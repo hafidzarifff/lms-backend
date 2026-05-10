@@ -46,8 +46,17 @@ Digunakan untuk mendapatkan token akses. User bisa login menggunakan salah satu 
 - **Response Error (401 Unauthorized):**
 ```json
 {
-    "status": "error",
+    "success": false,
     "message": "Kredensial tidak valid"
+}
+```
+
+- **Response Error (403 Forbidden):**
+Muncul jika akun belum disetujui, ditolak, atau dinonaktifkan.
+```json
+{
+    "success": false,
+    "message": "Akun Anda sedang dalam proses verifikasi oleh Admin."
 }
 ```
 
@@ -99,6 +108,49 @@ Mendapatkan data user yang sedang login (Middleware `auth:sanctum`).
     "role": "Admin",
     "created_at": "...",
     "updated_at": "..."
+}
+```
+
+---
+
+### 4. Registrasi Manual Dosen
+Digunakan oleh Dosen untuk mendaftarkan akun baru. Akun yang terdaftar akan berstatus **Menunggu** dan tidak bisa login sampai disetujui oleh Admin.
+
+- **URL:** `/register/dosen`
+- **Method:** `POST`
+- **Request Body:**
+```json
+{
+    "nama_lengkap": "Dr. Budi Santoso",
+    "nidn": "0012345678",
+    "email": "budi@univ.ac.id",
+    "password": "password123",
+    "password_confirmation": "password123",
+    "fakultas": "Teknik",
+    "prodi": "Informatika"
+}
+```
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "success": true,
+    "message": "Registrasi berhasil. Akun Anda sedang menunggu verifikasi oleh Admin.",
+    "data": {
+        "nama_lengkap": "Dr. Budi Santoso",
+        "email": "budi@univ.ac.id"
+    }
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "message": "NIDN sudah terdaftar dalam sistem. (and other validation messages)",
+    "errors": {
+        "nidn": ["NIDN sudah terdaftar dalam sistem."],
+        "email": ["Email sudah terdaftar dalam sistem."]
+    }
 }
 ```
 

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterDosenRequest;
 use Illuminate\Http\Request;
 use App\Models\Pengguna;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Enums\RolePengguna;
 
 class AuthController extends Controller
@@ -38,9 +40,35 @@ class AuthController extends Controller
         // 3. Verifikasi Kredensial
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'Kredensial tidak valid',
             ], 401);
+        }
+
+        // Simpan referensi user yang ditemukan ke variabel $pengguna
+        $pengguna = $user;
+
+        // 3a. Guard: Cek status persetujuan akun (khusus alur registrasi manual)
+        if ($pengguna->status_persetujuan === 'Menunggu') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Anda sedang dalam proses verifikasi oleh Admin.',
+            ], 403);
+        }
+
+        if ($pengguna->status_persetujuan === 'Ditolak') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pendaftaran akun Anda ditolak. Silakan hubungi Admin.',
+            ], 403);
+        }
+
+        // 3b. Guard: Cek status aktif akun
+        if ($pengguna->status_aktif === false) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Anda saat ini dinonaktifkan. Silakan hubungi Admin.',
+            ], 403);
         }
 
         // 4. Token Abilities
@@ -82,5 +110,45 @@ class AuthController extends Controller
             'status' => 'success',
             'message' => 'Logout berhasil'
         ], 200);
+    }
+
+    /**
+     * Proses registrasi manual khusus Dosen.
+     * Akun yang terdaftar akan menunggu verifikasi Admin sebelum bisa login.
+     */
+    public function registerDosen(RegisterDosenRequest $request)
+    {
+        // 1. Ambil data yang sudah tervalidasi oleh RegisterDosenRequest
+        $validated = $request->validated();
+
+        // 2. Generate UUID untuk primary key
+        $uuid = Str::uuid()->toString();
+
+        // 3. Hash password sebelum disimpan ke database
+        $hashedPassword = Hash::make($validated['password']);
+
+        // 4. Simpan data dosen baru ke tabel pengguna
+        $pengguna = Pengguna::create([
+            'id_user'             => $uuid,
+            'nama_lengkap'        => $validated['nama_lengkap'],
+            'email'               => $validated['email'],
+            'password'            => $hashedPassword,
+            'nomor_induk'         => $validated['nidn'],
+            'fakultas'            => $validated['fakultas'],
+            'prodi'               => $validated['prodi'],
+            'role'                => 'Dosen',
+            'status_persetujuan'  => 'Menunggu',
+            'status_aktif'        => false,
+        ]);
+
+        // 5. Return response sukses dengan HTTP 201 (Created)
+        return response()->json([
+            'success' => true,
+            'message' => 'Registrasi berhasil. Akun Anda sedang menunggu verifikasi oleh Admin.',
+            'data'    => [
+                'nama_lengkap' => $pengguna->nama_lengkap,
+                'email'        => $pengguna->email,
+            ],
+        ], 201);
     }
 }

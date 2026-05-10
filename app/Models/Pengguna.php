@@ -25,12 +25,17 @@ class Pengguna extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'id_user',
         'nama_lengkap',
         'role',
         'email',
         'username',
         'nomor_induk',
         'password',
+        'fakultas',
+        'prodi',
+        'status_aktif',
+        'status_persetujuan',
     ];
 
     /**
@@ -52,6 +57,7 @@ class Pengguna extends Authenticatable
         return [
             'role' => RolePengguna::class,
             'password' => 'hashed',
+            'status_aktif' => 'boolean',
         ];
     }
 }
