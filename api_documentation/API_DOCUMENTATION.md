@@ -143,7 +143,55 @@ Digunakan oleh Dosen untuk mendaftarkan akun baru. Akun yang terdaftar akan bers
 }
 ```
 
-- **Response Validasi Gagal (422 Unprocessable Entity):**
+- **Response Validasi Jika NIDN sudah terdaftar (422 Unprocessable Entity):**
+```json
+{
+    "message": "NIDN sudah terdaftar dalam sistem.",
+    "errors": {
+        "nidn": [
+            "NIDN sudah terdaftar dalam sistem."
+        ]
+    }
+}
+```
+
+- **Response Validasi Jika Email sudah terdaftar (422 Unprocessable Entity):**
+```json
+{
+    "message": "Email sudah terdaftar dalam sistem.",
+    "errors": {
+        "email": [
+            "Email sudah terdaftar dalam sistem."
+        ]
+    }
+}
+```
+
+- **Response Validasi Jika Password tidak cocok (422 Unprocessable Entity):**
+```json
+{
+    "message": "Konfirmasi password tidak cocok.",
+    "errors": {
+        "password": [
+            "Konfirmasi password tidak cocok."
+        ]
+    }
+}
+```
+
+- **Response Validasi Jika Password minimal 8 karakter (422 Unprocessable Entity):**
+```json
+{
+    "message": "Password minimal 8 karakter.",
+    "errors": {
+        "password": [
+            "Password minimal 8 karakter."
+        ]
+    }
+}
+```
+
+- **Response Validasi Jika NIDN dan Email sudah terdaftar (422 Unprocessable Entity):**
 ```json
 {
     "message": "NIDN sudah terdaftar dalam sistem. (and other validation messages)",
