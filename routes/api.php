@@ -14,6 +14,10 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    // Fitur Verifikasi Dosen (Admin)
+    Route::get('/verifikasi-dosen', [\App\Http\Controllers\Api\VerifikasiDosenController::class, 'index']);
+    Route::put('/verifikasi-dosen/{id}', [\App\Http\Controllers\Api\VerifikasiDosenController::class, 'updateStatus']);
+
     // Fitur Management Mahasiswa (Admin)
     Route::post('/mahasiswa', [\App\Http\Controllers\Api\MahasiswaController::class, 'store']);
     Route::get('/mahasiswa', [\App\Http\Controllers\Api\MahasiswaController::class, 'index']);

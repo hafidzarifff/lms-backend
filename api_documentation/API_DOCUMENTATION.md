@@ -114,7 +114,7 @@ Mendapatkan data user yang sedang login (Middleware `auth:sanctum`).
 ---
 
 ### 4. Registrasi Manual Dosen
-Digunakan oleh Dosen untuk mendaftarkan akun baru. Akun yang terdaftar akan berstatus **Menunggu** dan tidak bisa login sampai disetujui oleh Admin.
+Digunakan oleh Dosen untuk mendaftarkan akun baru secara mandiri. Akun yang terdaftar akan berstatus **Menunggu** dan tidak bisa login sampai disetujui oleh Admin.
 
 - **URL:** `/register/dosen`
 - **Method:** `POST`
@@ -143,69 +143,83 @@ Digunakan oleh Dosen untuk mendaftarkan akun baru. Akun yang terdaftar akan bers
 }
 ```
 
-- **Response Validasi Jika NIDN sudah terdaftar (422 Unprocessable Entity):**
+---
+
+### 5. Daftar Antrean Verifikasi Dosen (Admin)
+Melihat daftar dosen yang telah melakukan registrasi. Admin dapat memfilter berdasarkan status persetujuan.
+
+- **URL:** `/verifikasi-dosen`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Query Params:**
+    - `status` (optional): `Menunggu`, `Disetujui`, atau `Ditolak`.
+- **Response Sukses (200 OK):**
 ```json
 {
-    "message": "NIDN sudah terdaftar dalam sistem.",
-    "errors": {
-        "nidn": [
-            "NIDN sudah terdaftar dalam sistem."
-        ]
-    }
+    "current_page": 1,
+    "data": [
+        {
+            "id_user": "uuid-string",
+            "nama_lengkap": "Dr. Budi Santoso",
+            "email": "budi@univ.ac.id",
+            "role": "Dosen",
+            "status_persetujuan": "Menunggu",
+            "status_aktif": false,
+            "created_at": "..."
+        }
+    ],
+    "total": 1,
+    "per_page": 10
 }
 ```
 
-- **Response Validasi Jika Email sudah terdaftar (422 Unprocessable Entity):**
+---
+
+### 6. Proses Verifikasi Dosen (Admin)
+Menyetujui atau menolak registrasi akun dosen. Jika disetujui, akun otomatis menjadi aktif dan dosen bisa login.
+
+- **URL:** `/verifikasi-dosen/{id}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
 ```json
 {
-    "message": "Email sudah terdaftar dalam sistem.",
-    "errors": {
-        "email": [
-            "Email sudah terdaftar dalam sistem."
-        ]
-    }
+    "status_persetujuan": "Disetujui"
+}
+```
+*Pilihan status: `Disetujui` atau `Ditolak`.*
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Registrasi dosen berhasil disetujui."
 }
 ```
 
-- **Response Validasi Jika Password tidak cocok (422 Unprocessable Entity):**
+- **Response Error (404 Not Found):**
 ```json
 {
-    "message": "Konfirmasi password tidak cocok.",
-    "errors": {
-        "password": [
-            "Konfirmasi password tidak cocok."
-        ]
-    }
+    "success": false,
+    "message": "Data dosen tidak ditemukan."
 }
 ```
 
-- **Response Validasi Jika Password minimal 8 karakter (422 Unprocessable Entity):**
+- **Response Validasi Gagal (422 Unprocessable Entity):**
 ```json
 {
-    "message": "Password minimal 8 karakter.",
+    "message": "Status persetujuan wajib diisi. (and other validation messages)",
     "errors": {
-        "password": [
-            "Password minimal 8 karakter."
-        ]
-    }
-}
-```
-
-- **Response Validasi Jika NIDN dan Email sudah terdaftar (422 Unprocessable Entity):**
-```json
-{
-    "message": "NIDN sudah terdaftar dalam sistem. (and other validation messages)",
-    "errors": {
-        "nidn": ["NIDN sudah terdaftar dalam sistem."],
-        "email": ["Email sudah terdaftar dalam sistem."]
+        "status_persetujuan": ["Status persetujuan wajib diisi."]
     }
 }
 ```
 
 ---
 
-### 5. Tambah Data Mahasiswa (Admin)
-Digunakan oleh Admin untuk mendaftarkan Mahasiswa baru secara langsung. Sistem akan otomatis men-generate **Email** dan **Password default** berdasarkan Nomor Induk agar mahasiswa bisa langsung login.
+### 7. Tambah Data Mahasiswa (Admin)
+Menambahkan data mahasiswa baru secara manual. Sistem akan otomatis men-generate **Email** dan **Password default** agar mahasiswa bisa langsung login.
 
 - **URL:** `/mahasiswa`
 - **Method:** `POST`
@@ -221,7 +235,7 @@ Digunakan oleh Admin untuk mendaftarkan Mahasiswa baru secara langsung. Sistem a
     "angkatan": "2024"
 }
 ```
-*Catatan: Email otomatis akan berformat `{nomor_induk}@mhs.kampus.ac.id` dan Password default berformat `Mhs{nomor_induk}`.*
+*Catatan: Email otomatis akan berformat `{nomor_induk}@mhs.uika.ac.id` dan Password default berformat `Mhs{nomor_induk}`.*
 
 - **Response Sukses (201 Created):**
 ```json
@@ -230,33 +244,9 @@ Digunakan oleh Admin untuk mendaftarkan Mahasiswa baru secara langsung. Sistem a
 }
 ```
 
-- **Response Validasi Gagal (422 Unprocessable Entity):**
-```json
-{
-    "message": "NPM / Nomor Induk sudah terdaftar di sistem.",
-    "errors": {
-        "nomor_induk": [
-            "NPM / Nomor Induk sudah terdaftar di sistem."
-        ],
-        "nama_lengkap": [
-            "Nama lengkap wajib diisi."
-        ],
-        "fakultas": [
-            "Fakultas wajib diisi."
-        ],
-        "prodi": [
-            "Prodi wajib diisi."
-        ],
-        "angkatan": [
-            "Angkatan wajib diisi."
-        ]
-    }
-}
-```
-
 ---
 
-### 6. Daftar Data Mahasiswa (Admin)
+### 8. Daftar Data Mahasiswa (Admin)
 Mendapatkan list data seluruh mahasiswa dengan sistem pagination (50 data per halaman).
 
 - **URL:** `/mahasiswa`
@@ -289,7 +279,7 @@ Mendapatkan list data seluruh mahasiswa dengan sistem pagination (50 data per ha
 
 ---
 
-### 7. Detail Data Mahasiswa (Admin)
+### 9. Detail Data Mahasiswa (Admin)
 Mendapatkan detail satu data mahasiswa berdasarkan ID.
 
 - **URL:** `/mahasiswa/{id}`
@@ -322,8 +312,8 @@ Mendapatkan detail satu data mahasiswa berdasarkan ID.
 
 ---
 
-### 8. Update Data Mahasiswa (Admin)
-Memperbarui data profil mahasiswa. Jika `nomor_induk` diubah, maka `email` akan di-generate ulang secara otomatis mengikuti format baru. Password tidak akan berubah.
+### 10. Update Data Mahasiswa (Admin)
+Memperbarui data profil mahasiswa. Jika `nomor_induk` diubah, maka `email` akan di-generate ulang secara otomatis. Password tidak akan berubah.
 
 - **URL:** `/mahasiswa/{id}`
 - **Method:** `PUT`
@@ -357,7 +347,7 @@ Memperbarui data profil mahasiswa. Jika `nomor_induk` diubah, maka `email` akan 
 
 ---
 
-### 9. Hapus Data Mahasiswa (Admin)
+### 11. Hapus Data Mahasiswa (Admin)
 Menghapus data mahasiswa secara permanen dari sistem.
 
 - **URL:** `/mahasiswa/{id}`
