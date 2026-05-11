@@ -34,6 +34,7 @@ class Pengguna extends Authenticatable
         'password',
         'fakultas',
         'prodi',
+        'angkatan',
         'status_aktif',
         'status_persetujuan',
     ];

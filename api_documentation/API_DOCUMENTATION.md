@@ -204,6 +204,182 @@ Digunakan oleh Dosen untuk mendaftarkan akun baru. Akun yang terdaftar akan bers
 
 ---
 
+### 5. Tambah Data Mahasiswa (Admin)
+Digunakan oleh Admin untuk mendaftarkan Mahasiswa baru secara langsung. Sistem akan otomatis men-generate **Email** dan **Password default** berdasarkan Nomor Induk agar mahasiswa bisa langsung login.
+
+- **URL:** `/mahasiswa`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nama_lengkap": "Budi Rahardjo",
+    "nomor_induk": "20241001",
+    "fakultas": "Teknik",
+    "prodi": "Informatika",
+    "angkatan": "2024"
+}
+```
+*Catatan: Email otomatis akan berformat `{nomor_induk}@mhs.kampus.ac.id` dan Password default berformat `Mhs{nomor_induk}`.*
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "message": "Data mahasiswa berhasil ditambahkan. Email dan sandi default telah dibuat."
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "message": "NPM / Nomor Induk sudah terdaftar di sistem.",
+    "errors": {
+        "nomor_induk": [
+            "NPM / Nomor Induk sudah terdaftar di sistem."
+        ],
+        "nama_lengkap": [
+            "Nama lengkap wajib diisi."
+        ],
+        "fakultas": [
+            "Fakultas wajib diisi."
+        ],
+        "prodi": [
+            "Prodi wajib diisi."
+        ],
+        "angkatan": [
+            "Angkatan wajib diisi."
+        ]
+    }
+}
+```
+
+---
+
+### 6. Daftar Data Mahasiswa (Admin)
+Mendapatkan list data seluruh mahasiswa dengan sistem pagination (50 data per halaman).
+
+- **URL:** `/mahasiswa`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "current_page": 1,
+    "data": [
+        {
+            "id_user": "uuid-string",
+            "nama_lengkap": "Budi Rahardjo",
+            "nomor_induk": "20241001",
+            "email": "20241001@mhs.uika.ac.id",
+            "role": "Mahasiswa",
+            "fakultas": "Teknik",
+            "prodi": "Informatika",
+            "angkatan": "2024",
+            "status_aktif": true,
+            "created_at": "...",
+            "updated_at": "..."
+        }
+    ],
+    "total": 1,
+    "per_page": 50
+}
+```
+
+---
+
+### 7. Detail Data Mahasiswa (Admin)
+Mendapatkan detail satu data mahasiswa berdasarkan ID.
+
+- **URL:** `/mahasiswa/{id}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "id_user": "uuid-string",
+    "nama_lengkap": "Budi Rahardjo",
+    "nomor_induk": "20241001",
+    "email": "20241001@mhs.uika.ac.id",
+    "role": "Mahasiswa",
+    "fakultas": "Teknik",
+    "prodi": "Informatika",
+    "angkatan": "2024",
+    "status_aktif": true,
+    "created_at": "...",
+    "updated_at": "..."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data mahasiswa tidak ditemukan."
+}
+```
+
+---
+
+### 8. Update Data Mahasiswa (Admin)
+Memperbarui data profil mahasiswa. Jika `nomor_induk` diubah, maka `email` akan di-generate ulang secara otomatis mengikuti format baru. Password tidak akan berubah.
+
+- **URL:** `/mahasiswa/{id}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nama_lengkap": "Budi Rahardjo Updated",
+    "nomor_induk": "20241002",
+    "fakultas": "Teknik",
+    "prodi": "Sistem Informasi",
+    "angkatan": "2024",
+    "status_aktif": false
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Data mahasiswa berhasil diperbarui."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data mahasiswa tidak ditemukan."
+}
+```
+
+---
+
+### 9. Hapus Data Mahasiswa (Admin)
+Menghapus data mahasiswa secara permanen dari sistem.
+
+- **URL:** `/mahasiswa/{id}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Data mahasiswa berhasil dihapus."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data mahasiswa tidak ditemukan."
+}
+```
+
+---
+
 ## 🎭 Roles & Permissions (Abilities)
 Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Admin:** `admin:*`
