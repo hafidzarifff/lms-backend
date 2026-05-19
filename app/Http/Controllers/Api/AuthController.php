@@ -48,7 +48,16 @@ class AuthController extends Controller
         // Simpan referensi user yang ditemukan ke variabel $pengguna
         $pengguna = $user;
 
-        // 3a. Guard: Cek status persetujuan akun (khusus alur registrasi manual)
+        /**
+         * =============================================================
+         * GUARD: Pengecekan kondisi akun sebelum token di-generate
+         * Urutan pengecekan: Status Persetujuan → Status Aktif
+         * =============================================================
+         */
+
+        // 3a. Guard #1: Cek apakah akun masih MENUNGGU verifikasi Admin.
+        // Kondisi ini berlaku untuk Dosen yang baru registrasi mandiri,
+        // atau Mahasiswa yang ditambahkan Admin namun belum disetujui.
         if ($pengguna->status_persetujuan === 'Menunggu') {
             return response()->json([
                 'success' => false,
@@ -56,6 +65,9 @@ class AuthController extends Controller
             ], 403);
         }
 
+        // 3b. Guard #2: Cek apakah pendaftaran akun DITOLAK oleh Admin.
+        // Jika Admin menolak registrasi, pengguna tidak boleh login
+        // dan harus menghubungi Admin untuk klarifikasi lebih lanjut.
         if ($pengguna->status_persetujuan === 'Ditolak') {
             return response()->json([
                 'success' => false,
@@ -63,11 +75,14 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // 3b. Guard: Cek status aktif akun
-        if ($pengguna->status_aktif === false) {
+        // 3c. Guard #3: Cek apakah akun sudah DISETUJUI tapi DINONAKTIFKAN sementara.
+        // Ini menangani kasus di mana Admin menonaktifkan akun yang sebelumnya aktif
+        // (misalnya karena cuti, pelanggaran, atau alasan administratif lainnya).
+        // Pengecekan ini hanya berlaku jika status_persetujuan = 'Disetujui'.
+        if ($pengguna->status_persetujuan === 'Disetujui' && !$pengguna->status_aktif) {
             return response()->json([
                 'success' => false,
-                'message' => 'Akun Anda saat ini dinonaktifkan. Silakan hubungi Admin.',
+                'message' => 'Akun Anda dinonaktifkan oleh Admin. Silakan hubungi pihak program studi atau admin lms.',
             ], 403);
         }
 
