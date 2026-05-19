@@ -24,4 +24,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'show']);
     Route::put('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'update']);
     Route::delete('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'destroy']);
+
+    // Fitur Management Dosen (Admin)
+    Route::put('/dosen/{id}', [\App\Http\Controllers\Api\DosenController::class, 'update']);
+    Route::delete('/dosen/{id}', [\App\Http\Controllers\Api\DosenController::class, 'destroy']);
 });

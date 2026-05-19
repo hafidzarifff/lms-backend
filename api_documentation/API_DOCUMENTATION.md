@@ -370,6 +370,76 @@ Menghapus data mahasiswa secara permanen dari sistem.
 
 ---
 
+### 12. Update Data Dosen (Admin)
+Memperbarui data profil dosen (nama_lengkap, nomor_induk/NIDN, email, fakultas, prodi, status_aktif, status_persetujuan). Password tidak akan berubah.
+
+- **URL:** `/dosen/{id}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nama_lengkap": "Dr. Budi Santoso Updated",
+    "nomor_induk": "0012345678",
+    "email": "budi.updated@univ.ac.id",
+    "fakultas": "Teknik",
+    "prodi": "Sistem Informasi",
+    "status_aktif": true,
+    "status_persetujuan": "Disetujui"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Data dosen berhasil diperbarui."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data dosen tidak ditemukan."
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "message": "Nama lengkap wajib diisi. (and other validation messages)",
+    "errors": {
+        "nama_lengkap": ["Nama lengkap wajib diisi."],
+        "nomor_induk": ["Nomor induk sudah terdaftar."]
+    }
+}
+```
+
+---
+
+### 13. Hapus Data Dosen (Admin)
+Menghapus data dosen secara permanen dari sistem.
+
+- **URL:** `/dosen/{id}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Data dosen berhasil dihapus."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data dosen tidak ditemukan."
+}
+```
+
+---
+
 ## 🎭 Roles & Permissions (Abilities)
 Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Admin:** `admin:*`
