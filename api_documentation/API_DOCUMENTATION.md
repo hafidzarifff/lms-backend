@@ -595,6 +595,167 @@ Menghapus data master kelas secara permanen dari sistem.
 
 ---
 
+### 19. Daftar Master Mata Kuliah (Admin)
+Mengambil seluruh data master mata kuliah dengan pagination (10 data per halaman), diurutkan dari yang terbaru.
+
+- **URL:** `/mata-kuliah`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "current_page": 1,
+    "data": [
+        {
+            "id_mk": "uuid-string",
+            "kode_mk": "IF101",
+            "nama_mk": "Algoritma dan Pemrograman",
+            "sks": 3,
+            "deskripsi": "Mata kuliah dasar tentang algoritma dan pemrograman.",
+            "created_at": "...",
+            "updated_at": "..."
+        }
+    ],
+    "total": 1,
+    "per_page": 10
+}
+```
+
+---
+
+### 20. Detail Master Mata Kuliah (Admin)
+Mengambil detail satu data mata kuliah berdasarkan ID.
+
+- **URL:** `/mata-kuliah/{id_mk}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "id_mk": "uuid-string",
+    "kode_mk": "IF101",
+    "nama_mk": "Algoritma dan Pemrograman",
+    "sks": 3,
+    "deskripsi": "Mata kuliah dasar tentang algoritma dan pemrograman.",
+    "created_at": "...",
+    "updated_at": "..."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data mata kuliah tidak ditemukan."
+}
+```
+
+---
+
+### 21. Tambah Master Mata Kuliah (Admin)
+Menambahkan data master mata kuliah baru ke sistem.
+
+- **URL:** `/mata-kuliah`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "kode_mk": "IF101",
+    "nama_mk": "Algoritma dan Pemrograman",
+    "sks": 3,
+    "deskripsi": "Mata kuliah dasar tentang algoritma dan pemrograman."
+}
+```
+*Catatan: Field `deskripsi` bersifat opsional (nullable).*
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "message": "Master mata kuliah berhasil ditambahkan.",
+    "data": {
+        "id_mk": "uuid-string",
+        "kode_mk": "IF101",
+        "nama_mk": "Algoritma dan Pemrograman",
+        "sks": 3,
+        "deskripsi": "Mata kuliah dasar tentang algoritma dan pemrograman.",
+        "created_at": "...",
+        "updated_at": "..."
+    }
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "message": "The kode mk field is required. (and other validation messages)",
+    "errors": {
+        "kode_mk": ["The kode mk has already been taken."],
+        "sks": ["The sks field must be at least 1."]
+    }
+}
+```
+
+---
+
+### 22. Update Master Mata Kuliah (Admin)
+Memperbarui data master mata kuliah yang sudah ada.
+
+- **URL:** `/mata-kuliah/{id_mk}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "kode_mk": "IF102",
+    "nama_mk": "Struktur Data",
+    "sks": 4,
+    "deskripsi": "Mata kuliah lanjutan tentang struktur data."
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Master mata kuliah berhasil diperbarui."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data mata kuliah tidak ditemukan."
+}
+```
+
+---
+
+### 23. Hapus Master Mata Kuliah (Admin)
+Menghapus data master mata kuliah secara permanen dari sistem.
+
+- **URL:** `/mata-kuliah/{id_mk}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Master mata kuliah berhasil dihapus."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data mata kuliah tidak ditemukan."
+}
+```
+
+---
+
 ## 🎭 Roles & Permissions (Abilities)
 Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Admin:** `admin:*`

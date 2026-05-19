@@ -35,4 +35,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/kelas', [\App\Http\Controllers\Api\KelasController::class, 'store']);
     Route::put('/kelas/{id_kelas}', [\App\Http\Controllers\Api\KelasController::class, 'update']);
     Route::delete('/kelas/{id_kelas}', [\App\Http\Controllers\Api\KelasController::class, 'destroy']);
+
+    // Fitur Management Master Mata Kuliah (Admin)
+    Route::get('/mata-kuliah', [\App\Http\Controllers\Api\MataKuliahController::class, 'index']);
+    Route::get('/mata-kuliah/{id_mk}', [\App\Http\Controllers\Api\MataKuliahController::class, 'show']);
+    Route::post('/mata-kuliah', [\App\Http\Controllers\Api\MataKuliahController::class, 'store']);
+    Route::put('/mata-kuliah/{id_mk}', [\App\Http\Controllers\Api\MataKuliahController::class, 'update']);
+    Route::delete('/mata-kuliah/{id_mk}', [\App\Http\Controllers\Api\MataKuliahController::class, 'destroy']);
 });
