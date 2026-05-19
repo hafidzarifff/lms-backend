@@ -440,6 +440,161 @@ Menghapus data dosen secara permanen dari sistem.
 
 ---
 
+### 14. Daftar Master Kelas (Admin)
+Mengambil seluruh data master kelas dengan pagination (10 data per halaman), diurutkan dari yang terbaru.
+
+- **URL:** `/kelas`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "current_page": 1,
+    "data": [
+        {
+            "id_kelas": "uuid-string",
+            "nama_kelas": "Kelas A",
+            "kode_kelas": "KLS-A",
+            "tahun_angkatan": "2024",
+            "created_at": "...",
+            "updated_at": "..."
+        }
+    ],
+    "total": 1,
+    "per_page": 10
+}
+```
+
+---
+
+### 15. Detail Master Kelas (Admin)
+Mengambil detail satu data kelas berdasarkan ID.
+
+- **URL:** `/kelas/{id_kelas}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "id_kelas": "uuid-string",
+    "nama_kelas": "Kelas A",
+    "kode_kelas": "KLS-A",
+    "tahun_angkatan": "2024",
+    "created_at": "...",
+    "updated_at": "..."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data kelas tidak ditemukan."
+}
+```
+
+---
+
+### 16. Tambah Master Kelas (Admin)
+Menambahkan data master kelas baru ke sistem.
+
+- **URL:** `/kelas`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nama_kelas": "Kelas A",
+    "kode_kelas": "KLS-A",
+    "tahun_angkatan": "2024"
+}
+```
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "message": "Master kelas berhasil ditambahkan.",
+    "data": {
+        "id_kelas": "uuid-string",
+        "nama_kelas": "Kelas A",
+        "kode_kelas": "KLS-A",
+        "tahun_angkatan": "2024",
+        "created_at": "...",
+        "updated_at": "..."
+    }
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "message": "The nama kelas field is required. (and other validation messages)",
+    "errors": {
+        "nama_kelas": ["The nama kelas field is required."],
+        "kode_kelas": ["The kode kelas has already been taken."]
+    }
+}
+```
+
+---
+
+### 17. Update Master Kelas (Admin)
+Memperbarui data master kelas yang sudah ada.
+
+- **URL:** `/kelas/{id_kelas}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nama_kelas": "Kelas B Updated",
+    "kode_kelas": "KLS-B",
+    "tahun_angkatan": "2025"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Master kelas berhasil diperbarui."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data kelas tidak ditemukan."
+}
+```
+
+---
+
+### 18. Hapus Master Kelas (Admin)
+Menghapus data master kelas secara permanen dari sistem.
+
+- **URL:** `/kelas/{id_kelas}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Master kelas berhasil dihapus."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data kelas tidak ditemukan."
+}
+```
+
+---
+
 ## 🎭 Roles & Permissions (Abilities)
 Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Admin:** `admin:*`

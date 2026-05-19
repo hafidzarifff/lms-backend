@@ -28,4 +28,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Fitur Management Dosen (Admin)
     Route::put('/dosen/{id}', [\App\Http\Controllers\Api\DosenController::class, 'update']);
     Route::delete('/dosen/{id}', [\App\Http\Controllers\Api\DosenController::class, 'destroy']);
+
+    // Fitur Management Master Kelas (Admin)
+    Route::get('/kelas', [\App\Http\Controllers\Api\KelasController::class, 'index']);
+    Route::get('/kelas/{id_kelas}', [\App\Http\Controllers\Api\KelasController::class, 'show']);
+    Route::post('/kelas', [\App\Http\Controllers\Api\KelasController::class, 'store']);
+    Route::put('/kelas/{id_kelas}', [\App\Http\Controllers\Api\KelasController::class, 'update']);
+    Route::delete('/kelas/{id_kelas}', [\App\Http\Controllers\Api\KelasController::class, 'destroy']);
 });
