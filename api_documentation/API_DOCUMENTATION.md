@@ -29,6 +29,7 @@ Digunakan untuk mendapatkan token akses. User bisa login menggunakan salah satu 
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "status": "success",
     "message": "Login berhasil",
     "data": {
@@ -63,6 +64,7 @@ Muncul jika akun belum disetujui, ditolak, atau dinonaktifkan.
 - **Response Validasi Gagal (422 Unprocessable Entity):**
 ```json
 {
+    "success": false,
     "message": "Email, Username, atau Nomor Induk wajib diisi. (and other validation messages)",
     "errors": {
         "identifier": ["Email, Username, atau Nomor Induk wajib diisi."],
@@ -83,6 +85,7 @@ Menghapus token akses yang sedang digunakan.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "status": "success",
     "message": "Logout berhasil"
 }
@@ -100,6 +103,7 @@ Mendapatkan data user yang sedang login (Middleware `auth:sanctum`).
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "id_user": "uuid-string-here",
     "nama_lengkap": "Administrator LMS",
     "email": "admin@lms.com",
@@ -157,6 +161,7 @@ Melihat daftar dosen yang telah melakukan registrasi. Admin dapat memfilter berd
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "current_page": 1,
     "data": [
         {
@@ -194,6 +199,7 @@ Menyetujui atau menolak registrasi akun dosen. Jika disetujui, akun otomatis men
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Registrasi dosen berhasil disetujui."
 }
 ```
@@ -209,6 +215,7 @@ Menyetujui atau menolak registrasi akun dosen. Jika disetujui, akun otomatis men
 - **Response Validasi Gagal (422 Unprocessable Entity):**
 ```json
 {
+    "success": false,
     "message": "Status persetujuan wajib diisi. (and other validation messages)",
     "errors": {
         "status_persetujuan": ["Status persetujuan wajib diisi."]
@@ -240,6 +247,7 @@ Menambahkan data mahasiswa baru secara manual. Sistem akan otomatis men-generate
 - **Response Sukses (201 Created):**
 ```json
 {
+    "success": true,
     "message": "Data mahasiswa berhasil ditambahkan. Email dan sandi default telah dibuat."
 }
 ```
@@ -256,6 +264,7 @@ Mendapatkan list data seluruh mahasiswa dengan sistem pagination (50 data per ha
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "current_page": 1,
     "data": [
         {
@@ -289,6 +298,7 @@ Mendapatkan detail satu data mahasiswa berdasarkan ID.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "id_user": "uuid-string",
     "nama_lengkap": "Budi Rahardjo",
     "nomor_induk": "20241001",
@@ -306,6 +316,7 @@ Mendapatkan detail satu data mahasiswa berdasarkan ID.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data mahasiswa tidak ditemukan."
 }
 ```
@@ -334,6 +345,7 @@ Memperbarui data profil mahasiswa. Jika `nomor_induk` diubah, maka `email` akan 
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Data mahasiswa berhasil diperbarui."
 }
 ```
@@ -341,6 +353,7 @@ Memperbarui data profil mahasiswa. Jika `nomor_induk` diubah, maka `email` akan 
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data mahasiswa tidak ditemukan."
 }
 ```
@@ -357,6 +370,7 @@ Menghapus data mahasiswa secara permanen dari sistem.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Data mahasiswa berhasil dihapus."
 }
 ```
@@ -364,6 +378,7 @@ Menghapus data mahasiswa secara permanen dari sistem.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data mahasiswa tidak ditemukan."
 }
 ```
@@ -393,6 +408,7 @@ Memperbarui data profil dosen (nama_lengkap, nomor_induk/NIDN, email, fakultas, 
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Data dosen berhasil diperbarui."
 }
 ```
@@ -400,6 +416,7 @@ Memperbarui data profil dosen (nama_lengkap, nomor_induk/NIDN, email, fakultas, 
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data dosen tidak ditemukan."
 }
 ```
@@ -407,6 +424,7 @@ Memperbarui data profil dosen (nama_lengkap, nomor_induk/NIDN, email, fakultas, 
 - **Response Validasi Gagal (422 Unprocessable Entity):**
 ```json
 {
+    "success": false,
     "message": "Nama lengkap wajib diisi. (and other validation messages)",
     "errors": {
         "nama_lengkap": ["Nama lengkap wajib diisi."],
@@ -427,6 +445,7 @@ Menghapus data dosen secara permanen dari sistem.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Data dosen berhasil dihapus."
 }
 ```
@@ -434,6 +453,7 @@ Menghapus data dosen secara permanen dari sistem.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data dosen tidak ditemukan."
 }
 ```
@@ -450,6 +470,7 @@ Mengambil seluruh data master kelas dengan pagination (10 data per halaman), diu
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "current_page": 1,
     "data": [
         {
@@ -478,6 +499,7 @@ Mengambil detail satu data kelas berdasarkan ID.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "id_kelas": "uuid-string",
     "nama_kelas": "Kelas A",
     "kode_kelas": "KLS-A",
@@ -490,6 +512,7 @@ Mengambil detail satu data kelas berdasarkan ID.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data kelas tidak ditemukan."
 }
 ```
@@ -515,6 +538,7 @@ Menambahkan data master kelas baru ke sistem.
 - **Response Sukses (201 Created):**
 ```json
 {
+    "success": true,
     "message": "Master kelas berhasil ditambahkan.",
     "data": {
         "id_kelas": "uuid-string",
@@ -530,6 +554,7 @@ Menambahkan data master kelas baru ke sistem.
 - **Response Validasi Gagal (422 Unprocessable Entity):**
 ```json
 {
+    "success": false,
     "message": "The nama kelas field is required. (and other validation messages)",
     "errors": {
         "nama_kelas": ["The nama kelas field is required."],
@@ -559,6 +584,7 @@ Memperbarui data master kelas yang sudah ada.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Master kelas berhasil diperbarui."
 }
 ```
@@ -566,6 +592,7 @@ Memperbarui data master kelas yang sudah ada.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data kelas tidak ditemukan."
 }
 ```
@@ -582,6 +609,7 @@ Menghapus data master kelas secara permanen dari sistem.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Master kelas berhasil dihapus."
 }
 ```
@@ -589,6 +617,7 @@ Menghapus data master kelas secara permanen dari sistem.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data kelas tidak ditemukan."
 }
 ```
@@ -605,6 +634,7 @@ Mengambil seluruh data master mata kuliah dengan pagination (10 data per halaman
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "current_page": 1,
     "data": [
         {
@@ -634,6 +664,7 @@ Mengambil detail satu data mata kuliah berdasarkan ID.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "id_mk": "uuid-string",
     "kode_mk": "IF101",
     "nama_mk": "Algoritma dan Pemrograman",
@@ -647,6 +678,7 @@ Mengambil detail satu data mata kuliah berdasarkan ID.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data mata kuliah tidak ditemukan."
 }
 ```
@@ -674,6 +706,7 @@ Menambahkan data master mata kuliah baru ke sistem.
 - **Response Sukses (201 Created):**
 ```json
 {
+    "success": true,
     "message": "Master mata kuliah berhasil ditambahkan.",
     "data": {
         "id_mk": "uuid-string",
@@ -690,6 +723,7 @@ Menambahkan data master mata kuliah baru ke sistem.
 - **Response Validasi Gagal (422 Unprocessable Entity):**
 ```json
 {
+    "success": false,
     "message": "The kode mk field is required. (and other validation messages)",
     "errors": {
         "kode_mk": ["The kode mk has already been taken."],
@@ -720,6 +754,7 @@ Memperbarui data master mata kuliah yang sudah ada.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Master mata kuliah berhasil diperbarui."
 }
 ```
@@ -727,6 +762,7 @@ Memperbarui data master mata kuliah yang sudah ada.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data mata kuliah tidak ditemukan."
 }
 ```
@@ -743,6 +779,7 @@ Menghapus data master mata kuliah secara permanen dari sistem.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Master mata kuliah berhasil dihapus."
 }
 ```
@@ -750,6 +787,7 @@ Menghapus data master mata kuliah secara permanen dari sistem.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data mata kuliah tidak ditemukan."
 }
 ```
