@@ -794,6 +794,231 @@ Menghapus data master mata kuliah secara permanen dari sistem.
 
 ---
 
+### 24. Daftar Jadwal Perkuliahan (Admin)
+Mengambil seluruh data jadwal perkuliahan dengan Eager Loading (data mata kuliah, kelas, dan dosen ikut ditampilkan). Pagination 10 data per halaman, diurutkan dari yang terbaru.
+
+- **URL:** `/jadwal-perkuliahan`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "current_page": 1,
+    "data": [
+        {
+            "id_jadwal": "uuid-string",
+            "id_mk": "uuid-string",
+            "id_kelas": "uuid-string",
+            "id_dosen": "uuid-string",
+            "sks": 3,
+            "semester": "2026 - Ganjil",
+            "hari": "Senin",
+            "waktu_mulai": "08:00",
+            "waktu_berakhir": "10:00",
+            "token_enrollment": "ABCXYZ",
+            "created_at": "...",
+            "updated_at": "...",
+            "mata_kuliah": {
+                "id_mk": "uuid-string",
+                "kode_mk": "IF101",
+                "nama_mk": "Algoritma dan Pemrograman",
+                "sks": 3,
+                "deskripsi": "..."
+            },
+            "kelas": {
+                "id_kelas": "uuid-string",
+                "nama_kelas": "Kelas A",
+                "kode_kelas": "KLS-A",
+                "tahun_angkatan": "2024"
+            },
+            "dosen": {
+                "id_user": "uuid-string",
+                "nama_lengkap": "Dr. Budi Santoso",
+                "email": "budi@univ.ac.id",
+                "role": "Dosen"
+            }
+        }
+    ],
+    "total": 1,
+    "per_page": 10
+}
+```
+
+---
+
+### 25. Detail Jadwal Perkuliahan (Admin)
+Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi mata kuliah, kelas, dan dosen.
+
+- **URL:** `/jadwal-perkuliahan/{id_jadwal}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "id_jadwal": "uuid-string",
+    "id_mk": "uuid-string",
+    "id_kelas": "uuid-string",
+    "id_dosen": "uuid-string",
+    "sks": 3,
+    "semester": "2026 - Ganjil",
+    "hari": "Senin",
+    "waktu_mulai": "08:00",
+    "waktu_berakhir": "10:00",
+    "token_enrollment": "ABCXYZ",
+    "created_at": "...",
+    "updated_at": "...",
+    "mata_kuliah": {
+        "id_mk": "uuid-string",
+        "kode_mk": "IF101",
+        "nama_mk": "Algoritma dan Pemrograman",
+        "sks": 3,
+        "deskripsi": "..."
+    },
+    "kelas": {
+        "id_kelas": "uuid-string",
+        "nama_kelas": "Kelas A",
+        "kode_kelas": "KLS-A",
+        "tahun_angkatan": "2024"
+    },
+    "dosen": {
+        "id_user": "uuid-string",
+        "nama_lengkap": "Dr. Budi Santoso",
+        "email": "budi@univ.ac.id",
+        "role": "Dosen"
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data jadwal perkuliahan tidak ditemukan."
+}
+```
+
+---
+
+### 26. Tambah Jadwal Perkuliahan (Admin)
+Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata kuliah yang dipilih. Token enrollment di-generate otomatis sebagai 6 karakter huruf kapital acak dan unik.
+
+- **URL:** `/jadwal-perkuliahan`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "id_mk": "uuid-mata-kuliah",
+    "id_kelas": "uuid-kelas",
+    "id_dosen": "uuid-dosen",
+    "semester": "2026 - Ganjil",
+    "hari": "Senin",
+    "waktu_mulai": "08:00",
+    "waktu_berakhir": "10:00"
+}
+```
+*Catatan: Field `sks` dan `token_enrollment` tidak perlu dikirim. SKS otomatis diambil dari mata kuliah, token otomatis di-generate oleh sistem.*
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "message": "Jadwal perkuliahan berhasil ditambahkan.",
+    "data": {
+        "id_jadwal": "uuid-string",
+        "id_mk": "uuid-mata-kuliah",
+        "id_kelas": "uuid-kelas",
+        "id_dosen": "uuid-dosen",
+        "sks": 3,
+        "semester": "2026 - Ganjil",
+        "hari": "Senin",
+        "waktu_mulai": "08:00",
+        "waktu_berakhir": "10:00",
+        "token_enrollment": "ABCXYZ",
+        "created_at": "...",
+        "updated_at": "...",
+        "mata_kuliah": { "..." : "..." },
+        "kelas": { "..." : "..." },
+        "dosen": { "..." : "..." }
+    }
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "message": "Mata kuliah wajib dipilih. (and other validation messages)",
+    "errors": {
+        "id_mk": ["Mata kuliah wajib dipilih."],
+        "id_dosen": ["Pengguna yang dipilih bukan berstatus Dosen."],
+        "semester": ["Format semester tidak valid. Gunakan format: \"2026 - Ganjil\" atau \"2026 - Genap\"."],
+        "waktu_berakhir": ["Waktu berakhir harus setelah waktu mulai."]
+    }
+}
+```
+
+---
+
+### 27. Update Jadwal Perkuliahan (Admin)
+Memperbarui data jadwal perkuliahan yang sudah ada. Token enrollment tidak berubah. Jika mata kuliah (`id_mk`) diubah, maka SKS otomatis menyesuaikan dari mata kuliah baru.
+
+- **URL:** `/jadwal-perkuliahan/{id_jadwal}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "id_mk": "uuid-mata-kuliah",
+    "id_kelas": "uuid-kelas",
+    "id_dosen": "uuid-dosen",
+    "semester": "2026 - Genap",
+    "hari": "Selasa",
+    "waktu_mulai": "10:00",
+    "waktu_berakhir": "12:00"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Jadwal perkuliahan berhasil diperbarui."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data jadwal perkuliahan tidak ditemukan."
+}
+```
+
+---
+
+### 28. Hapus Jadwal Perkuliahan (Admin)
+Menghapus data jadwal perkuliahan secara permanen dari sistem.
+
+- **URL:** `/jadwal-perkuliahan/{id_jadwal}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "message": "Jadwal perkuliahan berhasil dihapus."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "message": "Data jadwal perkuliahan tidak ditemukan."
+}
+```
+
+---
+
 ## 🎭 Roles & Permissions (Abilities)
 Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Admin:** `admin:*`
