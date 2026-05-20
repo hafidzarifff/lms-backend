@@ -804,6 +804,7 @@ Mengambil seluruh data jadwal perkuliahan dengan Eager Loading (data mata kuliah
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "current_page": 1,
     "data": [
         {
@@ -857,6 +858,7 @@ Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi ma
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "id_jadwal": "uuid-string",
     "id_mk": "uuid-string",
     "id_kelas": "uuid-string",
@@ -894,6 +896,7 @@ Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi ma
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data jadwal perkuliahan tidak ditemukan."
 }
 ```
@@ -924,6 +927,7 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
 - **Response Sukses (201 Created):**
 ```json
 {
+    "success": true,
     "message": "Jadwal perkuliahan berhasil ditambahkan.",
     "data": {
         "id_jadwal": "uuid-string",
@@ -948,6 +952,7 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
 - **Response Validasi Gagal (422 Unprocessable Entity):**
 ```json
 {
+    "success": false,
     "message": "Mata kuliah wajib dipilih. (and other validation messages)",
     "errors": {
         "id_mk": ["Mata kuliah wajib dipilih."],
@@ -983,6 +988,7 @@ Memperbarui data jadwal perkuliahan yang sudah ada. Token enrollment tidak berub
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Jadwal perkuliahan berhasil diperbarui."
 }
 ```
@@ -990,6 +996,7 @@ Memperbarui data jadwal perkuliahan yang sudah ada. Token enrollment tidak berub
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data jadwal perkuliahan tidak ditemukan."
 }
 ```
@@ -1006,6 +1013,7 @@ Menghapus data jadwal perkuliahan secara permanen dari sistem.
 - **Response Sukses (200 OK):**
 ```json
 {
+    "success": true,
     "message": "Jadwal perkuliahan berhasil dihapus."
 }
 ```
@@ -1013,6 +1021,7 @@ Menghapus data jadwal perkuliahan secara permanen dari sistem.
 - **Response Error (404 Not Found):**
 ```json
 {
+    "success": false,
     "message": "Data jadwal perkuliahan tidak ditemukan."
 }
 ```
