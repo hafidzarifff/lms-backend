@@ -839,7 +839,10 @@ Mengambil seluruh data jadwal perkuliahan dengan Eager Loading (data mata kuliah
             "id_kelas": "uuid-string",
             "id_dosen": "uuid-string",
             "sks": 3,
-            "semester": "2026 - Ganjil",
+            "fakultas": "Teknik",
+            "prodi": "Informatika",
+            "tahun": "2025/2026",
+            "semester": 1,
             "hari": "Senin",
             "waktu_mulai": "08:00",
             "waktu_berakhir": "10:00",
@@ -895,7 +898,10 @@ Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi ma
     "id_kelas": "uuid-string",
     "id_dosen": "uuid-string",
     "sks": 3,
-    "semester": "2026 - Ganjil",
+    "fakultas": "Teknik",
+    "prodi": "Informatika",
+    "tahun": "2025/2026",
+    "semester": 1,
     "hari": "Senin",
     "waktu_mulai": "08:00",
     "waktu_berakhir": "10:00",
@@ -952,13 +958,16 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
     "id_mk": "uuid-mata-kuliah",
     "id_kelas": "uuid-kelas",
     "id_dosen": "uuid-dosen",
-    "semester": "2026 - Ganjil",
+    "semester": 1,
+    "fakultas": "Teknik",
+    "prodi": "Informatika",
+    "tahun": "2025/2026",
     "hari": "Senin",
     "waktu_mulai": "08:00",
     "waktu_berakhir": "10:00"
 }
 ```
-*Catatan: Field `sks` dan `token_enrollment` tidak perlu dikirim. SKS otomatis diambil dari mata kuliah, token otomatis di-generate oleh sistem.*
+*Catatan: Field `sks` dan `token_enrollment` tidak perlu dikirim. SKS otomatis diambil dari mata kuliah, token otomatis di-generate oleh sistem. `semester` berupa integer (1-14).*
 
 - **Response Sukses (201 Created):**
 ```json
@@ -971,7 +980,10 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
         "id_kelas": "uuid-kelas",
         "id_dosen": "uuid-dosen",
         "sks": 3,
-        "semester": "2026 - Ganjil",
+        "fakultas": "Teknik",
+        "prodi": "Informatika",
+        "tahun": "2025/2026",
+        "semester": 1,
         "hari": "Senin",
         "waktu_mulai": "08:00",
         "waktu_berakhir": "10:00",
@@ -993,7 +1005,10 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
     "errors": {
         "id_mk": ["Mata kuliah wajib dipilih."],
         "id_dosen": ["Pengguna yang dipilih bukan berstatus Dosen."],
-        "semester": ["Format semester tidak valid. Gunakan format: \"2026 - Ganjil\" atau \"2026 - Genap\"."],
+        "semester": ["Semester harus berupa angka.", "Semester minimal bernilai 1.", "Semester maksimal bernilai 14."],
+        "fakultas": ["Fakultas wajib diisi."],
+        "prodi": ["Program studi wajib diisi."],
+        "tahun": ["Tahun ajaran wajib diisi."],
         "waktu_berakhir": ["Waktu berakhir harus setelah waktu mulai."]
     }
 }
@@ -1014,7 +1029,10 @@ Memperbarui data jadwal perkuliahan yang sudah ada. Token enrollment tidak berub
     "id_mk": "uuid-mata-kuliah",
     "id_kelas": "uuid-kelas",
     "id_dosen": "uuid-dosen",
-    "semester": "2026 - Genap",
+    "semester": 2,
+    "fakultas": "Teknik",
+    "prodi": "Informatika",
+    "tahun": "2025/2026",
     "hari": "Selasa",
     "waktu_mulai": "10:00",
     "waktu_berakhir": "12:00"

@@ -33,6 +33,9 @@ class JadwalPerkuliahan extends Model
         'id_kelas',
         'id_dosen',
         'sks',
+        'fakultas',
+        'prodi',
+        'tahun',
         'semester',
         'hari',
         'waktu_mulai',
@@ -49,6 +52,7 @@ class JadwalPerkuliahan extends Model
     {
         return [
             'sks' => 'integer',
+            'semester' => 'integer',
         ];
     }
 

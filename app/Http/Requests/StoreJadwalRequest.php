@@ -45,8 +45,17 @@ class StoreJadwalRequest extends FormRequest
                 },
             ],
 
-            // Semester wajib diisi, format ketat: "YYYY - Ganjil" atau "YYYY - Genap"
-            'semester' => ['required', 'string', 'regex:/^\d{4}\s-\s(Ganjil|Genap)$/'],
+            // Semester wajib diisi, bertipe integer, nilai antara 1 sampai 14
+            'semester' => ['required', 'integer', 'min:1', 'max:14'],
+
+            // Nama fakultas wajib diisi, bertipe string, maksimal 255 karakter
+            'fakultas' => ['required', 'string', 'max:255'],
+
+            // Nama program studi wajib diisi, bertipe string, maksimal 255 karakter
+            'prodi' => ['required', 'string', 'max:255'],
+
+            // Tahun ajaran wajib diisi, bertipe string, maksimal 9 karakter (contoh: 2025/2026)
+            'tahun' => ['required', 'string', 'max:9'],
 
             // Hari wajib diisi, hanya boleh dari daftar hari yang valid
             'hari' => ['required', 'string', 'in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu'],
@@ -80,7 +89,14 @@ class StoreJadwalRequest extends FormRequest
             'id_dosen.exists'      => 'Dosen yang dipilih tidak ditemukan.',
 
             'semester.required'    => 'Semester wajib diisi.',
-            'semester.regex'       => 'Format semester tidak valid. Gunakan format: "2026 - Ganjil" atau "2026 - Genap".',
+            'semester.integer'     => 'Semester harus berupa angka.',
+            'semester.min'         => 'Semester minimal bernilai 1.',
+            'semester.max'         => 'Semester maksimal bernilai 14.',
+
+            'fakultas.required'    => 'Fakultas wajib diisi.',
+            'prodi.required'       => 'Program studi wajib diisi.',
+            'tahun.required'       => 'Tahun ajaran wajib diisi.',
+            'tahun.max'            => 'Tahun ajaran maksimal 9 karakter.',
 
             'hari.required'        => 'Hari wajib dipilih.',
             'hari.in'              => 'Hari yang dipilih tidak valid.',
