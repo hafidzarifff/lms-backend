@@ -41,6 +41,15 @@ class UpdateMataKuliahRequest extends FormRequest
 
             // Deskripsi bersifat opsional (boleh dikosongkan), bertipe string
             'deskripsi' => ['nullable', 'string'],
+
+            // Semester perkuliahan, opsional, harus berupa angka integer antara 1 sampai 14
+            'semester' => ['nullable', 'integer', 'min:1', 'max:14'],
+
+            // Nama fakultas penyelenggara, opsional, bertipe string, maksimal 100 karakter
+            'fakultas' => ['nullable', 'string', 'max:100'],
+
+            // Nama program studi penyelenggara, opsional, bertipe string, maksimal 100 karakter
+            'prodi' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

@@ -32,6 +32,9 @@ class MasterMataKuliah extends Model
         'nama_mk',
         'sks',
         'deskripsi',
+        'semester',
+        'fakultas',
+        'prodi',
     ];
 
     /**
@@ -43,6 +46,7 @@ class MasterMataKuliah extends Model
     {
         return [
             'sks' => 'integer',
+            'semester' => 'integer',
         ];
     }
 }

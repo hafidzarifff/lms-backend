@@ -643,6 +643,9 @@ Mengambil seluruh data master mata kuliah dengan pagination (10 data per halaman
             "nama_mk": "Algoritma dan Pemrograman",
             "sks": 3,
             "deskripsi": "Mata kuliah dasar tentang algoritma dan pemrograman.",
+            "semester": 1,
+            "fakultas": "Teknik",
+            "prodi": "Informatika",
             "created_at": "...",
             "updated_at": "..."
         }
@@ -670,6 +673,9 @@ Mengambil detail satu data mata kuliah berdasarkan ID.
     "nama_mk": "Algoritma dan Pemrograman",
     "sks": 3,
     "deskripsi": "Mata kuliah dasar tentang algoritma dan pemrograman.",
+    "semester": 1,
+    "fakultas": "Teknik",
+    "prodi": "Informatika",
     "created_at": "...",
     "updated_at": "..."
 }
@@ -698,10 +704,13 @@ Menambahkan data master mata kuliah baru ke sistem.
     "kode_mk": "IF101",
     "nama_mk": "Algoritma dan Pemrograman",
     "sks": 3,
-    "deskripsi": "Mata kuliah dasar tentang algoritma dan pemrograman."
+    "deskripsi": "Mata kuliah dasar tentang algoritma dan pemrograman.",
+    "semester": 1,
+    "fakultas": "Teknik",
+    "prodi": "Informatika"
 }
 ```
-*Catatan: Field `deskripsi` bersifat opsional (nullable).*
+*Catatan: Field `deskripsi`, `semester`, `fakultas`, dan `prodi` bersifat opsional (nullable). `semester` harus berupa integer antara 1-14.*
 
 - **Response Sukses (201 Created):**
 ```json
@@ -714,6 +723,9 @@ Menambahkan data master mata kuliah baru ke sistem.
         "nama_mk": "Algoritma dan Pemrograman",
         "sks": 3,
         "deskripsi": "Mata kuliah dasar tentang algoritma dan pemrograman.",
+        "semester": 1,
+        "fakultas": "Teknik",
+        "prodi": "Informatika",
         "created_at": "...",
         "updated_at": "..."
     }
@@ -727,7 +739,8 @@ Menambahkan data master mata kuliah baru ke sistem.
     "message": "The kode mk field is required. (and other validation messages)",
     "errors": {
         "kode_mk": ["The kode mk has already been taken."],
-        "sks": ["The sks field must be at least 1."]
+        "sks": ["The sks field must be at least 1."],
+        "semester": ["The semester field must be between 1 and 14."]
     }
 }
 ```
@@ -747,7 +760,10 @@ Memperbarui data master mata kuliah yang sudah ada.
     "kode_mk": "IF102",
     "nama_mk": "Struktur Data",
     "sks": 4,
-    "deskripsi": "Mata kuliah lanjutan tentang struktur data."
+    "deskripsi": "Mata kuliah lanjutan tentang struktur data.",
+    "semester": 2,
+    "fakultas": "Teknik",
+    "prodi": "Informatika"
 }
 ```
 
@@ -825,7 +841,10 @@ Mengambil seluruh data jadwal perkuliahan dengan Eager Loading (data mata kuliah
                 "kode_mk": "IF101",
                 "nama_mk": "Algoritma dan Pemrograman",
                 "sks": 3,
-                "deskripsi": "..."
+                "deskripsi": "...",
+                "semester": 1,
+                "fakultas": "Teknik",
+                "prodi": "Informatika"
             },
             "kelas": {
                 "id_kelas": "uuid-string",
@@ -876,7 +895,10 @@ Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi ma
         "kode_mk": "IF101",
         "nama_mk": "Algoritma dan Pemrograman",
         "sks": 3,
-        "deskripsi": "..."
+        "deskripsi": "...",
+        "semester": 1,
+        "fakultas": "Teknik",
+        "prodi": "Informatika"
     },
     "kelas": {
         "id_kelas": "uuid-string",
