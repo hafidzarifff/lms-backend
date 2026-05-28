@@ -7,36 +7,34 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Menambahkan kolom fakultas, prodi, tahun ke tabel jadwal_perkuliahan,
-     * dan mengubah tipe data kolom semester dari string menjadi integer.
+     * Run the migrations.
      */
     public function up(): void
     {
+        // 1. Eksekusi RAW Query khusus PostgreSQL untuk mengubah tipe data dengan klausa USING
+        // Kita gunakan klausa USING dan melakukan casting, jika ada text non-numeric akan diubah menjadi null/0 terlebih dahulu
+        DB::statement('ALTER TABLE "jadwal_perkuliahan" ALTER COLUMN "semester" TYPE integer USING (CASE WHEN semester ~ \'^[0-9]+$\' THEN semester::integer ELSE 1 END)');
+
+        // 2. Jalankan blueprint sisa kolom lainnya seperti biasa
         Schema::table('jadwal_perkuliahan', function (Blueprint $table) {
-            // Nama fakultas penyelenggara jadwal perkuliahan
-            $table->string('fakultas')->nullable()->after('sks');
-
-            // Nama program studi penyelenggara jadwal perkuliahan
-            $table->string('prodi')->nullable()->after('fakultas');
-
-            // Tahun ajaran (contoh: "2025/2026"), maksimal 9 karakter
-            $table->string('tahun', 9)->nullable()->after('prodi');
-
-            // Ubah tipe data semester dari string menjadi integer (1-14)
+            // Kita definisikan ulang semester agar sinkron dengan skema Laravel (opsional, untuk memastikan nullability)
             $table->integer('semester')->change();
+            
+            // Menambahkan 3 field baru yang Anda inginkan kemarin
+            $table->string('fakultas')->nullable()->after('sks');
+            $table->string('prodi')->nullable()->after('fakultas');
+            $table->string('tahun', 9)->nullable()->after('prodi');
         });
     }
 
     /**
-     * Rollback: hapus kolom fakultas, prodi, tahun dan kembalikan semester ke string.
+     * Reverse the migrations.
      */
     public function down(): void
     {
         Schema::table('jadwal_perkuliahan', function (Blueprint $table) {
+            $table->string('semester')->change();
             $table->dropColumn(['fakultas', 'prodi', 'tahun']);
-
-            // Kembalikan semester ke tipe string seperti semula
-            $table->string('semester', 20)->change();
         });
     }
 };
