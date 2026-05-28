@@ -38,6 +38,12 @@ class UpdateKelasRequest extends FormRequest
 
             // Tahun angkatan wajib diisi, bertipe string, minimal 4 karakter
             'tahun_angkatan' => ['required', 'string', 'min:4'],
+
+            // Nama fakultas wajib diisi, bertipe string, maksimal 255 karakter
+            'fakultas' => ['required', 'string', 'max:255'],
+
+            // Nama program studi wajib diisi, bertipe string, maksimal 255 karakter
+            'prodi' => ['required', 'string', 'max:255'],
         ];
     }
 }

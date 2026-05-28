@@ -478,6 +478,8 @@ Mengambil seluruh data master kelas dengan pagination (10 data per halaman), diu
             "nama_kelas": "Kelas A",
             "kode_kelas": "KLS-A",
             "tahun_angkatan": "2024",
+            "fakultas": "Teknik",
+            "prodi": "Informatika",
             "created_at": "...",
             "updated_at": "..."
         }
@@ -504,6 +506,8 @@ Mengambil detail satu data kelas berdasarkan ID.
     "nama_kelas": "Kelas A",
     "kode_kelas": "KLS-A",
     "tahun_angkatan": "2024",
+    "fakultas": "Teknik",
+    "prodi": "Informatika",
     "created_at": "...",
     "updated_at": "..."
 }
@@ -531,7 +535,9 @@ Menambahkan data master kelas baru ke sistem.
 {
     "nama_kelas": "Kelas A",
     "kode_kelas": "KLS-A",
-    "tahun_angkatan": "2024"
+    "tahun_angkatan": "2024",
+    "fakultas": "Teknik",
+    "prodi": "Informatika"
 }
 ```
 
@@ -545,6 +551,8 @@ Menambahkan data master kelas baru ke sistem.
         "nama_kelas": "Kelas A",
         "kode_kelas": "KLS-A",
         "tahun_angkatan": "2024",
+        "fakultas": "Teknik",
+        "prodi": "Informatika",
         "created_at": "...",
         "updated_at": "..."
     }
@@ -577,7 +585,9 @@ Memperbarui data master kelas yang sudah ada.
 {
     "nama_kelas": "Kelas B Updated",
     "kode_kelas": "KLS-B",
-    "tahun_angkatan": "2025"
+    "tahun_angkatan": "2025",
+    "fakultas": "Teknik",
+    "prodi": "Sistem Informasi"
 }
 ```
 
@@ -850,7 +860,9 @@ Mengambil seluruh data jadwal perkuliahan dengan Eager Loading (data mata kuliah
                 "id_kelas": "uuid-string",
                 "nama_kelas": "Kelas A",
                 "kode_kelas": "KLS-A",
-                "tahun_angkatan": "2024"
+                "tahun_angkatan": "2024",
+                "fakultas": "Teknik",
+                "prodi": "Informatika"
             },
             "dosen": {
                 "id_user": "uuid-string",
@@ -904,7 +916,9 @@ Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi ma
         "id_kelas": "uuid-string",
         "nama_kelas": "Kelas A",
         "kode_kelas": "KLS-A",
-        "tahun_angkatan": "2024"
+        "tahun_angkatan": "2024",
+        "fakultas": "Teknik",
+        "prodi": "Informatika"
     },
     "dosen": {
         "id_user": "uuid-string",

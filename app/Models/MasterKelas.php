@@ -31,5 +31,7 @@ class MasterKelas extends Model
         'nama_kelas',
         'kode_kelas',
         'tahun_angkatan',
+        'fakultas',
+        'prodi',
     ];
 }
