@@ -17,10 +17,10 @@ return new class extends Migration
 
         // 2. Jalankan blueprint sisa kolom lainnya seperti biasa
         Schema::table('jadwal_perkuliahan', function (Blueprint $table) {
-            // Kita definisikan ulang semester agar sinkron dengan skema Laravel (opsional, untuk memastikan nullability)
+            // Definisikan ulang semester agar sinkron dengan skema Laravel
             $table->integer('semester')->change();
             
-            // Menambahkan 3 field baru yang Anda inginkan kemarin
+            // Menambahkan 3 field baru
             $table->string('fakultas')->nullable()->after('sks');
             $table->string('prodi')->nullable()->after('fakultas');
             $table->string('tahun', 9)->nullable()->after('prodi');
