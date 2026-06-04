@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JadwalPerkuliahan extends Model
 {
@@ -85,5 +86,14 @@ class JadwalPerkuliahan extends Model
     public function dosen(): BelongsTo
     {
         return $this->belongsTo(Pengguna::class, 'id_dosen', 'id_user');
+    }
+
+    /**
+     * Relasi ke tabel peserta_kelas.
+     * Satu jadwal dapat memiliki banyak peserta (mahasiswa yang terdaftar).
+     */
+    public function pesertaKelas(): HasMany
+    {
+        return $this->hasMany(PesertaKelas::class, 'id_jadwal', 'id_jadwal');
     }
 }

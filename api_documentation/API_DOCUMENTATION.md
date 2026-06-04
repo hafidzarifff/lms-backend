@@ -1082,6 +1082,130 @@ Menghapus data jadwal perkuliahan secara permanen dari sistem.
 
 ---
 
+### 29. Pendaftaran Peserta Kelas (Mahasiswa)
+Mahasiswa mendaftar (enroll) ke jadwal perkuliahan menggunakan token (6 karakter uppercase).
+
+- **URL:** `/peserta-kelas/enroll`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "token_enrollment": "ABCXYZ"
+}
+```
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "success": true,
+    "message": "Berhasil mendaftar ke kelas.",
+    "data": {
+        "id_peserta": "uuid-string",
+        "id_jadwal": "uuid-jadwal",
+        "id_mahasiswa": "uuid-mahasiswa",
+        "tanggal_daftar": "2026-06-04T07:55:00.000000Z",
+        "evaluasi_selesai": false,
+        "kehadiran": "0/0",
+        "nilai_akhir": 0.00,
+        "status_kelayakan": "Belum Ditentukan",
+        "created_at": "...",
+        "updated_at": "...",
+        "jadwal": { "..." : "..." },
+        "mahasiswa": { "..." : "..." }
+    }
+}
+```
+
+- **Response Error (403 Forbidden):**
+```json
+{
+    "success": false,
+    "message": "Hanya pengguna dengan role Mahasiswa yang dapat melakukan enrollment.",
+    "data": null
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Token enrollment tidak valid atau jadwal tidak ditemukan.",
+    "data": null
+}
+```
+
+- **Response Error (409 Conflict):**
+```json
+{
+    "success": false,
+    "message": "Anda sudah terdaftar di kelas ini.",
+    "data": null
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "success": false,
+    "message": "Validasi gagal.",
+    "data": {
+        "token_enrollment": [
+            "Token enrollment wajib diisi."
+        ]
+    }
+}
+```
+
+---
+
+### 30. Daftar Peserta Kelas by Jadwal
+Mengambil daftar seluruh peserta yang terdaftar pada jadwal tertentu. Data mahasiswa di-eager load untuk mencegah N+1 query.
+
+- **URL:** `/jadwal/{id_jadwal}/peserta`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Daftar peserta kelas berhasil diambil.",
+    "data": [
+        {
+            "id_peserta": "uuid-string",
+            "id_jadwal": "uuid-jadwal",
+            "id_mahasiswa": "uuid-mahasiswa",
+            "tanggal_daftar": "2026-06-04T07:55:00.000000Z",
+            "evaluasi_selesai": false,
+            "kehadiran": "0/0",
+            "nilai_akhir": 0.00,
+            "status_kelayakan": "Belum Ditentukan",
+            "created_at": "...",
+            "updated_at": "...",
+            "mahasiswa": {
+                "id_user": "uuid-string",
+                "nama_lengkap": "Budi Rahardjo",
+                "nomor_induk": "20241001",
+                "email": "20241001@mhs.uika.ac.id"
+            }
+        }
+    ]
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data jadwal perkuliahan tidak ditemukan.",
+    "data": null
+}
+```
+
+---
+
 ## 🎭 Roles & Permissions (Abilities)
 Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Admin:** `admin:*`
