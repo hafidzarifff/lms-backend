@@ -58,10 +58,26 @@ class MahasiswaController extends Controller
      */
     public function index(): JsonResponse
     {
-        // Ambil data dengan role 'Mahasiswa', urutkan berdasarkan terbaru, pagination 50 per halaman
+        $request = request();
+
+        $perPage = min((int) $request->query('per_page', 20), 100);
+
         $mahasiswa = Pengguna::where('role', 'Mahasiswa')
+            ->when($request->query('search'), function ($q, $search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('nama_lengkap', 'ilike', "%{$search}%")
+                        ->orWhere('nomor_induk', 'ilike', "%{$search}%")
+                        ->orWhere('email', 'ilike', "%{$search}%");
+                });
+            })
+            ->when($request->has('status_aktif'), function ($q) use ($request) {
+                $q->where('status_aktif', filter_var($request->query('status_aktif'), FILTER_VALIDATE_BOOLEAN));
+            })
+            ->when($request->query('angkatan'), function ($q, $angkatan) {
+                $q->where('angkatan', $angkatan);
+            })
             ->orderBy('created_at', 'desc')
-            ->paginate(50);
+            ->paginate($perPage);
 
         return response()->json($mahasiswa, 200);
     }

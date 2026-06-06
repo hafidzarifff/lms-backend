@@ -19,18 +19,27 @@ class VerifikasiDosenController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        // 1. Inisiasi query untuk mengambil data dari tabel pengguna dengan role 'Dosen'
+        $perPage = min((int) $request->query('per_page', 20), 100);
+
         $query = Pengguna::where('role', 'Dosen');
 
-        // 2. Filter opsional berdasarkan status_persetujuan (Menunggu / Disetujui / Ditolak)
+        // Filter opsional berdasarkan status_persetujuan (Menunggu / Disetujui / Ditolak)
         if ($request->has('status')) {
             $query->where('status_persetujuan', $request->query('status'));
         }
 
-        // 3. Urutkan berdasarkan data terbaru dan terapkan pagination 50 data per halaman
-        $dosen = $query->orderBy('created_at', 'desc')->paginate(50);
+        // Server-side search
+        if ($request->query('search')) {
+            $search = $request->query('search');
+            $query->where(function ($sub) use ($search) {
+                $sub->where('nama_lengkap', 'ilike', "%{$search}%")
+                    ->orWhere('nomor_induk', 'ilike', "%{$search}%")
+                    ->orWhere('email', 'ilike', "%{$search}%");
+            });
+        }
 
-        // 4. Kembalikan response JSON berisi list data dosen
+        $dosen = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
         return response()->json($dosen, 200);
     }
 
