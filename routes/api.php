@@ -55,7 +55,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/jadwal/{id_jadwal}/peserta', [\App\Http\Controllers\Api\PesertaKelasController::class, 'pesertaByJadwal']);
 
     // Fitur Sesi Pertemuan Kelas
+    Route::get('/sesi-pertemuan', [\App\Http\Controllers\SesiPertemuanController::class, 'index']);
     Route::post('/sesi-pertemuan', [\App\Http\Controllers\SesiPertemuanController::class, 'store']);
+    Route::get('/sesi-pertemuan/{id_sesi}', [\App\Http\Controllers\SesiPertemuanController::class, 'show']);
+    Route::put('/sesi-pertemuan/{id_sesi}', [\App\Http\Controllers\SesiPertemuanController::class, 'update']);
+    Route::delete('/sesi-pertemuan/{id_sesi}', [\App\Http\Controllers\SesiPertemuanController::class, 'destroy']);
 
     // Dashboard Stats (COUNT only — ringan, 1 request)
     Route::get('/dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);

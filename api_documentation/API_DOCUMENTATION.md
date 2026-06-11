@@ -1268,6 +1268,221 @@ Menambahkan data sesi pertemuan untuk suatu jadwal perkuliahan. Sesi ini akan di
 
 ---
 
+### 32. Daftar Sesi Pertemuan
+Mengambil seluruh data sesi pertemuan dengan pagination (10 data per halaman), diurutkan berdasarkan tanggal pelaksanaan (terbaru) dan nomor pertemuan. Mendukung filter berdasarkan `id_jadwal`, `tanggal`, dan `metode_pertemuan`.
+
+- **URL:** `/sesi-pertemuan`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Query Params (Optional):**
+    - `per_page` (integer, default: 10): Jumlah data per halaman
+    - `id_jadwal` (uuid): Filter berdasarkan ID jadwal perkuliahan
+    - `tanggal` (date, format: YYYY-MM-DD): Filter berdasarkan tanggal pelaksanaan
+    - `metode_pertemuan` (string): Filter berdasarkan metode (`synchronous` atau `asynchronous`)
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id_sesi": "uuid-string",
+                "id_jadwal": "uuid-jadwal",
+                "pertemuan_ke": 1,
+                "judul_sesi": "Pengantar Perkuliahan",
+                "tanggal_pelaksanaan": "2026-06-15",
+                "jam_mulai": "08:00",
+                "jam_berakhir": "10:00",
+                "metode_pertemuan": "synchronous",
+                "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
+                "created_at": "...",
+                "updated_at": "...",
+                "jadwal_perkuliahan": {
+                    "id_jadwal": "uuid-jadwal",
+                    "id_mk": "uuid-mk",
+                    "id_kelas": "uuid-kelas",
+                    "id_dosen": "uuid-dosen",
+                    "sks": 3,
+                    "fakultas": "Teknik",
+                    "prodi": "Informatika",
+                    "tahun": "2025/2026",
+                    "semester": 1,
+                    "hari": "Senin",
+                    "waktu_mulai": "08:00",
+                    "waktu_berakhir": "10:00",
+                    "token_enrollment": "ABCXYZ",
+                    "created_at": "...",
+                    "updated_at": "..."
+                }
+            }
+        ],
+        "total": 1,
+        "per_page": 10
+    }
+}
+```
+
+---
+
+### 33. Detail Sesi Pertemuan
+Mengambil detail satu data sesi pertemuan berdasarkan ID, termasuk data relasi jadwal perkuliahan.
+
+- **URL:** `/sesi-pertemuan/{id_sesi}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "id_sesi": "uuid-string",
+        "id_jadwal": "uuid-jadwal",
+        "pertemuan_ke": 1,
+        "judul_sesi": "Pengantar Perkuliahan",
+        "tanggal_pelaksanaan": "2026-06-15",
+        "jam_mulai": "08:00",
+        "jam_berakhir": "10:00",
+        "metode_pertemuan": "synchronous",
+        "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
+        "created_at": "...",
+        "updated_at": "...",
+        "jadwal_perkuliahan": {
+            "id_jadwal": "uuid-jadwal",
+            "id_mk": "uuid-mk",
+            "id_kelas": "uuid-kelas",
+            "id_dosen": "uuid-dosen",
+            "sks": 3,
+            "fakultas": "Teknik",
+            "prodi": "Informatika",
+            "tahun": "2025/2026",
+            "semester": 1,
+            "hari": "Senin",
+            "waktu_mulai": "08:00",
+            "waktu_berakhir": "10:00",
+            "token_enrollment": "ABCXYZ",
+            "created_at": "...",
+            "updated_at": "..."
+        }
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+### 34. Update Sesi Pertemuan
+Memperbarui data sesi pertemuan yang sudah ada. Field `id_jadwal` tidak dapat diubah. Validasi duplikasi pertemuan ke dan bentrok waktu tetap berlaku untuk record lain.
+
+- **URL:** `/sesi-pertemuan/{id_sesi}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "pertemuan_ke": 1,
+    "judul_sesi": "Pengantar Perkuliahan (Updated)",
+    "tanggal_pelaksanaan": "2026-06-16",
+    "jam_mulai": "09:00",
+    "jam_berakhir": "11:00",
+    "metode_pertemuan": "synchronous",
+    "link_kelas_daring": "https://meet.google.com/xyz-abcd-efg"
+}
+```
+*Catatan: Field `id_jadwal` tidak boleh dikirim karena tidak dapat diubah. Tanggal pelaksanaan boleh tanggal lampau (berbeda dengan endpoint POST).*
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Sesi pertemuan berhasil diperbarui.",
+    "data": {
+        "id_sesi": "uuid-string",
+        "id_jadwal": "uuid-jadwal",
+        "pertemuan_ke": 1,
+        "judul_sesi": "Pengantar Perkuliahan (Updated)",
+        "tanggal_pelaksanaan": "2026-06-16",
+        "jam_mulai": "09:00",
+        "jam_berakhir": "11:00",
+        "metode_pertemuan": "synchronous",
+        "link_kelas_daring": "https://meet.google.com/xyz-abcd-efg",
+        "created_at": "...",
+        "updated_at": "..."
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+- **Response Error (422 Unprocessable Entity - ID Jadwal Diubah):**
+```json
+{
+    "message": "ID Jadwal tidak boleh diubah.",
+    "errors": {
+        "id_jadwal": ["ID Jadwal tidak boleh diubah."]
+    }
+}
+```
+
+- **Response Error (422 Unprocessable Entity - Bentrok Waktu):**
+```json
+{
+    "status": "error",
+    "message": "Waktu sesi bentrok dengan sesi lain pada tanggal yang sama."
+}
+```
+
+- **Response Error (422 Unprocessable Entity - Duplikasi Pertemuan Ke):**
+```json
+{
+    "status": "error",
+    "message": "Pertemuan ke-1 sudah ada untuk jadwal ini."
+}
+```
+
+---
+
+### 35. Hapus Sesi Pertemuan
+Menghapus data sesi pertemuan secara permanen dari sistem.
+
+- **URL:** `/sesi-pertemuan/{id_sesi}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Sesi pertemuan berhasil dihapus."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
 ## 🎭 Roles & Permissions (Abilities)
 Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Admin:** `admin:*`
