@@ -57,7 +57,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Fitur Sesi Pertemuan Kelas
     Route::get('/sesi-pertemuan', [\App\Http\Controllers\SesiPertemuanController::class, 'index']);
     Route::post('/sesi-pertemuan', [\App\Http\Controllers\SesiPertemuanController::class, 'store']);
+    Route::get('/sesi-pertemuan/jadwal/{id_jadwal}', [\App\Http\Controllers\SesiPertemuanController::class, 'getByJadwal']);
     Route::get('/sesi-pertemuan/{id_sesi}', [\App\Http\Controllers\SesiPertemuanController::class, 'show']);
+    Route::get('/sesi-pertemuan/{id_sesi}/aktif', [\App\Http\Controllers\SesiPertemuanController::class, 'cekSesiAktif']);
     Route::put('/sesi-pertemuan/{id_sesi}', [\App\Http\Controllers\SesiPertemuanController::class, 'update']);
     Route::delete('/sesi-pertemuan/{id_sesi}', [\App\Http\Controllers\SesiPertemuanController::class, 'destroy']);
 
@@ -65,7 +67,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
 
     // ============================================================
-    // Fitur Tugas & Pengumpulan Tugas
+    // Fitur Presensi Mahasiswa
+    // ============================================================
+    Route::post('/presensi/catat', [\App\Http\Controllers\Api\PresensiController::class, 'catat']);
+    Route::put('/presensi/{id}/status', [\App\Http\Controllers\Api\PresensiController::class, 'updateStatus']);
+    Route::get('/presensi/sesi/{id_sesi}', [\App\Http\Controllers\Api\PresensiController::class, 'getBySesi']);
+    Route::get('/presensi/peserta/{id_peserta}', [\App\Http\Controllers\Api\PresensiController::class, 'getByPeserta']);
+    Route::post('/presensi/persentase', [\App\Http\Controllers\Api\PresensiController::class, 'hitungPersentase']);
+    Route::post('/presensi/rekap', [\App\Http\Controllers\Api\PresensiController::class, 'rekapKehadiran']);
+
+    // ============================================================
+    // Fitur Materi Pembelajaran
+    // ============================================================
+    Route::post('/materi/upload', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'upload']);
+    Route::put('/materi/{id}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'update']);
+    Route::delete('/materi/{id}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'hapus']);
+    Route::get('/materi/sesi/{id_sesi}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'getBySesi']);
+    Route::get('/materi/{id}/download', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'generateLinkDownload']);
+
+    // ============================================================
+    // Fitur Tugas
     // ============================================================
 
     // Dosen: CRUD Tugas di sesi tertentu
@@ -73,25 +94,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/sesi/{sesi_id}/tugas', [\App\Http\Controllers\Api\TugasController::class, 'store']);
         Route::put('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'update']);
         Route::delete('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'destroy']);
-        Route::get('/tugas/{id}/pengumpulan', [\App\Http\Controllers\Api\TugasController::class, 'pengumpulan']);
-        Route::put('/pengumpulan/{id}/nilai', [\App\Http\Controllers\Api\TugasController::class, 'beriNilai']);
     });
 
     // Dosen & Mahasiswa: List tugas di sesi (GET shared)
     Route::middleware('role:Dosen,Mahasiswa')->group(function () {
         Route::get('/sesi/{sesi_id}/tugas', [\App\Http\Controllers\Api\TugasController::class, 'index']);
         Route::get('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'show']);
+        Route::get('/tugas/{id}/deadline', [\App\Http\Controllers\Api\TugasController::class, 'cekDeadline']);
+        Route::get('/tugas/{id}/launch/{id_peserta}', [\App\Http\Controllers\Api\TugasController::class, 'getLaunchUrl']);
     });
 
-    // Mahasiswa: Kumpulkan tugas & lihat status
-    Route::middleware('role:Mahasiswa')->group(function () {
-        Route::post('/tugas/{id}/kumpul', [\App\Http\Controllers\Api\TugasController::class, 'kumpul']);
-        Route::get('/tugas/{id}/pengumpulan/saya', [\App\Http\Controllers\Api\TugasController::class, 'statusPengumpulan']);
-    });
-
-    // Admin: List semua tugas & hapus pengumpulan
+    // Admin: List semua tugas
     Route::middleware('role:Admin')->group(function () {
         Route::get('/admin/tugas', [\App\Http\Controllers\Api\AdminTugasController::class, 'index']);
-        Route::delete('/admin/pengumpulan/{id}', [\App\Http\Controllers\Api\AdminTugasController::class, 'deletePengumpulan']);
     });
 });
