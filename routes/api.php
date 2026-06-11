@@ -53,4 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Fitur Peserta Kelas / Enrollment Mahasiswa
     Route::post('/peserta-kelas/enroll', [\App\Http\Controllers\Api\PesertaKelasController::class, 'enroll']);
     Route::get('/jadwal/{id_jadwal}/peserta', [\App\Http\Controllers\Api\PesertaKelasController::class, 'pesertaByJadwal']);
+
+    // Fitur Sesi Pertemuan Kelas
+    Route::post('/sesi-pertemuan', [\App\Http\Controllers\SesiPertemuanController::class, 'store']);
 });

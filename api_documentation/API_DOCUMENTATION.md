@@ -1202,6 +1202,68 @@ Mengambil daftar seluruh peserta yang terdaftar pada jadwal tertentu. Data mahas
     "message": "Data jadwal perkuliahan tidak ditemukan.",
     "data": null
 }
+}
+```
+
+---
+
+### 31. Tambah Sesi Pertemuan
+Menambahkan data sesi pertemuan untuk suatu jadwal perkuliahan. Sesi ini akan diperiksa apakah berbenturan waktunya atau apakah pertemuannya duplikat.
+
+- **URL:** `/sesi-pertemuan`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "id_jadwal": "550e8400-e29b-41d4-a716-446655440000",
+    "pertemuan_ke": 1,
+    "judul_sesi": "Pengantar Perkuliahan",
+    "tanggal_pelaksanaan": "2026-06-15",
+    "jam_mulai": "08:00",
+    "jam_berakhir": "10:00",
+    "metode_pertemuan": "synchronous",
+    "link_kelas_daring": "https://meet.google.com/abc-defg-hij"
+}
+```
+*Catatan: Nilai `id_jadwal` di atas hanya contoh format UUID. Pastikan Anda menggunakan `id_jadwal` asli yang sudah terdaftar di database (ambil melalui endpoint `GET /jadwal-perkuliahan`).*
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "status": "success",
+    "message": "Sesi pertemuan berhasil dibuat.",
+    "data": {
+        "id_sesi": "uuid-string",
+        "id_jadwal": "550e8400-e29b-41d4-a716-446655440000",
+        "pertemuan_ke": 1,
+        "judul_sesi": "Pengantar Perkuliahan",
+        "tanggal_pelaksanaan": "2026-06-15",
+        "jam_mulai": "08:00",
+        "jam_berakhir": "10:00",
+        "metode_pertemuan": "synchronous",
+        "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
+        "created_at": "...",
+        "updated_at": "..."
+    }
+}
+```
+
+- **Response Error (422 Unprocessable Entity - Bentrok Waktu):**
+```json
+{
+    "status": "error",
+    "message": "Waktu sesi bentrok dengan sesi lain pada tanggal yang sama."
+}
+```
+
+- **Response Error (422 Unprocessable Entity - Duplikasi Pertemuan Ke):**
+```json
+{
+    "status": "error",
+    "message": "Pertemuan ke-1 sudah ada untuk jadwal ini."
+}
 ```
 
 ---
