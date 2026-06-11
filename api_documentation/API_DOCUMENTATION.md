@@ -1483,6 +1483,602 @@ Menghapus data sesi pertemuan secara permanen dari sistem.
 
 ---
 
+### 36. Tambah Tugas (Dosen)
+Dosen membuat tugas baru di sesi pertemuan tertentu. Dosen harus merupakan pemilik sesi (dosen pengampu jadwal perkuliahan).
+
+- **URL:** `/sesi/{sesi_id}/tugas`
+- **Method:** `POST`
+- **Role:** `Dosen`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "judul": "Tugas 1: Membuat Aplikasi CRUD",
+    "deskripsi": "Buatlah aplikasi CRUD sederhana menggunakan Laravel 11 sesuai materi yang telah dipelajari.",
+    "deadline": "2026-06-20T23:59:00"
+}
+```
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "success": true,
+    "message": "Tugas berhasil dibuat.",
+    "data": {
+        "id_tugas": "uuid-string",
+        "id_sesi": "uuid-sesi",
+        "judul": "Tugas 1: Membuat Aplikasi CRUD",
+        "deskripsi": "Buatlah aplikasi CRUD sederhana menggunakan Laravel 11 sesuai materi yang telah dipelajari.",
+        "deadline": "2026-06-20T23:59:00.000000Z",
+        "created_at": "...",
+        "updated_at": "..."
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
+```json
+{
+    "success": false,
+    "message": "Anda tidak memiliki akses ke sesi ini."
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "message": "Judul tugas wajib diisi. (and other validation messages)",
+    "errors": {
+        "judul": ["Judul tugas wajib diisi."],
+        "deadline": ["Deadline harus di waktu yang akan datang."]
+    }
+}
+```
+
+---
+
+### 37. Daftar Tugas di Sesi (Dosen & Mahasiswa)
+Mengambil daftar tugas yang ada di sesi pertemuan tertentu dengan pagination (maksimal 20 data per halaman).
+
+- **URL:** `/sesi/{sesi_id}/tugas`
+- **Method:** `GET`
+- **Role:** `Dosen`, `Mahasiswa`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Query Params (Optional):**
+    - `per_page` (integer, default: 20, max: 20): Jumlah data per halaman
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Daftar tugas berhasil diambil.",
+    "data": [
+        {
+            "id_tugas": "uuid-string",
+            "id_sesi": "uuid-sesi",
+            "judul": "Tugas 1: Membuat Aplikasi CRUD",
+            "deskripsi": "Buatlah aplikasi CRUD sederhana...",
+            "deadline": "2026-06-20T23:59:00.000000Z",
+            "created_at": "...",
+            "updated_at": "..."
+        }
+    ],
+    "meta": {
+        "page": 1,
+        "per_page": 20,
+        "total": 1
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+### 38. Detail Tugas (Dosen & Mahasiswa)
+Mengambil detail satu tugas berdasarkan ID, termasuk informasi sesi pertemuan dan jadwal perkuliahan.
+
+- **URL:** `/tugas/{id}`
+- **Method:** `GET`
+- **Role:** `Dosen`, `Mahasiswa`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "data": {
+        "id_tugas": "uuid-string",
+        "id_sesi": "uuid-sesi",
+        "judul": "Tugas 1: Membuat Aplikasi CRUD",
+        "deskripsi": "Buatlah aplikasi CRUD sederhana menggunakan Laravel 11 sesuai materi yang telah dipelajari.",
+        "deadline": "2026-06-20T23:59:00.000000Z",
+        "created_at": "...",
+        "updated_at": "...",
+        "sesi_pertemuan": {
+            "id_sesi": "uuid-sesi",
+            "id_jadwal": "uuid-jadwal",
+            "pertemuan_ke": 1,
+            "judul_sesi": "Pengantar Perkuliahan",
+            "tanggal_pelaksanaan": "2026-06-15",
+            "jadwal_perkuliahan": {
+                "id_jadwal": "uuid-jadwal",
+                "id_mk": "uuid-mk",
+                "id_kelas": "uuid-kelas",
+                "id_dosen": "uuid-dosen",
+                "sks": 3,
+                "fakultas": "Teknik",
+                "prodi": "Informatika",
+                "tahun": "2025/2026",
+                "semester": 1,
+                "hari": "Senin",
+                "waktu_mulai": "08:00",
+                "waktu_berakhir": "10:00",
+                "token_enrollment": "ABCXYZ"
+            }
+        }
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Tugas tidak ditemukan."
+}
+```
+
+---
+
+### 39. Update Tugas (Dosen)
+Memperbarui data tugas (judul, deskripsi, deadline). Dosen harus merupakan pemilik sesi.
+
+- **URL:** `/tugas/{id}`
+- **Method:** `PUT`
+- **Role:** `Dosen`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "judul": "Tugas 1: Membuat Aplikasi CRUD (Revisi)",
+    "deskripsi": "Deskripsi yang telah diperbarui.",
+    "deadline": "2026-06-25T23:59:00"
+}
+```
+*Catatan: Semua field bersifat opsional, hanya field yang dikirim yang akan diupdate.*
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Tugas berhasil diperbarui.",
+    "data": {
+        "id_tugas": "uuid-string",
+        "id_sesi": "uuid-sesi",
+        "judul": "Tugas 1: Membuat Aplikasi CRUD (Revisi)",
+        "deskripsi": "Deskripsi yang telah diperbarui.",
+        "deadline": "2026-06-25T23:59:00.000000Z",
+        "created_at": "...",
+        "updated_at": "..."
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Tugas tidak ditemukan."
+}
+```
+
+- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
+```json
+{
+    "success": false,
+    "message": "Anda tidak memiliki akses ke tugas ini."
+}
+```
+
+---
+
+### 40. Hapus Tugas (Dosen - Soft Delete)
+Menghapus tugas menggunakan soft delete (data tidak hilang permanen, hanya ditandai `deleted_at`). Dosen harus merupakan pemilik sesi.
+
+- **URL:** `/tugas/{id}`
+- **Method:** `DELETE`
+- **Role:** `Dosen`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Tugas berhasil dihapus."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Tugas tidak ditemukan."
+}
+```
+
+- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
+```json
+{
+    "success": false,
+    "message": "Anda tidak memiliki akses ke tugas ini."
+}
+```
+
+---
+
+### 41. Daftar Pengumpulan Tugas (Dosen)
+Melihat seluruh pengumpulan tugas yang telah dilakukan oleh mahasiswa. Dosen harus merupakan pemilik sesi.
+
+- **URL:** `/tugas/{id}/pengumpulan`
+- **Method:** `GET`
+- **Role:** `Dosen`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Query Params (Optional):**
+    - `per_page` (integer, default: 20, max: 20): Jumlah data per halaman
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Daftar pengumpulan tugas berhasil diambil.",
+    "data": [
+        {
+            "id_pengumpulan": "uuid-string",
+            "id_tugas": "uuid-tugas",
+            "id_mahasiswa": "uuid-mahasiswa",
+            "file_url": "tugas/abc123.pdf",
+            "nilai": 85,
+            "catatan_dosen": "Bagus, pertahankan.",
+            "created_at": "...",
+            "updated_at": "...",
+            "mahasiswa": {
+                "id_user": "uuid-mahasiswa",
+                "nama_lengkap": "Budi Rahardjo",
+                "nomor_induk": "20241001",
+                "email": "20241001@mhs.uika.ac.id"
+            }
+        }
+    ],
+    "meta": {
+        "page": 1,
+        "per_page": 20,
+        "total": 1
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Tugas tidak ditemukan."
+}
+```
+
+- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
+```json
+{
+    "success": false,
+    "message": "Anda tidak memiliki akses ke tugas ini."
+}
+```
+
+---
+
+### 42. Beri Nilai Pengumpulan (Dosen)
+Memberikan nilai (0-100) dan catatan dosen ke pengumpulan tugas mahasiswa. Dosen harus merupakan pemilik sesi.
+
+- **URL:** `/pengumpulan/{id}/nilai`
+- **Method:** `PUT`
+- **Role:** `Dosen`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nilai": 85,
+    "catatan_dosen": "Pengerjaan bagus, tapi perlu perbaikan pada validasi input."
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Nilai berhasil diberikan.",
+    "data": {
+        "id_pengumpulan": "uuid-string",
+        "id_tugas": "uuid-tugas",
+        "id_mahasiswa": "uuid-mahasiswa",
+        "file_url": "tugas/abc123.pdf",
+        "nilai": 85,
+        "catatan_dosen": "Pengerjaan bagus, tapi perlu perbaikan pada validasi input.",
+        "created_at": "...",
+        "updated_at": "..."
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data pengumpulan tidak ditemukan."
+}
+```
+
+- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
+```json
+{
+    "success": false,
+    "message": "Anda tidak memiliki akses untuk menilai pengumpulan ini."
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "message": "Nilai wajib diisi. (and other validation messages)",
+    "errors": {
+        "nilai": ["Nilai wajib diisi.", "Nilai minimal 0.", "Nilai maksimal 100."]
+    }
+}
+```
+
+---
+
+### 43. Kumpulkan Tugas (Mahasiswa)
+Mahasiswa mengumpulkan tugas dengan mengunggah file. Hanya bisa dilakukan sebelum deadline dan hanya boleh 1 kali per tugas.
+
+- **URL:** `/tugas/{id}/kumpul`
+- **Method:** `POST`
+- **Role:** `Mahasiswa`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+    - `Content-Type: multipart/form-data`
+- **Request Body (Form Data):**
+```
+file: [binary file]
+```
+*Catatan: Maksimal ukuran file 10 MB.*
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "success": true,
+    "message": "Tugas berhasil dikumpulkan.",
+    "data": {
+        "id_pengumpulan": "uuid-string",
+        "id_tugas": "uuid-tugas",
+        "id_mahasiswa": "uuid-mahasiswa",
+        "file_url": "tugas/abc123.pdf",
+        "nilai": null,
+        "catatan_dosen": null,
+        "created_at": "...",
+        "updated_at": "..."
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Tugas tidak ditemukan."
+}
+```
+
+- **Response Error (403 Forbidden - Melewati Deadline):**
+```json
+{
+    "success": false,
+    "message": "Deadline pengumpulan sudah terlewat."
+}
+```
+
+- **Response Error (422 Unprocessable Entity - Sudah Pernah Mengumpulkan):**
+```json
+{
+    "success": false,
+    "message": "Anda sudah mengumpulkan tugas ini."
+}
+```
+
+- **Response Validasi Gagal (422 Unprocessable Entity):**
+```json
+{
+    "message": "File tugas wajib diunggah. (and other validation messages)",
+    "errors": {
+        "file": ["File tugas wajib diunggah.", "Ukuran file maksimal 10 MB."]
+    }
+}
+```
+
+---
+
+### 44. Status Pengumpulan Tugas Saya (Mahasiswa)
+Mahasiswa melihat status pengumpulan tugas miliknya sendiri. Response berisi status pengumpulan (`belum_dikumpulkan`, `menunggu_penilaian`, atau `sudah_dinilai`).
+
+- **URL:** `/tugas/{id}/pengumpulan/saya`
+- **Method:** `GET`
+- **Role:** `Mahasiswa`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses - Belum Dikumpulkan (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Anda belum mengumpulkan tugas ini.",
+    "data": {
+        "status": "belum_dikumpulkan",
+        "pengumpulan": null
+    }
+}
+```
+
+- **Response Sukses - Menunggu Penilaian (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Status pengumpulan berhasil diambil.",
+    "data": {
+        "status": "menunggu_penilaian",
+        "pengumpulan": {
+            "id_pengumpulan": "uuid-string",
+            "id_tugas": "uuid-tugas",
+            "id_mahasiswa": "uuid-mahasiswa",
+            "file_url": "tugas/abc123.pdf",
+            "nilai": null,
+            "catatan_dosen": null,
+            "created_at": "...",
+            "updated_at": "..."
+        }
+    }
+}
+```
+
+- **Response Sukses - Sudah Dinilai (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Status pengumpulan berhasil diambil.",
+    "data": {
+        "status": "sudah_dinilai",
+        "pengumpulan": {
+            "id_pengumpulan": "uuid-string",
+            "id_tugas": "uuid-tugas",
+            "id_mahasiswa": "uuid-mahasiswa",
+            "file_url": "tugas/abc123.pdf",
+            "nilai": 85,
+            "catatan_dosen": "Pengerjaan bagus, tapi perlu perbaikan pada validasi input.",
+            "created_at": "...",
+            "updated_at": "..."
+        }
+    }
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Tugas tidak ditemukan."
+}
+```
+
+---
+
+### 45. Daftar Semua Tugas (Admin)
+Mengambil seluruh tugas lintas sesi dengan pagination (maksimal 20 data per halaman).
+
+- **URL:** `/admin/tugas`
+- **Method:** `GET`
+- **Role:** `Admin`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Query Params (Optional):**
+    - `per_page` (integer, default: 20, max: 20): Jumlah data per halaman
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Daftar semua tugas berhasil diambil.",
+    "data": [
+        {
+            "id_tugas": "uuid-string",
+            "id_sesi": "uuid-sesi",
+            "judul": "Tugas 1: Membuat Aplikasi CRUD",
+            "deskripsi": "Buatlah aplikasi CRUD sederhana...",
+            "deadline": "2026-06-20T23:59:00.000000Z",
+            "created_at": "...",
+            "updated_at": "...",
+            "sesi_pertemuan": {
+                "id_sesi": "uuid-sesi",
+                "id_jadwal": "uuid-jadwal",
+                "pertemuan_ke": 1,
+                "judul_sesi": "Pengantar Perkuliahan",
+                "tanggal_pelaksanaan": "2026-06-15",
+                "jadwal_perkuliahan": {
+                    "id_jadwal": "uuid-jadwal",
+                    "id_mk": "uuid-mk",
+                    "id_kelas": "uuid-kelas",
+                    "id_dosen": "uuid-dosen",
+                    "sks": 3,
+                    "fakultas": "Teknik",
+                    "prodi": "Informatika",
+                    "tahun": "2025/2026",
+                    "semester": 1,
+                    "hari": "Senin",
+                    "waktu_mulai": "08:00",
+                    "waktu_berakhir": "10:00",
+                    "token_enrollment": "ABCXYZ"
+                }
+            }
+        }
+    ],
+    "meta": {
+        "page": 1,
+        "per_page": 20,
+        "total": 1
+    }
+}
+```
+
+---
+
+### 46. Hapus Pengumpulan Tugas (Admin - Soft Delete)
+Admin menghapus data pengumpulan tugas menggunakan soft delete.
+
+- **URL:** `/admin/pengumpulan/{id}`
+- **Method:** `DELETE`
+- **Role:** `Admin`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Data pengumpulan berhasil dihapus."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data pengumpulan tidak ditemukan."
+}
+```
+
+---
+
 ## 🎭 Roles & Permissions (Abilities)
 Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Admin:** `admin:*`
@@ -1490,6 +2086,22 @@ Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Mahasiswa:** `mahasiswa:*`
 
 FE dapat mengecek scope token ini jika diperlukan untuk permission-based UI.
+
+### Middleware Role-Based
+Beberapa endpoint dilindungi dengan middleware role yang memastikan hanya user dengan role tertentu yang dapat mengakses:
+- `role:Admin` — Hanya Admin yang dapat mengakses
+- `role:Dosen` — Hanya Dosen yang dapat mengakses
+- `role:Mahasiswa` — Hanya Mahasiswa yang dapat mengakses
+- `role:Dosen,Mahasiswa` — Dosen dan Mahasiswa dapat mengakses
+
+Jika user tidak memiliki akses, API akan mengembalikan response:
+```json
+{
+    "success": false,
+    "message": "Anda tidak memiliki akses ke fitur ini."
+}
+```
+dengan status code `403 Forbidden`.
 
 ## 🛠️ Tips untuk Frontend (FE)
 1. **Header:** Pastikan selalu mengirim header `Accept: application/json` agar Laravel mengembalikan response dalam format JSON (terutama saat error validasi).

@@ -31,4 +31,9 @@ class SesiPertemuan extends Model
     {
         return $this->belongsTo(JadwalPerkuliahan::class, 'id_jadwal', 'id_jadwal');
     }
+
+    public function tugas()
+    {
+        return $this->hasMany(Tugas::class, 'id_sesi', 'id_sesi');
+    }
 }

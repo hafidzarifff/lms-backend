@@ -63,4 +63,35 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Dashboard Stats (COUNT only — ringan, 1 request)
     Route::get('/dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
+
+    // ============================================================
+    // Fitur Tugas & Pengumpulan Tugas
+    // ============================================================
+
+    // Dosen: CRUD Tugas di sesi tertentu
+    Route::middleware('role:Dosen')->group(function () {
+        Route::post('/sesi/{sesi_id}/tugas', [\App\Http\Controllers\Api\TugasController::class, 'store']);
+        Route::put('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'update']);
+        Route::delete('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'destroy']);
+        Route::get('/tugas/{id}/pengumpulan', [\App\Http\Controllers\Api\TugasController::class, 'pengumpulan']);
+        Route::put('/pengumpulan/{id}/nilai', [\App\Http\Controllers\Api\TugasController::class, 'beriNilai']);
+    });
+
+    // Dosen & Mahasiswa: List tugas di sesi (GET shared)
+    Route::middleware('role:Dosen,Mahasiswa')->group(function () {
+        Route::get('/sesi/{sesi_id}/tugas', [\App\Http\Controllers\Api\TugasController::class, 'index']);
+        Route::get('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'show']);
+    });
+
+    // Mahasiswa: Kumpulkan tugas & lihat status
+    Route::middleware('role:Mahasiswa')->group(function () {
+        Route::post('/tugas/{id}/kumpul', [\App\Http\Controllers\Api\TugasController::class, 'kumpul']);
+        Route::get('/tugas/{id}/pengumpulan/saya', [\App\Http\Controllers\Api\TugasController::class, 'statusPengumpulan']);
+    });
+
+    // Admin: List semua tugas & hapus pengumpulan
+    Route::middleware('role:Admin')->group(function () {
+        Route::get('/admin/tugas', [\App\Http\Controllers\Api\AdminTugasController::class, 'index']);
+        Route::delete('/admin/pengumpulan/{id}', [\App\Http\Controllers\Api\AdminTugasController::class, 'deletePengumpulan']);
+    });
 });
