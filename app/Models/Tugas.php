@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Tugas extends Model
 {
@@ -20,15 +20,17 @@ class Tugas extends Model
 
     protected $fillable = [
         'id_sesi',
-        'judul',
-        'deskripsi',
-        'deadline',
+        'judul_tugas',
+        'deskripsi_tugas',
+        'batas_waktu',
+        'link_cbt',
+        'token_cbt',
     ];
 
     protected function casts(): array
     {
         return [
-            'deadline' => 'datetime',
+            'batas_waktu' => 'datetime',
         ];
     }
 
@@ -41,10 +43,40 @@ class Tugas extends Model
     }
 
     /**
-     * Relasi ke pengumpulan_tugas (semua pengumpulan oleh mahasiswa).
+     * Cek apakah tugas sudah melewati batas waktu.
      */
-    public function pengumpulanTugas(): HasMany
+    public function cekDeadline(): bool
     {
-        return $this->hasMany(PengumpulanTugas::class, 'id_tugas', 'id_tugas');
+        return now()->greaterThan($this->batas_waktu);
+    }
+
+    /**
+     * Generate launch URL untuk CBT berdasarkan peserta.
+     * Hanya bisa jika tugas memiliki link_cbt dan token_cbt.
+     */
+    public function getLaunchUrl(string $id_peserta): ?string
+    {
+        if (!$this->link_cbt || !$this->token_cbt) {
+            return null;
+        }
+
+        // Generate launch URL dengan parameter token dan peserta
+        $url = $this->link_cbt;
+        $separator = str_contains($url, '?') ? '&' : '?';
+        $url .= $separator . http_build_query([
+            'token' => $this->token_cbt,
+            'id_peserta' => $id_peserta,
+            'id_tugas' => $this->id_tugas,
+        ]);
+
+        return $url;
+    }
+
+    /**
+     * Generate token CBT baru (6 karakter alphanumeric).
+     */
+    public static function generateTokenCbt(): string
+    {
+        return strtoupper(Str::random(6));
     }
 }

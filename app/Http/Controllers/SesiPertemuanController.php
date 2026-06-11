@@ -196,4 +196,54 @@ class SesiPertemuanController extends Controller
             'message' => 'Sesi pertemuan berhasil dihapus.'
         ], 200);
     }
+
+    /**
+     * Mendapatkan semua sesi berdasarkan jadwal.
+     *
+     * @param string $id_jadwal
+     * @return JsonResponse
+     */
+    public function getByJadwal(string $id_jadwal): JsonResponse
+    {
+        $sesiPertemuans = SesiPertemuan::where('id_jadwal', $id_jadwal)
+            ->orderBy('pertemuan_ke', 'asc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $sesiPertemuans
+        ], 200);
+    }
+
+    /**
+     * Cek apakah sesi sedang aktif (berlangsung saat ini).
+     *
+     * @param string $id_sesi
+     * @return JsonResponse
+     */
+    public function cekSesiAktif(string $id_sesi): JsonResponse
+    {
+        $sesiPertemuan = SesiPertemuan::find($id_sesi);
+
+        if (!$sesiPertemuan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sesi pertemuan tidak ditemukan.'
+            ], 404);
+        }
+
+        $aktif = $sesiPertemuan->cekSesiAktif();
+
+        return response()->json([
+            'status' => 'success',
+            'aktif' => $aktif,
+            'data' => [
+                'id_sesi' => $sesiPertemuan->id_sesi,
+                'judul_sesi' => $sesiPertemuan->judul_sesi,
+                'tanggal_pelaksanaan' => $sesiPertemuan->tanggal_pelaksanaan->format('Y-m-d'),
+                'jam_mulai' => $sesiPertemuan->jam_mulai->format('H:i:s'),
+                'jam_berakhir' => $sesiPertemuan->jam_berakhir->format('H:i:s'),
+            ]
+        ], 200);
+    }
 }

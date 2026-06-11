@@ -14,24 +14,31 @@ class StoreTugasRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'judul'     => ['required', 'string', 'max:200'],
-            'deskripsi' => ['nullable', 'string'],
-            'deadline'  => ['required', 'date', 'after:now'],
+            'judul_tugas'     => ['required', 'string', 'max:200'],
+            'deskripsi_tugas' => ['nullable', 'string'],
+            'batas_waktu'     => ['required', 'date', 'after:now'],
+            'link_cbt'        => ['nullable', 'url'],
+            'token_cbt'       => ['nullable', 'string', 'max:10'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'judul.required'    => 'Judul tugas wajib diisi.',
-            'judul.string'      => 'Judul tugas harus berupa teks.',
-            'judul.max'         => 'Judul tugas maksimal 200 karakter.',
+            'judul_tugas.required'     => 'Judul tugas wajib diisi.',
+            'judul_tugas.string'       => 'Judul tugas harus berupa teks.',
+            'judul_tugas.max'          => 'Judul tugas maksimal 200 karakter.',
 
-            'deskripsi.string'  => 'Deskripsi harus berupa teks.',
+            'deskripsi_tugas.string'   => 'Deskripsi harus berupa teks.',
 
-            'deadline.required' => 'Deadline wajib diisi.',
-            'deadline.date'     => 'Format deadline tidak valid.',
-            'deadline.after'    => 'Deadline harus di waktu yang akan datang.',
+            'batas_waktu.required'     => 'Batas waktu wajib diisi.',
+            'batas_waktu.date'         => 'Format batas waktu tidak valid.',
+            'batas_waktu.after'        => 'Batas waktu harus di waktu yang akan datang.',
+
+            'link_cbt.url'             => 'Link CBT harus berupa URL yang valid.',
+
+            'token_cbt.string'         => 'Token CBT harus berupa teks.',
+            'token_cbt.max'            => 'Token CBT maksimal 10 karakter.',
         ];
     }
 }
