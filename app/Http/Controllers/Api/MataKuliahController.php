@@ -18,9 +18,27 @@ class MataKuliahController extends Controller
      */
     public function index(): JsonResponse
     {
-        // Ambil semua data mata kuliah, urutkan dari yang terbaru (created_at DESC), pagination 10 per halaman
-        $mataKuliah = MasterMataKuliah::orderBy('created_at', 'desc')
-            ->paginate(10);
+        $request = request();
+
+        $perPage = min((int) $request->query('per_page', 20), 100);
+
+        $mataKuliah = MasterMataKuliah::query()
+            ->when($request->query('search'), function ($q, $search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('kode_mk', 'ilike', "%{$search}%")
+                        ->orWhere('nama_mk', 'ilike', "%{$search}%")
+                        ->orWhere('fakultas', 'ilike', "%{$search}%")
+                        ->orWhere('prodi', 'ilike', "%{$search}%");
+                });
+            })
+            ->when($request->query('semester'), function ($q, $semester) {
+                $q->where('semester', $semester);
+            })
+            ->when($request->query('sks'), function ($q, $sks) {
+                $q->where('sks', $sks);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
 
         return response()->json($mataKuliah, 200);
     }

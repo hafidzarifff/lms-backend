@@ -22,11 +22,42 @@ class JadwalPerkuliahanController extends Controller
      */
     public function index(): JsonResponse
     {
-        // Eager Loading relasi: mataKuliah, kelas, dosen
-        // Ini menghindari masalah N+1 query saat menampilkan daftar jadwal
-        $jadwal = JadwalPerkuliahan::with(['mataKuliah', 'kelas', 'dosen'])
+        $request = request();
+
+        $perPage = min((int) $request->query('per_page', 20), 100);
+
+        $jadwal = JadwalPerkuliahan::with([
+                'mataKuliah:id_mk,kode_mk,nama_mk,sks',
+                'kelas:id_kelas,kode_kelas,nama_kelas',
+                'dosen:id_user,nama_lengkap,nomor_induk',
+            ])
+            ->when($request->query('search'), function ($q, $search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('fakultas', 'ilike', "%{$search}%")
+                        ->orWhere('prodi', 'ilike', "%{$search}%")
+                        ->orWhereHas('mataKuliah', function ($mk) use ($search) {
+                            $mk->where('nama_mk', 'ilike', "%{$search}%");
+                        })
+                        ->orWhereHas('kelas', function ($k) use ($search) {
+                            $k->where('nama_kelas', 'ilike', "%{$search}%");
+                        })
+                        ->orWhereHas('dosen', function ($d) use ($search) {
+                            $d->where('nama_lengkap', 'ilike', "%{$search}%")
+                              ->orWhere('nomor_induk', 'ilike', "%{$search}%");
+                        });
+                });
+            })
+            ->when($request->query('semester'), function ($q, $semester) {
+                $q->where('semester', $semester);
+            })
+            ->when($request->query('tahun'), function ($q, $tahun) {
+                $q->where('tahun', $tahun);
+            })
+            ->when($request->query('hari'), function ($q, $hari) {
+                $q->where('hari', $hari);
+            })
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate($perPage);
 
         return response()->json($jadwal, 200);
     }

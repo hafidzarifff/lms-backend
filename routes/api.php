@@ -56,4 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Fitur Sesi Pertemuan Kelas
     Route::post('/sesi-pertemuan', [\App\Http\Controllers\SesiPertemuanController::class, 'store']);
+
+    // Dashboard Stats (COUNT only — ringan, 1 request)
+    Route::get('/dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
 });
