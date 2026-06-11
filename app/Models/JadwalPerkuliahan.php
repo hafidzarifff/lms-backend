@@ -97,4 +97,13 @@ class JadwalPerkuliahan extends Model
     {
         return $this->hasMany(PesertaKelas::class, 'id_jadwal', 'id_jadwal');
     }
+
+    /**
+     * Relasi ke tabel sesi_pertemuan.
+     * Satu jadwal dapat memiliki banyak sesi pertemuan.
+     */
+    public function sesiPertemuan(): HasMany
+    {
+        return $this->hasMany(SesiPertemuan::class, 'id_jadwal', 'id_jadwal');
+    }
 }
