@@ -74,4 +74,9 @@ class SesiPertemuan extends Model
     {
         return $this->hasMany(MateriPembelajaran::class, 'id_sesi', 'id_sesi');
     }
+
+    public function forumDiskusi()
+    {
+        return $this->hasMany(ForumDiskusi::class, 'id_sesi', 'id_sesi');
+    }
 }
