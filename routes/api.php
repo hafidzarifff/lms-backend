@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Fitur Management Jadwal Perkuliahan (Admin)
     Route::get('/jadwal-perkuliahan', [\App\Http\Controllers\Api\JadwalPerkuliahanController::class, 'index']);
+    Route::get('/jadwal-perkuliahan/grouped', [\App\Http\Controllers\Api\JadwalPerkuliahanController::class, 'grouped']);
     Route::get('/jadwal-perkuliahan/{id_jadwal}', [\App\Http\Controllers\Api\JadwalPerkuliahanController::class, 'show']);
     Route::post('/jadwal-perkuliahan', [\App\Http\Controllers\Api\JadwalPerkuliahanController::class, 'store']);
     Route::put('/jadwal-perkuliahan/{id_jadwal}', [\App\Http\Controllers\Api\JadwalPerkuliahanController::class, 'update']);
