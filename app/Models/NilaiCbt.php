@@ -2,38 +2,35 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PengumpulanTugas extends Model
+class NilaiCbt extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $table = 'pengumpulan_tugas';
-    protected $primaryKey = 'id_pengumpulan';
+    protected $table = 'nilai_cbt';
+    protected $primaryKey = 'id_nilai';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
         'id_tugas',
-        'id_mahasiswa',
-        'file_url',
+        'id_peserta',
         'nilai',
-        'catatan_dosen',
+        'waktu_sinkron',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'nilai' => 'integer',
-        ];
-    }
+    protected $casts = [
+        'nilai' => 'decimal:2',
+        'waktu_sinkron' => 'datetime',
+    ];
 
     /**
-     * Relasi ke tugas.
+     * Relasi ke tugas
      */
     public function tugas(): BelongsTo
     {
@@ -41,10 +38,10 @@ class PengumpulanTugas extends Model
     }
 
     /**
-     * Relasi ke mahasiswa (pengguna).
+     * Relasi ke peserta (pengguna)
      */
-    public function mahasiswa(): BelongsTo
+    public function peserta(): BelongsTo
     {
-        return $this->belongsTo(Pengguna::class, 'id_mahasiswa', 'id_user');
+        return $this->belongsTo(Pengguna::class, 'id_peserta', 'id_user');
     }
 }

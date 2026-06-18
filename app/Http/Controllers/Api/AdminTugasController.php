@@ -4,52 +4,30 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tugas;
-use App\Models\PengumpulanTugas;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminTugasController extends Controller
 {
     /**
-     * GET /admin/tugas — Admin melihat semua tugas lintas sesi dengan pagination.
+     * GET /admin/tugas - List semua tugas (Admin).
+     * Menampilkan semua tugas dari semua sesi, dengan relasi sesi dan jadwal.
      */
     public function index(Request $request): JsonResponse
     {
-        $paginator = Tugas::with(['sesiPertemuan.jadwalPerkuliahan'])
+        $perPage = $request->query('per_page', 10);
+
+        $tugas = Tugas::with([
+                'sesiPertemuan.jadwalPerkuliahan.mataKuliah',
+                'sesiPertemuan.jadwalPerkuliahan.kelas',
+                'sesiPertemuan.jadwalPerkuliahan.dosen',
+            ])
             ->orderBy('created_at', 'desc')
-            ->paginate(min($request->input('per_page', 20), 20));
+            ->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'message' => 'Daftar semua tugas berhasil diambil.',
-            'data'    => $paginator->items(),
-            'meta'    => [
-                'page'     => $paginator->currentPage(),
-                'per_page' => $paginator->perPage(),
-                'total'    => $paginator->total(),
-            ],
-        ], 200);
-    }
-
-    /**
-     * DELETE /admin/pengumpulan/:id — Admin menghapus pengumpulan (soft delete).
-     */
-    public function deletePengumpulan(string $id): JsonResponse
-    {
-        $pengumpulan = PengumpulanTugas::find($id);
-
-        if (!$pengumpulan) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data pengumpulan tidak ditemukan.',
-            ], 404);
-        }
-
-        $pengumpulan->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data pengumpulan berhasil dihapus.',
+            'data' => $tugas,
         ], 200);
     }
 }

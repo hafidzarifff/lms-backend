@@ -22,7 +22,7 @@ class AuthController extends Controller
             'identifier' => 'required|string|max:255',
             'password' => 'required|string|min:8',
         ], [
-            'identifier.required' => 'Email, Username, atau Nomor Induk wajib diisi.',
+            'identifier.required' => 'Email atau Nomor Induk wajib diisi.',
             'identifier.string' => 'Format identifier tidak valid.',
             'identifier.max' => 'Identifier maksimal 255 karakter.',
             'password.required' => 'Password wajib diisi.',
@@ -33,7 +33,6 @@ class AuthController extends Controller
         // 2. Pencarian User (Multi-Credential Query Fix)
         $user = Pengguna::where(function ($query) use ($request) {
             $query->where('email', $request->identifier)
-                  ->orWhere('username', $request->identifier)
                   ->orWhere('nomor_induk', $request->identifier);
         })->first();
 

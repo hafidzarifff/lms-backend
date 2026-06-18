@@ -1483,597 +1483,1394 @@ Menghapus data sesi pertemuan secara permanen dari sistem.
 
 ---
 
-### 36. Tambah Tugas (Dosen)
-Dosen membuat tugas baru di sesi pertemuan tertentu. Dosen harus merupakan pemilik sesi (dosen pengampu jadwal perkuliahan).
-
-- **URL:** `/sesi/{sesi_id}/tugas`
-- **Method:** `POST`
-- **Role:** `Dosen`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body:**
-```json
-{
-    "judul": "Tugas 1: Membuat Aplikasi CRUD",
-    "deskripsi": "Buatlah aplikasi CRUD sederhana menggunakan Laravel 11 sesuai materi yang telah dipelajari.",
-    "deadline": "2026-06-20T23:59:00"
-}
-```
-
-- **Response Sukses (201 Created):**
-```json
-{
-    "success": true,
-    "message": "Tugas berhasil dibuat.",
-    "data": {
-        "id_tugas": "uuid-string",
-        "id_sesi": "uuid-sesi",
-        "judul": "Tugas 1: Membuat Aplikasi CRUD",
-        "deskripsi": "Buatlah aplikasi CRUD sederhana menggunakan Laravel 11 sesuai materi yang telah dipelajari.",
-        "deadline": "2026-06-20T23:59:00.000000Z",
-        "created_at": "...",
-        "updated_at": "..."
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Sesi pertemuan tidak ditemukan."
-}
-```
-
-- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
-```json
-{
-    "success": false,
-    "message": "Anda tidak memiliki akses ke sesi ini."
-}
-```
-
-- **Response Validasi Gagal (422 Unprocessable Entity):**
-```json
-{
-    "message": "Judul tugas wajib diisi. (and other validation messages)",
-    "errors": {
-        "judul": ["Judul tugas wajib diisi."],
-        "deadline": ["Deadline harus di waktu yang akan datang."]
-    }
-}
-```
-
 ---
 
-### 37. Daftar Tugas di Sesi (Dosen & Mahasiswa)
-Mengambil daftar tugas yang ada di sesi pertemuan tertentu dengan pagination (maksimal 20 data per halaman).
+## 📜 Fitur Tugas
 
-- **URL:** `/sesi/{sesi_id}/tugas`
-- **Method:** `GET`
-- **Role:** `Dosen`, `Mahasiswa`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Query Params (Optional):**
-    - `per_page` (integer, default: 20, max: 20): Jumlah data per halaman
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Daftar tugas berhasil diambil.",
-    "data": [
-        {
-            "id_tugas": "uuid-string",
-            "id_sesi": "uuid-sesi",
-            "judul": "Tugas 1: Membuat Aplikasi CRUD",
-            "deskripsi": "Buatlah aplikasi CRUD sederhana...",
-            "deadline": "2026-06-20T23:59:00.000000Z",
-            "created_at": "...",
-            "updated_at": "..."
-        }
-    ],
-    "meta": {
-        "page": 1,
-        "per_page": 20,
-        "total": 1
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Sesi pertemuan tidak ditemukan."
-}
-```
-
----
-
-### 38. Detail Tugas (Dosen & Mahasiswa)
-Mengambil detail satu tugas berdasarkan ID, termasuk informasi sesi pertemuan dan jadwal perkuliahan.
-
-- **URL:** `/tugas/{id}`
-- **Method:** `GET`
-- **Role:** `Dosen`, `Mahasiswa`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "data": {
-        "id_tugas": "uuid-string",
-        "id_sesi": "uuid-sesi",
-        "judul": "Tugas 1: Membuat Aplikasi CRUD",
-        "deskripsi": "Buatlah aplikasi CRUD sederhana menggunakan Laravel 11 sesuai materi yang telah dipelajari.",
-        "deadline": "2026-06-20T23:59:00.000000Z",
-        "created_at": "...",
-        "updated_at": "...",
-        "sesi_pertemuan": {
-            "id_sesi": "uuid-sesi",
-            "id_jadwal": "uuid-jadwal",
-            "pertemuan_ke": 1,
-            "judul_sesi": "Pengantar Perkuliahan",
-            "tanggal_pelaksanaan": "2026-06-15",
-            "jadwal_perkuliahan": {
-                "id_jadwal": "uuid-jadwal",
-                "id_mk": "uuid-mk",
-                "id_kelas": "uuid-kelas",
-                "id_dosen": "uuid-dosen",
-                "sks": 3,
-                "fakultas": "Teknik",
-                "prodi": "Informatika",
-                "tahun": "2025/2026",
-                "semester": 1,
-                "hari": "Senin",
-                "waktu_mulai": "08:00",
-                "waktu_berakhir": "10:00",
-                "token_enrollment": "ABCXYZ"
-            }
-        }
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Tugas tidak ditemukan."
-}
-```
-
----
-
-### 39. Update Tugas (Dosen)
-Memperbarui data tugas (judul, deskripsi, deadline). Dosen harus merupakan pemilik sesi.
-
-- **URL:** `/tugas/{id}`
-- **Method:** `PUT`
-- **Role:** `Dosen`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body:**
-```json
-{
-    "judul": "Tugas 1: Membuat Aplikasi CRUD (Revisi)",
-    "deskripsi": "Deskripsi yang telah diperbarui.",
-    "deadline": "2026-06-25T23:59:00"
-}
-```
-*Catatan: Semua field bersifat opsional, hanya field yang dikirim yang akan diupdate.*
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Tugas berhasil diperbarui.",
-    "data": {
-        "id_tugas": "uuid-string",
-        "id_sesi": "uuid-sesi",
-        "judul": "Tugas 1: Membuat Aplikasi CRUD (Revisi)",
-        "deskripsi": "Deskripsi yang telah diperbarui.",
-        "deadline": "2026-06-25T23:59:00.000000Z",
-        "created_at": "...",
-        "updated_at": "..."
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Tugas tidak ditemukan."
-}
-```
-
-- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
-```json
-{
-    "success": false,
-    "message": "Anda tidak memiliki akses ke tugas ini."
-}
-```
-
----
-
-### 40. Hapus Tugas (Dosen - Soft Delete)
-Menghapus tugas menggunakan soft delete (data tidak hilang permanen, hanya ditandai `deleted_at`). Dosen harus merupakan pemilik sesi.
-
-- **URL:** `/tugas/{id}`
-- **Method:** `DELETE`
-- **Role:** `Dosen`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Tugas berhasil dihapus."
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Tugas tidak ditemukan."
-}
-```
-
-- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
-```json
-{
-    "success": false,
-    "message": "Anda tidak memiliki akses ke tugas ini."
-}
-```
-
----
-
-### 41. Daftar Pengumpulan Tugas (Dosen)
-Melihat seluruh pengumpulan tugas yang telah dilakukan oleh mahasiswa. Dosen harus merupakan pemilik sesi.
-
-- **URL:** `/tugas/{id}/pengumpulan`
-- **Method:** `GET`
-- **Role:** `Dosen`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Query Params (Optional):**
-    - `per_page` (integer, default: 20, max: 20): Jumlah data per halaman
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Daftar pengumpulan tugas berhasil diambil.",
-    "data": [
-        {
-            "id_pengumpulan": "uuid-string",
-            "id_tugas": "uuid-tugas",
-            "id_mahasiswa": "uuid-mahasiswa",
-            "file_url": "tugas/abc123.pdf",
-            "nilai": 85,
-            "catatan_dosen": "Bagus, pertahankan.",
-            "created_at": "...",
-            "updated_at": "...",
-            "mahasiswa": {
-                "id_user": "uuid-mahasiswa",
-                "nama_lengkap": "Budi Rahardjo",
-                "nomor_induk": "20241001",
-                "email": "20241001@mhs.uika.ac.id"
-            }
-        }
-    ],
-    "meta": {
-        "page": 1,
-        "per_page": 20,
-        "total": 1
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Tugas tidak ditemukan."
-}
-```
-
-- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
-```json
-{
-    "success": false,
-    "message": "Anda tidak memiliki akses ke tugas ini."
-}
-```
-
----
-
-### 42. Beri Nilai Pengumpulan (Dosen)
-Memberikan nilai (0-100) dan catatan dosen ke pengumpulan tugas mahasiswa. Dosen harus merupakan pemilik sesi.
-
-- **URL:** `/pengumpulan/{id}/nilai`
-- **Method:** `PUT`
-- **Role:** `Dosen`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body:**
-```json
-{
-    "nilai": 85,
-    "catatan_dosen": "Pengerjaan bagus, tapi perlu perbaikan pada validasi input."
-}
-```
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Nilai berhasil diberikan.",
-    "data": {
-        "id_pengumpulan": "uuid-string",
-        "id_tugas": "uuid-tugas",
-        "id_mahasiswa": "uuid-mahasiswa",
-        "file_url": "tugas/abc123.pdf",
-        "nilai": 85,
-        "catatan_dosen": "Pengerjaan bagus, tapi perlu perbaikan pada validasi input.",
-        "created_at": "...",
-        "updated_at": "..."
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Data pengumpulan tidak ditemukan."
-}
-```
-
-- **Response Error (403 Forbidden - Bukan Dosen Pengampu):**
-```json
-{
-    "success": false,
-    "message": "Anda tidak memiliki akses untuk menilai pengumpulan ini."
-}
-```
-
-- **Response Validasi Gagal (422 Unprocessable Entity):**
-```json
-{
-    "message": "Nilai wajib diisi. (and other validation messages)",
-    "errors": {
-        "nilai": ["Nilai wajib diisi.", "Nilai minimal 0.", "Nilai maksimal 100."]
-    }
-}
-```
-
----
-
-### 43. Kumpulkan Tugas (Mahasiswa)
-Mahasiswa mengumpulkan tugas dengan mengunggah file. Hanya bisa dilakukan sebelum deadline dan hanya boleh 1 kali per tugas.
-
-- **URL:** `/tugas/{id}/kumpul`
-- **Method:** `POST`
-- **Role:** `Mahasiswa`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-    - `Content-Type: multipart/form-data`
-- **Request Body (Form Data):**
-```
-file: [binary file]
-```
-*Catatan: Maksimal ukuran file 10 MB.*
-
-- **Response Sukses (201 Created):**
-```json
-{
-    "success": true,
-    "message": "Tugas berhasil dikumpulkan.",
-    "data": {
-        "id_pengumpulan": "uuid-string",
-        "id_tugas": "uuid-tugas",
-        "id_mahasiswa": "uuid-mahasiswa",
-        "file_url": "tugas/abc123.pdf",
-        "nilai": null,
-        "catatan_dosen": null,
-        "created_at": "...",
-        "updated_at": "..."
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Tugas tidak ditemukan."
-}
-```
-
-- **Response Error (403 Forbidden - Melewati Deadline):**
-```json
-{
-    "success": false,
-    "message": "Deadline pengumpulan sudah terlewat."
-}
-```
-
-- **Response Error (422 Unprocessable Entity - Sudah Pernah Mengumpulkan):**
-```json
-{
-    "success": false,
-    "message": "Anda sudah mengumpulkan tugas ini."
-}
-```
-
-- **Response Validasi Gagal (422 Unprocessable Entity):**
-```json
-{
-    "message": "File tugas wajib diunggah. (and other validation messages)",
-    "errors": {
-        "file": ["File tugas wajib diunggah.", "Ukuran file maksimal 10 MB."]
-    }
-}
-```
-
----
-
-### 44. Status Pengumpulan Tugas Saya (Mahasiswa)
-Mahasiswa melihat status pengumpulan tugas miliknya sendiri. Response berisi status pengumpulan (`belum_dikumpulkan`, `menunggu_penilaian`, atau `sudah_dinilai`).
-
-- **URL:** `/tugas/{id}/pengumpulan/saya`
-- **Method:** `GET`
-- **Role:** `Mahasiswa`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Response Sukses - Belum Dikumpulkan (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Anda belum mengumpulkan tugas ini.",
-    "data": {
-        "status": "belum_dikumpulkan",
-        "pengumpulan": null
-    }
-}
-```
-
-- **Response Sukses - Menunggu Penilaian (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Status pengumpulan berhasil diambil.",
-    "data": {
-        "status": "menunggu_penilaian",
-        "pengumpulan": {
-            "id_pengumpulan": "uuid-string",
-            "id_tugas": "uuid-tugas",
-            "id_mahasiswa": "uuid-mahasiswa",
-            "file_url": "tugas/abc123.pdf",
-            "nilai": null,
-            "catatan_dosen": null,
-            "created_at": "...",
-            "updated_at": "..."
-        }
-    }
-}
-```
-
-- **Response Sukses - Sudah Dinilai (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Status pengumpulan berhasil diambil.",
-    "data": {
-        "status": "sudah_dinilai",
-        "pengumpulan": {
-            "id_pengumpulan": "uuid-string",
-            "id_tugas": "uuid-tugas",
-            "id_mahasiswa": "uuid-mahasiswa",
-            "file_url": "tugas/abc123.pdf",
-            "nilai": 85,
-            "catatan_dosen": "Pengerjaan bagus, tapi perlu perbaikan pada validasi input.",
-            "created_at": "...",
-            "updated_at": "..."
-        }
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Tugas tidak ditemukan."
-}
-```
-
----
-
-### 45. Daftar Semua Tugas (Admin)
-Mengambil seluruh tugas lintas sesi dengan pagination (maksimal 20 data per halaman).
+### 36. Daftar Tugas (Admin)
+Endpoint untuk daftar tugas (admin).
 
 - **URL:** `/admin/tugas`
 - **Method:** `GET`
-- **Role:** `Admin`
 - **Headers:**
     - `Authorization: Bearer <token>`
-- **Query Params (Optional):**
-    - `per_page` (integer, default: 20, max: 20): Jumlah data per halaman
+
 - **Response Sukses (200 OK):**
 ```json
 {
-    "success": true,
-    "message": "Daftar semua tugas berhasil diambil.",
-    "data": [
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 37. Buat Tugas
+Endpoint untuk buat tugas.
+
+- **URL:** `/sesi/{sesi_id}/tugas`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "judul_tugas": "string, max 200, required",
+    "deskripsi_tugas": "string, optional",
+    "batas_waktu": "YYYY-MM-DD HH:MM:SS, required",
+    "link_cbt": "url, optional",
+    "token_cbt": "string, max 10, optional"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 38. Update Tugas
+Endpoint untuk update tugas.
+
+- **URL:** `/tugas/{id}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "judul_tugas": "string, max 200, optional",
+    "deskripsi_tugas": "string, optional",
+    "batas_waktu": "YYYY-MM-DD HH:MM:SS, optional",
+    "link_cbt": "url, optional",
+    "token_cbt": "string, max 10, optional"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 39. Hapus Tugas
+Endpoint untuk hapus tugas.
+
+- **URL:** `/tugas/{id}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 40. Daftar Tugas di Sesi
+Endpoint untuk daftar tugas di sesi.
+
+- **URL:** `/sesi/{sesi_id}/tugas`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 41. Detail Tugas
+Endpoint untuk detail tugas.
+
+- **URL:** `/tugas/{id}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 42. Cek Deadline Tugas
+Endpoint untuk cek deadline tugas.
+
+- **URL:** `/tugas/{id}/deadline`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 43. Get Launch URL Tugas
+Endpoint untuk get launch url tugas.
+
+- **URL:** `/tugas/{id}/launch/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+## 📜 Fitur Forum Diskusi
+
+### 44. Daftar Forum Diskusi Sesi
+Endpoint untuk daftar forum diskusi sesi.
+
+- **URL:** `/sesi/{idSesi}/forum`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 45. Buat Post Forum
+Endpoint untuk buat post forum.
+
+- **URL:** `/forum`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "id_sesi": "uuid, required",
+    "isi_pesan": "string, max 5000, required",
+    "id_parent_pesan": "uuid, optional"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 46. Detail Post Forum
+Endpoint untuk detail post forum.
+
+- **URL:** `/forum/{idPesan}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 47. Balasan Forum
+Endpoint untuk balasan forum.
+
+- **URL:** `/forum/{idPesan}/replies`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 48. Update Post
+Endpoint untuk update post.
+
+- **URL:** `/forum/{idPesan}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "isi_pesan": "string, max 5000, required"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 49. Hapus Post
+Endpoint untuk hapus post.
+
+- **URL:** `/forum/{idPesan}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 50. Cari Forum
+Endpoint untuk cari forum.
+
+- **URL:** `/sesi/{idSesi}/forum/search`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+## 📜 Fitur Nilai CBT
+
+### 51. Simpan Nilai CBT
+Endpoint untuk simpan nilai cbt.
+
+- **URL:** `/nilai-cbt`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "nilai": [
         {
-            "id_tugas": "uuid-string",
-            "id_sesi": "uuid-sesi",
-            "judul": "Tugas 1: Membuat Aplikasi CRUD",
-            "deskripsi": "Buatlah aplikasi CRUD sederhana...",
-            "deadline": "2026-06-20T23:59:00.000000Z",
-            "created_at": "...",
-            "updated_at": "...",
-            "sesi_pertemuan": {
-                "id_sesi": "uuid-sesi",
-                "id_jadwal": "uuid-jadwal",
-                "pertemuan_ke": 1,
-                "judul_sesi": "Pengantar Perkuliahan",
-                "tanggal_pelaksanaan": "2026-06-15",
-                "jadwal_perkuliahan": {
-                    "id_jadwal": "uuid-jadwal",
-                    "id_mk": "uuid-mk",
-                    "id_kelas": "uuid-kelas",
-                    "id_dosen": "uuid-dosen",
-                    "sks": 3,
-                    "fakultas": "Teknik",
-                    "prodi": "Informatika",
-                    "tahun": "2025/2026",
-                    "semester": 1,
-                    "hari": "Senin",
-                    "waktu_mulai": "08:00",
-                    "waktu_berakhir": "10:00",
-                    "token_enrollment": "ABCXYZ"
+            "id_tugas": "uuid, required",
+            "id_peserta": "uuid, required",
+            "nilai": "numeric 0-100, required"
+        }
+    ]
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 52. Nilai CBT per Tugas
+Endpoint untuk nilai cbt per tugas.
+
+- **URL:** `/nilai-cbt/tugas/{id_tugas}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 53. Nilai CBT per Peserta
+Endpoint untuk nilai cbt per peserta.
+
+- **URL:** `/nilai-cbt/peserta/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 54. Detail Nilai CBT
+Endpoint untuk detail nilai cbt.
+
+- **URL:** `/nilai-cbt/{id_tugas}/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 55. Update Nilai CBT
+Endpoint untuk update nilai cbt.
+
+- **URL:** `/nilai-cbt/{id_nilai}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "nilai": "numeric 0-100, required"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 56. Hapus Nilai CBT
+Endpoint untuk hapus nilai cbt.
+
+- **URL:** `/nilai-cbt/{id_nilai}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 57. Statistik Nilai Tugas
+Endpoint untuk statistik nilai tugas.
+
+- **URL:** `/nilai-cbt/tugas/{id_tugas}/statistik`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 58. Ranking Nilai Tugas
+Endpoint untuk ranking nilai tugas.
+
+- **URL:** `/nilai-cbt/tugas/{id_tugas}/ranking/{limit?}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+## 📜 Fitur Pertanyaan Evaluasi
+
+### 59. Daftar Pertanyaan Evaluasi
+Endpoint untuk daftar pertanyaan evaluasi.
+
+- **URL:** `/pertanyaan-evaluasi`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 60. Daftar Pertanyaan Aktif
+Endpoint untuk daftar pertanyaan aktif.
+
+- **URL:** `/pertanyaan-evaluasi/aktif`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 61. Daftar Kategori Pertanyaan
+Endpoint untuk daftar kategori pertanyaan.
+
+- **URL:** `/pertanyaan-evaluasi/kategori`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 62. Detail Pertanyaan
+Endpoint untuk detail pertanyaan.
+
+- **URL:** `/pertanyaan-evaluasi/{id_pertanyaan}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 63. Buat Pertanyaan
+Endpoint untuk buat pertanyaan.
+
+- **URL:** `/pertanyaan-evaluasi`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "kategori": "string, max 50, required",
+    "teks_pertanyaan": "string, required",
+    "urutan": "integer, min 1, required",
+    "is_aktif": "boolean, optional"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 64. Update Pertanyaan
+Endpoint untuk update pertanyaan.
+
+- **URL:** `/pertanyaan-evaluasi/{id_pertanyaan}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "kategori": "string, max 50, optional",
+    "teks_pertanyaan": "string, optional",
+    "urutan": "integer, optional",
+    "is_aktif": "boolean, optional"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 65. Hapus Pertanyaan
+Endpoint untuk hapus pertanyaan.
+
+- **URL:** `/pertanyaan-evaluasi/{id_pertanyaan}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 66. Toggle Status Aktif Pertanyaan
+Endpoint untuk toggle status aktif pertanyaan.
+
+- **URL:** `/pertanyaan-evaluasi/{id_pertanyaan}/toggle`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 67. Update Urutan Bulk
+Endpoint untuk update urutan bulk.
+
+- **URL:** `/pertanyaan-evaluasi/bulk-urutan`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "urutan": [
+        {
+            "id_pertanyaan": "uuid, required",
+            "urutan": "integer, required"
+        }
+    ]
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+## 📜 Fitur Jawaban Evaluasi
+
+### 68. Simpan Jawaban Evaluasi
+Endpoint untuk simpan jawaban evaluasi.
+
+- **URL:** `/jawaban-evaluasi`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "id_peserta": "uuid, required",
+    "jawaban": [
+        {
+            "id_pertanyaan": "uuid, required",
+            "skor": "integer 1-5, required"
+        }
+    ]
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 69. Jawaban per Peserta
+Endpoint untuk jawaban per peserta.
+
+- **URL:** `/jawaban-evaluasi/peserta/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 70. Jawaban per Pertanyaan
+Endpoint untuk jawaban per pertanyaan.
+
+- **URL:** `/jawaban-evaluasi/pertanyaan/{id_pertanyaan}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 71. Detail Jawaban
+Endpoint untuk detail jawaban.
+
+- **URL:** `/jawaban-evaluasi/{id_pertanyaan}/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 72. Update Jawaban
+Endpoint untuk update jawaban.
+
+- **URL:** `/jawaban-evaluasi/{id_evaluasi}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "skor": "integer 1-5, required"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 73. Hapus Jawaban
+Endpoint untuk hapus jawaban.
+
+- **URL:** `/jawaban-evaluasi/{id_evaluasi}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 74. Statistik Jawaban Pertanyaan
+Endpoint untuk statistik jawaban pertanyaan.
+
+- **URL:** `/jawaban-evaluasi/pertanyaan/{id_pertanyaan}/statistik`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 75. Statistik Kategori Evaluasi
+Endpoint untuk statistik kategori evaluasi.
+
+- **URL:** `/jawaban-evaluasi/statistik-kategori`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 76. Cek Status Evaluasi Peserta
+Endpoint untuk cek status evaluasi peserta.
+
+- **URL:** `/jawaban-evaluasi/peserta/{id_peserta}/status`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 77. Rekap Evaluasi
+Endpoint untuk rekap evaluasi.
+
+- **URL:** `/jawaban-evaluasi/rekap`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+## 📜 Fitur Template Sertifikat
+
+### 78. Daftar Template
+Endpoint untuk daftar template.
+
+- **URL:** `/template-sertifikat`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 79. Daftar Template Aktif
+Endpoint untuk daftar template aktif.
+
+- **URL:** `/template-sertifikat/aktif`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 80. Detail Template
+Endpoint untuk detail template.
+
+- **URL:** `/template-sertifikat/{id_template}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 81. Buat Template
+Endpoint untuk buat template.
+
+- **URL:** `/template-sertifikat`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (Multipart/form-data):**
+    - `nama_template`: string, max 100, required
+    - `file_background`: image (jpeg, jpg, png), max 5MB, optional
+    - `is_aktif`: boolean, optional
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 82. Update Template
+Endpoint untuk update template.
+
+- **URL:** `/template-sertifikat/{id_template}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "nama_template": "string, max 100, optional",
+    "is_aktif": "boolean, optional"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 83. Hapus Template
+Endpoint untuk hapus template.
+
+- **URL:** `/template-sertifikat/{id_template}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 84. Toggle Status Aktif Template
+Endpoint untuk toggle status aktif template.
+
+- **URL:** `/template-sertifikat/{id_template}/toggle`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 85. Upload Background Template
+Endpoint untuk upload background template.
+
+- **URL:** `/template-sertifikat/{id_template}/background`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (Multipart/form-data):**
+    - `file_background`: image (jpeg, jpg, png), max 5MB, required
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+### 86. Download Background Template
+Endpoint untuk download background template.
+
+- **URL:** `/template-sertifikat/{id_template}/download-background`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Berhasil",
+    "data": {}
+}
+```
+
+---
+
+## 📜 Fitur Sertifikat
+
+### 87. Daftar Sertifikat
+Mengambil semua sertifikat dengan dukungan filter dan pagination (15 data per halaman).
+
+- **URL:** `/sertifikat`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Query Params:**
+    - `id_peserta` (opsional): Filter berdasarkan ID peserta (UUID)
+    - `id_template` (opsional): Filter berdasarkan ID template (UUID)
+    - `dari_tanggal` (opsional): Filter rentang tanggal terbit awal (YYYY-MM-DD)
+    - `sampai_tanggal` (opsional): Filter rentang tanggal terbit akhir (YYYY-MM-DD)
+    - `per_page` (opsional): Jumlah item per halaman (default 15)
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id_sertifikat": "uuid-string",
+                "id_peserta": "uuid-string",
+                "id_template": "uuid-string",
+                "nomor_sertifikat": "SERT/2026/06/0001",
+                "tanggal_terbit": "2026-06-17",
+                "file_url": "sertifikats/filename.pdf",
+                "created_at": "...",
+                "updated_at": "...",
+                "peserta": {
+                    "id_user": "uuid-string",
+                    "nama_lengkap": "Budi Santoso",
+                    "nim": "12345678",
+                    "email": "budi@example.com"
+                },
+                "template": {
+                    "id_template": "uuid-string",
+                    "nama_template": "Sertifikat Kelulusan"
                 }
             }
-        }
-    ],
-    "meta": {
-        "page": 1,
-        "per_page": 20,
-        "total": 1
+        ],
+        "total": 1,
+        "per_page": 15
     }
 }
 ```
 
 ---
 
-### 46. Hapus Pengumpulan Tugas (Admin - Soft Delete)
-Admin menghapus data pengumpulan tugas menggunakan soft delete.
+### 88. Daftar Sertifikat per Peserta
+Mengambil semua sertifikat untuk satu peserta tertentu (tanpa pagination).
 
-- **URL:** `/admin/pengumpulan/{id}`
-- **Method:** `DELETE`
-- **Role:** `Admin`
+- **URL:** `/sertifikat/peserta/{id_peserta}`
+- **Method:** `GET`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
-    "success": true,
-    "message": "Data pengumpulan berhasil dihapus."
+    "status": "success",
+    "data": [
+        {
+            "id_sertifikat": "uuid-string",
+            "nomor_sertifikat": "SERT/2026/06/0001",
+            "tanggal_terbit": "2026-06-17",
+            "peserta": { ... },
+            "template": { ... }
+        }
+    ]
+}
+```
+
+---
+
+### 89. Detail Sertifikat
+Mengambil detail satu data sertifikat.
+
+- **URL:** `/sertifikat/{id_sertifikat}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "id_sertifikat": "uuid-string",
+        "nomor_sertifikat": "SERT/2026/06/0001",
+        "tanggal_terbit": "2026-06-17",
+        "file_url": "sertifikats/filename.pdf",
+        "peserta": { ... },
+        "template": { ... }
+    }
 }
 ```
 
 - **Response Error (404 Not Found):**
 ```json
 {
-    "success": false,
-    "message": "Data pengumpulan tidak ditemukan."
+    "status": "error",
+    "message": "Sertifikat tidak ditemukan"
+}
+```
+
+---
+
+### 90. Terbitkan Sertifikat
+Menerbitkan sertifikat baru untuk satu peserta. Nomor sertifikat akan digenerate otomatis.
+
+- **URL:** `/sertifikat`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (Multipart/form-data jika ada file):**
+    - `id_peserta`: UUID (Wajib)
+    - `id_template`: UUID (Wajib, harus aktif)
+    - `tanggal_terbit`: YYYY-MM-DD (Opsional, default sekarang)
+    - `file_sertifikat`: File PDF (Opsional, max 10MB)
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "status": "success",
+    "message": "Sertifikat berhasil diterbitkan",
+    "data": { ... }
+}
+```
+
+---
+
+### 91. Terbitkan Sertifikat Bulk
+Menerbitkan sertifikat untuk banyak peserta sekaligus.
+
+- **URL:** `/sertifikat/bulk`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "id_template": "uuid-string",
+    "tanggal_terbit": "2026-06-17",
+    "peserta": [
+        { "id_peserta": "uuid-1" },
+        { "id_peserta": "uuid-2" }
+    ]
+}
+```
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "status": "success",
+    "message": "2 sertifikat berhasil diterbitkan",
+    "data": [ { ... }, { ... } ],
+    "total": 2
+}
+```
+
+---
+
+### 92. Update Sertifikat
+Memperbarui data tanggal terbit sertifikat.
+
+- **URL:** `/sertifikat/{id_sertifikat}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (JSON):**
+```json
+{
+    "tanggal_terbit": "2026-06-18"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Sertifikat berhasil diupdate",
+    "data": { ... }
+}
+```
+
+---
+
+### 93. Upload File Sertifikat
+Upload atau timpa file PDF sertifikat yang sudah ada.
+
+- **URL:** `/sertifikat/{id_sertifikat}/upload`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body (Multipart/form-data):**
+    - `file_sertifikat`: File PDF (Wajib, max 10MB)
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "File sertifikat berhasil diupload",
+    "data": { ... }
+}
+```
+
+---
+
+### 94. Download File Sertifikat
+Mendapatkan URL untuk mengunduh file sertifikat.
+
+- **URL:** `/sertifikat/{id_sertifikat}/download`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "url": "/storage/sertifikats/uuid_filename.pdf",
+        "nomor_sertifikat": "SERT/2026/06/0001",
+        "nama_file": "uuid_filename.pdf"
+    }
+}
+```
+
+---
+
+### 95. Verifikasi Sertifikat
+Verifikasi keaslian sertifikat berdasarkan nomor sertifikat. Endpoint ini bisa diakses secara publik (tidak perlu token jika diatur di routing).
+
+- **URL:** `/sertifikat/verify/{nomor_sertifikat}`
+- **Method:** `GET`
+
+- **Response Sukses (200 OK - Valid):**
+```json
+{
+    "status": "success",
+    "valid": true,
+    "message": "Sertifikat valid",
+    "data": {
+        "nomor_sertifikat": "SERT/2026/06/0001",
+        "tanggal_terbit": "17 June 2026",
+        "peserta": { ... },
+        "template": { ... }
+    }
+}
+```
+
+- **Response Error (404 Not Found - Tidak Valid):**
+```json
+{
+    "status": "error",
+    "message": "Sertifikat tidak valid atau tidak ditemukan",
+    "valid": false
+}
+```
+
+---
+
+### 96. Statistik Sertifikat
+Mendapatkan statistik penggunaan sertifikat secara keseluruhan.
+
+- **URL:** `/sertifikat/statistik`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "summary": {
+            "total_sertifikat": 150,
+            "total_penerima": 120,
+            "total_template_digunakan": 5,
+            "terbit_pertama": "2026-01-01",
+            "terbit_terakhir": "2026-06-17"
+        },
+        "per_bulan": [
+            {
+                "bulan": "2026-06-01 00:00:00",
+                "jumlah": 45
+            }
+        ]
+    }
 }
 ```
 
@@ -2086,22 +2883,6 @@ Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
 - **Mahasiswa:** `mahasiswa:*`
 
 FE dapat mengecek scope token ini jika diperlukan untuk permission-based UI.
-
-### Middleware Role-Based
-Beberapa endpoint dilindungi dengan middleware role yang memastikan hanya user dengan role tertentu yang dapat mengakses:
-- `role:Admin` — Hanya Admin yang dapat mengakses
-- `role:Dosen` — Hanya Dosen yang dapat mengakses
-- `role:Mahasiswa` — Hanya Mahasiswa yang dapat mengakses
-- `role:Dosen,Mahasiswa` — Dosen dan Mahasiswa dapat mengakses
-
-Jika user tidak memiliki akses, API akan mengembalikan response:
-```json
-{
-    "success": false,
-    "message": "Anda tidak memiliki akses ke fitur ini."
-}
-```
-dengan status code `403 Forbidden`.
 
 ## 🛠️ Tips untuk Frontend (FE)
 1. **Header:** Pastikan selalu mengirim header `Accept: application/json` agar Laravel mengembalikan response dalam format JSON (terutama saat error validasi).

@@ -5,60 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTugasRequest;
 use App\Http\Requests\UpdateTugasRequest;
-use App\Http\Requests\KumpulTugasRequest;
-use App\Http\Requests\BeriNilaiRequest;
-use App\Models\SesiPertemuan;
 use App\Models\Tugas;
-use App\Models\PengumpulanTugas;
+use App\Models\SesiPertemuan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class TugasController extends Controller
 {
-    // ============================================================
-    // DOSEN: CRUD Tugas
-    // ============================================================
-
     /**
-     * POST /sesi/:sesi_id/tugas — Dosen membuat tugas baru di sesi tertentu.
-     */
-    public function store(StoreTugasRequest $request, string $sesi_id): JsonResponse
-    {
-        $sesi = SesiPertemuan::with('jadwalPerkuliahan')->find($sesi_id);
-
-        if (!$sesi) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sesi pertemuan tidak ditemukan.',
-            ], 404);
-        }
-
-        // Pastikan dosen yang mengakses adalah pemilik sesi
-        $user = $request->user();
-        if ($sesi->jadwalPerkuliahan->id_dosen !== $user->id_user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda tidak memiliki akses ke sesi ini.',
-            ], 403);
-        }
-
-        $tugas = Tugas::create([
-            'id_sesi'   => $sesi_id,
-            'judul'     => $request->judul,
-            'deskripsi' => $request->deskripsi,
-            'deadline'  => $request->deadline,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Tugas berhasil dibuat.',
-            'data'    => $tugas,
-        ], 201);
-    }
-
-    /**
-     * GET /sesi/:sesi_id/tugas — List tugas di sesi (Dosen & Mahasiswa).
+     * GET /sesi/:sesi_id/tugas - List tugas di sesi (Dosen & Mahasiswa)
      */
     public function index(Request $request, string $sesi_id): JsonResponse
     {
@@ -67,32 +22,68 @@ class TugasController extends Controller
         if (!$sesi) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sesi pertemuan tidak ditemukan.',
+                'message' => 'Sesi tidak ditemukan.',
             ], 404);
         }
 
-        $paginator = Tugas::where('id_sesi', $sesi_id)
-            ->orderBy('deadline', 'asc')
-            ->paginate(min($request->input('per_page', 20), 20));
+        $perPage = $request->query('per_page', 10);
+        $tugas = Tugas::where('id_sesi', $sesi_id)
+            ->orderBy('batas_waktu', 'asc')
+            ->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'message' => 'Daftar tugas berhasil diambil.',
-            'data'    => $paginator->items(),
-            'meta'    => [
-                'page'     => $paginator->currentPage(),
-                'per_page' => $paginator->perPage(),
-                'total'    => $paginator->total(),
-            ],
+            'data' => $tugas,
         ], 200);
     }
 
     /**
-     * GET /tugas/:id — Detail tugas.
+     * POST /sesi/:sesi_id/tugas - Buat tugas baru (Dosen)
+     */
+    public function store(StoreTugasRequest $request, string $sesi_id): JsonResponse
+    {
+        $sesi = SesiPertemuan::find($sesi_id);
+
+        if (!$sesi) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sesi tidak ditemukan.',
+            ], 404);
+        }
+
+        // Validasi dosen pemilik sesi
+        $user = auth()->user();
+        if ($sesi->jadwalPerkuliahan->id_dosen !== $user->id_user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses ke sesi ini.',
+            ], 403);
+        }
+
+        $validated = $request->validated();
+
+        // Generate token CBT jika ada link CBT tapi tidak ada token
+        if (isset($validated['link_cbt']) && $validated['link_cbt'] && !isset($validated['token_cbt'])) {
+            $validated['token_cbt'] = Tugas::generateTokenCbt();
+        }
+
+        $validated['id_sesi'] = $sesi_id;
+
+        $tugas = Tugas::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tugas berhasil dibuat.',
+            'data' => $tugas,
+        ], 201);
+    }
+
+    /**
+     * GET /tugas/:id - Detail tugas
      */
     public function show(string $id): JsonResponse
     {
-        $tugas = Tugas::with('sesiPertemuan.jadwalPerkuliahan')->find($id);
+        $tugas = Tugas::with('sesiPertemuan')->find($id);
 
         if (!$tugas) {
             return response()->json([
@@ -103,16 +94,16 @@ class TugasController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $tugas,
+            'data' => $tugas,
         ], 200);
     }
 
     /**
-     * PUT /tugas/:id — Dosen mengedit tugas.
+     * PUT /tugas/:id - Update tugas (Dosen)
      */
     public function update(UpdateTugasRequest $request, string $id): JsonResponse
     {
-        $tugas = Tugas::with('sesiPertemuan.jadwalPerkuliahan')->find($id);
+        $tugas = Tugas::with('sesiPertemuan')->find($id);
 
         if (!$tugas) {
             return response()->json([
@@ -121,7 +112,8 @@ class TugasController extends Controller
             ], 404);
         }
 
-        $user = $request->user();
+        // Validasi dosen pemilik sesi
+        $user = auth()->user();
         if ($tugas->sesiPertemuan->jadwalPerkuliahan->id_dosen !== $user->id_user) {
             return response()->json([
                 'success' => false,
@@ -129,21 +121,28 @@ class TugasController extends Controller
             ], 403);
         }
 
-        $tugas->update($request->validated());
+        $validated = $request->validated();
+
+        // Generate token CBT jika ada link CBT baru tapi tidak ada token
+        if (isset($validated['link_cbt']) && $validated['link_cbt'] && !isset($validated['token_cbt'])) {
+            $validated['token_cbt'] = Tugas::generateTokenCbt();
+        }
+
+        $tugas->update($validated);
 
         return response()->json([
             'success' => true,
-            'message' => 'Tugas berhasil diperbarui.',
-            'data'    => $tugas->fresh(),
+            'message' => 'Tugas berhasil diupdate.',
+            'data' => $tugas->fresh(),
         ], 200);
     }
 
     /**
-     * DELETE /tugas/:id — Soft delete tugas.
+     * DELETE /tugas/:id - Hapus tugas (Dosen)
      */
-    public function destroy(Request $request, string $id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
-        $tugas = Tugas::with('sesiPertemuan.jadwalPerkuliahan')->find($id);
+        $tugas = Tugas::with('sesiPertemuan')->find($id);
 
         if (!$tugas) {
             return response()->json([
@@ -152,7 +151,8 @@ class TugasController extends Controller
             ], 404);
         }
 
-        $user = $request->user();
+        // Validasi dosen pemilik sesi
+        $user = auth()->user();
         if ($tugas->sesiPertemuan->jadwalPerkuliahan->id_dosen !== $user->id_user) {
             return response()->json([
                 'success' => false,
@@ -168,92 +168,10 @@ class TugasController extends Controller
         ], 200);
     }
 
-    // ============================================================
-    // DOSEN: Lihat Pengumpulan & Beri Nilai
-    // ============================================================
-
     /**
-     * GET /tugas/:id/pengumpulan — Dosen melihat semua pengumpulan mahasiswa.
+     * GET /tugas/:id/deadline - Cek deadline tugas
      */
-    public function pengumpulan(Request $request, string $id): JsonResponse
-    {
-        $tugas = Tugas::with('sesiPertemuan.jadwalPerkuliahan')->find($id);
-
-        if (!$tugas) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tugas tidak ditemukan.',
-            ], 404);
-        }
-
-        $user = $request->user();
-        if ($tugas->sesiPertemuan->jadwalPerkuliahan->id_dosen !== $user->id_user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda tidak memiliki akses ke tugas ini.',
-            ], 403);
-        }
-
-        $paginator = PengumpulanTugas::with('mahasiswa')
-            ->where('id_tugas', $id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(min($request->input('per_page', 20), 20));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Daftar pengumpulan tugas berhasil diambil.',
-            'data'    => $paginator->items(),
-            'meta'    => [
-                'page'     => $paginator->currentPage(),
-                'per_page' => $paginator->perPage(),
-                'total'    => $paginator->total(),
-            ],
-        ], 200);
-    }
-
-    /**
-     * PUT /pengumpulan/:id/nilai — Dosen memberi nilai dan catatan.
-     */
-    public function beriNilai(BeriNilaiRequest $request, string $id): JsonResponse
-    {
-        $pengumpulan = PengumpulanTugas::with('tugas.sesiPertemuan.jadwalPerkuliahan')->find($id);
-
-        if (!$pengumpulan) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data pengumpulan tidak ditemukan.',
-            ], 404);
-        }
-
-        $user = $request->user();
-        $idDosen = $pengumpulan->tugas->sesiPertemuan->jadwalPerkuliahan->id_dosen;
-        if ($idDosen !== $user->id_user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda tidak memiliki akses untuk menilai pengumpulan ini.',
-            ], 403);
-        }
-
-        $pengumpulan->update([
-            'nilai'          => $request->nilai,
-            'catatan_dosen'  => $request->catatan_dosen,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Nilai berhasil diberikan.',
-            'data'    => $pengumpulan->fresh(),
-        ], 200);
-    }
-
-    // ============================================================
-    // MAHASISWA: Kumpulkan Tugas & Lihat Status
-    // ============================================================
-
-    /**
-     * POST /tugas/:id/kumpul — Mahasiswa mengumpulkan tugas.
-     */
-    public function kumpul(KumpulTugasRequest $request, string $id): JsonResponse
+    public function cekDeadline(string $id): JsonResponse
     {
         $tugas = Tugas::find($id);
 
@@ -264,48 +182,20 @@ class TugasController extends Controller
             ], 404);
         }
 
-        // Cek apakah sudah melewati deadline
-        if (now()->greaterThan($tugas->deadline)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Deadline pengumpulan sudah terlewat.',
-            ], 403);
-        }
-
-        $user = $request->user();
-
-        // Cek apakah sudah pernah mengumpulkan (mencegah duplikat)
-        $sudahKumpul = PengumpulanTugas::where('id_tugas', $id)
-            ->where('id_mahasiswa', $user->id_user)
-            ->exists();
-
-        if ($sudahKumpul) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda sudah mengumpulkan tugas ini.',
-            ], 422);
-        }
-
-        // Simpan file ke storage
-        $filePath = $request->file('file')->store('tugas', 'local');
-
-        $pengumpulan = PengumpulanTugas::create([
-            'id_tugas'     => $id,
-            'id_mahasiswa' => $user->id_user,
-            'file_url'     => $filePath,
-        ]);
+        $melewatiDeadline = $tugas->cekDeadline();
 
         return response()->json([
             'success' => true,
-            'message' => 'Tugas berhasil dikumpulkan.',
-            'data'    => $pengumpulan,
-        ], 201);
+            'melewati_deadline' => $melewatiDeadline,
+            'batas_waktu' => $tugas->batas_waktu,
+            'waktu_sekarang' => now(),
+        ], 200);
     }
 
     /**
-     * GET /tugas/:id/pengumpulan/saya — Mahasiswa melihat status pengumpulan miliknya.
+     * GET /tugas/:id/launch/:id_peserta - Generate launch URL untuk CBT
      */
-    public function statusPengumpulan(Request $request, string $id): JsonResponse
+    public function getLaunchUrl(string $id, string $id_peserta): JsonResponse
     {
         $tugas = Tugas::find($id);
 
@@ -316,30 +206,20 @@ class TugasController extends Controller
             ], 404);
         }
 
-        $user = $request->user();
-
-        $pengumpulan = PengumpulanTugas::where('id_tugas', $id)
-            ->where('id_mahasiswa', $user->id_user)
-            ->first();
-
-        if (!$pengumpulan) {
+        // Validasi tugas memiliki link CBT
+        if (!$tugas->link_cbt) {
             return response()->json([
-                'success' => true,
-                'message' => 'Anda belum mengumpulkan tugas ini.',
-                'data'    => [
-                    'status'       => 'belum_dikumpulkan',
-                    'pengumpulan'  => null,
-                ],
-            ], 200);
+                'success' => false,
+                'message' => 'Tugas ini tidak memiliki link CBT.',
+            ], 400);
         }
+
+        $launchUrl = $tugas->getLaunchUrl($id_peserta);
 
         return response()->json([
             'success' => true,
-            'message' => 'Status pengumpulan berhasil diambil.',
-            'data'    => [
-                'status'       => $pengumpulan->nilai !== null ? 'sudah_dinilai' : 'menunggu_penilaian',
-                'pengumpulan'  => $pengumpulan,
-            ],
+            'launch_url' => $launchUrl,
+            'judul_tugas' => $tugas->judul_tugas,
         ], 200);
     }
 }

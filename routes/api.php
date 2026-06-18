@@ -58,7 +58,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Fitur Sesi Pertemuan Kelas
     Route::get('/sesi-pertemuan', [\App\Http\Controllers\SesiPertemuanController::class, 'index']);
     Route::post('/sesi-pertemuan', [\App\Http\Controllers\SesiPertemuanController::class, 'store']);
+    Route::get('/sesi-pertemuan/jadwal/{id_jadwal}', [\App\Http\Controllers\SesiPertemuanController::class, 'getByJadwal']);
     Route::get('/sesi-pertemuan/{id_sesi}', [\App\Http\Controllers\SesiPertemuanController::class, 'show']);
+    Route::get('/sesi-pertemuan/{id_sesi}/aktif', [\App\Http\Controllers\SesiPertemuanController::class, 'cekSesiAktif']);
     Route::put('/sesi-pertemuan/{id_sesi}', [\App\Http\Controllers\SesiPertemuanController::class, 'update']);
     Route::delete('/sesi-pertemuan/{id_sesi}', [\App\Http\Controllers\SesiPertemuanController::class, 'destroy']);
 
@@ -66,7 +68,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
 
     // ============================================================
-    // Fitur Tugas & Pengumpulan Tugas
+    // Fitur Presensi Mahasiswa
+    // ============================================================
+    Route::post('/presensi/catat', [\App\Http\Controllers\Api\PresensiController::class, 'catat']);
+    Route::put('/presensi/{id}/status', [\App\Http\Controllers\Api\PresensiController::class, 'updateStatus']);
+    Route::get('/presensi/sesi/{id_sesi}', [\App\Http\Controllers\Api\PresensiController::class, 'getBySesi']);
+    Route::get('/presensi/peserta/{id_peserta}', [\App\Http\Controllers\Api\PresensiController::class, 'getByPeserta']);
+    Route::post('/presensi/persentase', [\App\Http\Controllers\Api\PresensiController::class, 'hitungPersentase']);
+    Route::post('/presensi/rekap', [\App\Http\Controllers\Api\PresensiController::class, 'rekapKehadiran']);
+
+    // ============================================================
+    // Fitur Materi Pembelajaran
+    // ============================================================
+    Route::post('/materi/upload', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'upload']);
+    Route::put('/materi/{id}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'update']);
+    Route::delete('/materi/{id}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'hapus']);
+    Route::get('/materi/sesi/{id_sesi}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'getBySesi']);
+    Route::get('/materi/{id}/download', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'generateLinkDownload']);
+
+    // ============================================================
+    // Fitur Tugas
     // ============================================================
 
     // Dosen: CRUD Tugas di sesi tertentu
@@ -74,25 +95,96 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/sesi/{sesi_id}/tugas', [\App\Http\Controllers\Api\TugasController::class, 'store']);
         Route::put('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'update']);
         Route::delete('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'destroy']);
-        Route::get('/tugas/{id}/pengumpulan', [\App\Http\Controllers\Api\TugasController::class, 'pengumpulan']);
-        Route::put('/pengumpulan/{id}/nilai', [\App\Http\Controllers\Api\TugasController::class, 'beriNilai']);
     });
 
     // Dosen & Mahasiswa: List tugas di sesi (GET shared)
     Route::middleware('role:Dosen,Mahasiswa')->group(function () {
         Route::get('/sesi/{sesi_id}/tugas', [\App\Http\Controllers\Api\TugasController::class, 'index']);
         Route::get('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'show']);
+        Route::get('/tugas/{id}/deadline', [\App\Http\Controllers\Api\TugasController::class, 'cekDeadline']);
+        Route::get('/tugas/{id}/launch/{id_peserta}', [\App\Http\Controllers\Api\TugasController::class, 'getLaunchUrl']);
     });
 
-    // Mahasiswa: Kumpulkan tugas & lihat status
-    Route::middleware('role:Mahasiswa')->group(function () {
-        Route::post('/tugas/{id}/kumpul', [\App\Http\Controllers\Api\TugasController::class, 'kumpul']);
-        Route::get('/tugas/{id}/pengumpulan/saya', [\App\Http\Controllers\Api\TugasController::class, 'statusPengumpulan']);
-    });
-
-    // Admin: List semua tugas & hapus pengumpulan
+    // Admin: List semua tugas
     Route::middleware('role:Admin')->group(function () {
         Route::get('/admin/tugas', [\App\Http\Controllers\Api\AdminTugasController::class, 'index']);
-        Route::delete('/admin/pengumpulan/{id}', [\App\Http\Controllers\Api\AdminTugasController::class, 'deletePengumpulan']);
     });
+
+    // ============================================================
+    // Fitur Forum Diskusi
+    // ============================================================
+    Route::get('/sesi/{idSesi}/forum', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'index']);
+    Route::post('/forum', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'store']);
+    Route::get('/forum/{idPesan}', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'show']);
+    Route::get('/forum/{idPesan}/replies', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'getReplies']);
+    Route::put('/forum/{idPesan}', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'update']);
+    Route::delete('/forum/{idPesan}', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'destroy']);
+    Route::get('/sesi/{idSesi}/forum/search', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'search']);
+
+    // ============================================================
+    // Fitur Nilai CBT
+    // ============================================================
+    Route::post('/nilai-cbt', [\App\Http\Controllers\NilaiCbtController::class, 'store']);
+    Route::get('/nilai-cbt/tugas/{id_tugas}', [\App\Http\Controllers\NilaiCbtController::class, 'getByTugas']);
+    Route::get('/nilai-cbt/peserta/{id_peserta}', [\App\Http\Controllers\NilaiCbtController::class, 'getByPeserta']);
+    Route::get('/nilai-cbt/{id_tugas}/{id_peserta}', [\App\Http\Controllers\NilaiCbtController::class, 'show']);
+    Route::put('/nilai-cbt/{id_nilai}', [\App\Http\Controllers\NilaiCbtController::class, 'update']);
+    Route::delete('/nilai-cbt/{id_nilai}', [\App\Http\Controllers\NilaiCbtController::class, 'destroy']);
+    Route::get('/nilai-cbt/tugas/{id_tugas}/statistik', [\App\Http\Controllers\NilaiCbtController::class, 'getStatistik']);
+    Route::get('/nilai-cbt/tugas/{id_tugas}/ranking/{limit?}', [\App\Http\Controllers\NilaiCbtController::class, 'getRanking']);
+
+    // ============================================================
+    // Fitur Pertanyaan Evaluasi
+    // ============================================================
+    Route::get('/pertanyaan-evaluasi', [\App\Http\Controllers\PertanyaanEvaluasiController::class, 'index']);
+    Route::get('/pertanyaan-evaluasi/aktif', [\App\Http\Controllers\PertanyaanEvaluasiController::class, 'getAktif']);
+    Route::get('/pertanyaan-evaluasi/kategori', [\App\Http\Controllers\PertanyaanEvaluasiController::class, 'getKategori']);
+    Route::get('/pertanyaan-evaluasi/{id_pertanyaan}', [\App\Http\Controllers\PertanyaanEvaluasiController::class, 'show']);
+    Route::post('/pertanyaan-evaluasi', [\App\Http\Controllers\PertanyaanEvaluasiController::class, 'store']);
+    Route::put('/pertanyaan-evaluasi/{id_pertanyaan}', [\App\Http\Controllers\PertanyaanEvaluasiController::class, 'update']);
+    Route::delete('/pertanyaan-evaluasi/{id_pertanyaan}', [\App\Http\Controllers\PertanyaanEvaluasiController::class, 'destroy']);
+    Route::put('/pertanyaan-evaluasi/{id_pertanyaan}/toggle', [\App\Http\Controllers\PertanyaanEvaluasiController::class, 'toggleAktif']);
+    Route::post('/pertanyaan-evaluasi/bulk-urutan', [\App\Http\Controllers\PertanyaanEvaluasiController::class, 'bulkUpdateUrutan']);
+
+    // ============================================================
+    // Fitur Jawaban Evaluasi
+    // ============================================================
+    Route::post('/jawaban-evaluasi', [\App\Http\Controllers\JawabanEvaluasiController::class, 'store']);
+    Route::get('/jawaban-evaluasi/peserta/{id_peserta}', [\App\Http\Controllers\JawabanEvaluasiController::class, 'getByPeserta']);
+    Route::get('/jawaban-evaluasi/pertanyaan/{id_pertanyaan}', [\App\Http\Controllers\JawabanEvaluasiController::class, 'getByPertanyaan']);
+    Route::get('/jawaban-evaluasi/{id_pertanyaan}/{id_peserta}', [\App\Http\Controllers\JawabanEvaluasiController::class, 'show']);
+    Route::put('/jawaban-evaluasi/{id_evaluasi}', [\App\Http\Controllers\JawabanEvaluasiController::class, 'update']);
+    Route::delete('/jawaban-evaluasi/{id_evaluasi}', [\App\Http\Controllers\JawabanEvaluasiController::class, 'destroy']);
+    Route::get('/jawaban-evaluasi/pertanyaan/{id_pertanyaan}/statistik', [\App\Http\Controllers\JawabanEvaluasiController::class, 'getStatistikPertanyaan']);
+    Route::get('/jawaban-evaluasi/statistik-kategori', [\App\Http\Controllers\JawabanEvaluasiController::class, 'getStatistikKategori']);
+    Route::get('/jawaban-evaluasi/peserta/{id_peserta}/status', [\App\Http\Controllers\JawabanEvaluasiController::class, 'checkStatus']);
+    Route::get('/jawaban-evaluasi/rekap', [\App\Http\Controllers\JawabanEvaluasiController::class, 'getRekap']);
+
+    // ============================================================
+    // Fitur Template Sertifikat
+    // ============================================================
+    Route::get('/template-sertifikat', [\App\Http\Controllers\TemplateSertifikatController::class, 'index']);
+    Route::get('/template-sertifikat/aktif', [\App\Http\Controllers\TemplateSertifikatController::class, 'getAktif']);
+    Route::get('/template-sertifikat/{id_template}', [\App\Http\Controllers\TemplateSertifikatController::class, 'show']);
+    Route::post('/template-sertifikat', [\App\Http\Controllers\TemplateSertifikatController::class, 'store']);
+    Route::put('/template-sertifikat/{id_template}', [\App\Http\Controllers\TemplateSertifikatController::class, 'update']);
+    Route::delete('/template-sertifikat/{id_template}', [\App\Http\Controllers\TemplateSertifikatController::class, 'destroy']);
+    Route::put('/template-sertifikat/{id_template}/toggle', [\App\Http\Controllers\TemplateSertifikatController::class, 'toggleAktif']);
+    Route::post('/template-sertifikat/{id_template}/background', [\App\Http\Controllers\TemplateSertifikatController::class, 'uploadBackground']);
+    Route::get('/template-sertifikat/{id_template}/download-background', [\App\Http\Controllers\TemplateSertifikatController::class, 'downloadBackground']);
+
+    // ============================================================
+    // Fitur Sertifikat
+    // ============================================================
+    Route::get('/sertifikat', [\App\Http\Controllers\SertifikatController::class, 'index']);
+    Route::get('/sertifikat/peserta/{id_peserta}', [\App\Http\Controllers\SertifikatController::class, 'getByPeserta']);
+    Route::get('/sertifikat/{id_sertifikat}', [\App\Http\Controllers\SertifikatController::class, 'show']);
+    Route::post('/sertifikat', [\App\Http\Controllers\SertifikatController::class, 'store']);
+    Route::post('/sertifikat/bulk', [\App\Http\Controllers\SertifikatController::class, 'storeBulk']);
+    Route::put('/sertifikat/{id_sertifikat}', [\App\Http\Controllers\SertifikatController::class, 'update']);
+    Route::delete('/sertifikat/{id_sertifikat}', [\App\Http\Controllers\SertifikatController::class, 'destroy']);
+    Route::post('/sertifikat/{id_sertifikat}/upload', [\App\Http\Controllers\SertifikatController::class, 'uploadFile']);
+    Route::get('/sertifikat/{id_sertifikat}/download', [\App\Http\Controllers\SertifikatController::class, 'download']);
+    Route::get('/sertifikat/verify/{nomor_sertifikat}', [\App\Http\Controllers\SertifikatController::class, 'verify']);
+    Route::get('/sertifikat/statistik', [\App\Http\Controllers\SertifikatController::class, 'getStatistik']);
 });

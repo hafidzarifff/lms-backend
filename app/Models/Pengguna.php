@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Enums\RolePengguna;
 
 class Pengguna extends Authenticatable
@@ -30,14 +31,18 @@ class Pengguna extends Authenticatable
         'nama_lengkap',
         'role',
         'email',
-        'username',
         'nomor_induk',
         'password',
         'fakultas',
         'prodi',
         'angkatan',
+        'foto_profil',
         'status_aktif',
         'status_persetujuan',
+        'nomor_telepon',
+        'tanggal_lahir',
+        'alamat',
+        'login_terakhir',
     ];
 
     /**
@@ -61,5 +66,13 @@ class Pengguna extends Authenticatable
             'password' => 'hashed',
             'status_aktif' => 'boolean',
         ];
+    }
+
+    /**
+     * Relasi ke forum diskusi (pesan yang dikirim oleh pengguna ini)
+     */
+    public function forumDiskusi(): HasMany
+    {
+        return $this->hasMany(ForumDiskusi::class, 'id_pengirim', 'id_user');
     }
 }
