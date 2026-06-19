@@ -34,6 +34,12 @@ class KelasController extends Controller
             ->when($request->query('tahun_angkatan'), function ($q, $tahun) {
                 $q->where('tahun_angkatan', $tahun);
             })
+            ->when($request->query('fakultas'), function ($q, $fakultas) {
+                $q->where('fakultas', 'ilike', "%{$fakultas}%");
+            })
+            ->when($request->query('prodi'), function ($q, $prodi) {
+                $q->where('prodi', 'ilike', "%{$prodi}%");
+            })
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 

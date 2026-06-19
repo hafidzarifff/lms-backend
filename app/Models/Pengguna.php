@@ -31,6 +31,7 @@ class Pengguna extends Authenticatable
         'nama_lengkap',
         'role',
         'email',
+        'username',
         'nomor_induk',
         'password',
         'fakultas',

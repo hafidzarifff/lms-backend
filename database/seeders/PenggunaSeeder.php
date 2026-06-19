@@ -19,10 +19,11 @@ class PenggunaSeeder extends Seeder
         // 1. Admin
         Pengguna::create([
             'nama_lengkap' => 'Administrator',
-            'role' => RolePengguna::Admin,
-            'email' => 'admin@lms.com',
-            'nomor_induk' => null,
-            'password' => $password,
+            'role'         => RolePengguna::Admin,
+            'email'        => 'admin@lms.com',
+            'username'     => 'admin_lms',
+            'nomor_induk'  => null,
+            'password'     => $password,
         ]);
 
         // 2. Dosen

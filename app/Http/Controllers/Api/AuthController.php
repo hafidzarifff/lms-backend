@@ -30,9 +30,10 @@ class AuthController extends Controller
             'password.min' => 'Password minimal 8 karakter.',
         ]);
 
-        // 2. Pencarian User (Multi-Credential Query Fix)
+        // 2. Pencarian User — bisa login dengan email, username, atau nomor_induk
         $user = Pengguna::where(function ($query) use ($request) {
             $query->where('email', $request->identifier)
+                  ->orWhere('username', $request->identifier)
                   ->orWhere('nomor_induk', $request->identifier);
         })->first();
 

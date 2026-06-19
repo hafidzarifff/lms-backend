@@ -33,7 +33,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            // Foreign key constraints
+            // Foreign key constraints (kecuali self-reference, dibuat setelah tabel ada)
             $table->foreign('id_sesi')
                   ->references('id_sesi')
                   ->on('sesi_pertemuan')
@@ -44,15 +44,17 @@ return new class extends Migration
                   ->on('pengguna')
                   ->onDelete('cascade');
 
-            // Self-reference foreign key untuk reply
+            // Index untuk performa query
+            $table->index('id_sesi');
+            $table->index('id_parent_pesan');
+        });
+
+        // Self-referential FK dibuat SETELAH tabel ada agar PostgreSQL menemukan PK-nya
+        Schema::table('forum_diskusi', function (Blueprint $table) {
             $table->foreign('id_parent_pesan')
                   ->references('id_pesan')
                   ->on('forum_diskusi')
                   ->onDelete('cascade');
-
-            // Index untuk performa query
-            $table->index('id_sesi');
-            $table->index('id_parent_pesan');
         });
     }
 
