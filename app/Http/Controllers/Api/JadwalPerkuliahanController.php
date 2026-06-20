@@ -63,6 +63,107 @@ class JadwalPerkuliahanController extends Controller
     }
 
     /**
+     * Mengambil daftar jadwal yang sudah dikelompokkan per dosen + mata kuliah.
+     * Setiap group merepresentasikan satu mata kuliah yang diajarkan oleh satu dosen,
+     * lengkap dengan daftar kelas yang tersedia dan jumlah kelasnya.
+     *
+     * Digunakan di halaman Kelola Materi Perkuliahan & Forum Diskusi.
+     *
+     * @return JsonResponse
+     */
+    public function grouped(): JsonResponse
+    {
+        $request = request();
+        $perPage = min((int) $request->query('per_page', 20), 100);
+
+        // Ambil semua jadwal dengan filter yang relevan
+        $query = JadwalPerkuliahan::with([
+                'mataKuliah:id_mk,kode_mk,nama_mk,sks,deskripsi',
+                'kelas:id_kelas,kode_kelas,nama_kelas',
+                'dosen:id_user,nama_lengkap,nomor_induk',
+            ])
+            ->when($request->query('search'), function ($q, $search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('fakultas', 'ilike', "%{$search}%")
+                        ->orWhere('prodi', 'ilike', "%{$search}%")
+                        ->orWhereHas('mataKuliah', function ($mk) use ($search) {
+                            $mk->where('nama_mk', 'ilike', "%{$search}%")
+                               ->orWhere('kode_mk', 'ilike', "%{$search}%");
+                        })
+                        ->orWhereHas('dosen', function ($d) use ($search) {
+                            $d->where('nama_lengkap', 'ilike', "%{$search}%")
+                              ->orWhere('nomor_induk', 'ilike', "%{$search}%");
+                        });
+                });
+            })
+            ->when($request->query('semester'), fn($q, $v) => $q->where('semester', $v))
+            ->when($request->query('fakultas'), fn($q, $v) => $q->where('fakultas', $v))
+            ->when($request->query('prodi'),    fn($q, $v) => $q->where('prodi', $v))
+            ->when($request->query('tahun'),    fn($q, $v) => $q->where('tahun', $v))
+            ->when($request->query('nidn'), function ($q, $nidn) {
+                $q->whereHas('dosen', function ($d) use ($nidn) {
+                    $d->where('nomor_induk', $nidn);
+                });
+            })
+            ->orderBy('created_at', 'desc');
+
+        // Ambil semua data, lalu group di PHP layer
+        $all = $query->get();
+
+        // Kelompokkan berdasarkan id_dosen + id_mk
+        $grouped = $all->groupBy(function ($j) {
+            return ($j->id_dosen ?? 'no_dosen') . '_' . ($j->id_mk ?? 'no_mk');
+        })->map(function ($items) {
+            /** @var JadwalPerkuliahan $first */
+            $first = $items->first();
+
+            return [
+                // Representasi group — id_jadwal dari jadwal pertama sebagai identifier
+                'id_jadwal'       => $first->id_jadwal,
+                'id_mk'           => $first->id_mk,
+                'id_dosen'        => $first->id_dosen,
+                'kode_mk'         => $first->mataKuliah?->kode_mk,
+                'nama_mk'         => $first->mataKuliah?->nama_mk,
+                'sks'             => $first->mataKuliah?->sks ?? $first->sks,
+                'deskripsi'       => $first->mataKuliah?->deskripsi,
+                'nama_dosen'      => $first->dosen?->nama_lengkap,
+                'nidn'            => $first->dosen?->nomor_induk,
+                'fakultas'        => $first->fakultas,
+                'prodi'           => $first->prodi,
+                'semester'        => $first->semester,
+                'tahun'           => $first->tahun,
+                // Jumlah kelas unik untuk kombinasi dosen + MK ini
+                'jumlah_kelas'    => $items->count(),
+                // Detail tiap kelas (untuk ditampilkan saat kartu diklik)
+                'kelas_list'      => $items->map(fn($j) => [
+                    'id_jadwal'        => $j->id_jadwal,
+                    'id_kelas'         => $j->id_kelas,
+                    'nama_kelas'       => $j->kelas?->nama_kelas,
+                    'kode_kelas'       => $j->kelas?->kode_kelas,
+                    'hari'             => $j->hari,
+                    'waktu_mulai'      => $j->waktu_mulai,
+                    'waktu_berakhir'   => $j->waktu_berakhir,
+                    'token_enrollment' => $j->token_enrollment,
+                ])->values(),
+            ];
+        })->values();
+
+        // Manual pagination setelah grouping
+        $page     = max(1, (int) $request->query('page', 1));
+        $total    = $grouped->count();
+        $items    = $grouped->slice(($page - 1) * $perPage, $perPage)->values();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+
+        return response()->json([
+            'data'         => $items,
+            'current_page' => $page,
+            'last_page'    => $lastPage,
+            'per_page'     => $perPage,
+            'total'        => $total,
+        ], 200);
+    }
+
+    /**
      * Mengambil detail satu jadwal perkuliahan berdasarkan ID (Read One).
      * Sertakan Eager Loading agar data relasi ikut tampil.
      *

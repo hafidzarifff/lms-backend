@@ -19,11 +19,11 @@ class PenggunaSeeder extends Seeder
         // 1. Admin
         Pengguna::create([
             'nama_lengkap' => 'Administrator',
-            'role' => RolePengguna::Admin,
-            'email' => 'admin@lms.com',
-            'username' => 'admin_lms',
-            'nomor_induk' => null,
-            'password' => $password,
+            'role'         => RolePengguna::Admin,
+            'email'        => 'admin@lms.com',
+            'username'     => 'admin_lms',
+            'nomor_induk'  => null,
+            'password'     => $password,
         ]);
 
         // 2. Dosen
@@ -31,7 +31,6 @@ class PenggunaSeeder extends Seeder
             'nama_lengkap' => 'Dr. Budi Santoso',
             'role' => RolePengguna::Dosen,
             'email' => 'budi@lms.com',
-            'username' => null,
             'nomor_induk' => '1234567890',
             'password' => $password,
         ]);
@@ -41,7 +40,6 @@ class PenggunaSeeder extends Seeder
             'nama_lengkap' => 'Andi Wijaya',
             'role' => RolePengguna::Mahasiswa,
             'email' => 'andi@lms.com',
-            'username' => null,
             'nomor_induk' => '2024001',
             'password' => $password,
         ]);
