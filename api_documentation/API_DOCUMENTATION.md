@@ -110,8 +110,8 @@ Mendapatkan data user yang sedang login (Middleware `auth:sanctum`).
     "username": "admin",
     "nomor_induk": "12345678",
     "role": "Admin",
-    "created_at": "...",
-    "updated_at": "..."
+    "created_at": "2026-06-21T10:00:00.000000Z",
+    "updated_at": "2026-06-21T10:00:00.000000Z"
 }
 ```
 
@@ -171,7 +171,7 @@ Melihat daftar dosen yang telah melakukan registrasi. Admin dapat memfilter berd
             "role": "Dosen",
             "status_persetujuan": "Menunggu",
             "status_aktif": false,
-            "created_at": "..."
+            "created_at": "2026-06-21T10:00:00.000000Z"
         }
     ],
     "total": 1,
@@ -277,8 +277,8 @@ Mendapatkan list data seluruh mahasiswa dengan sistem pagination (50 data per ha
             "prodi": "Informatika",
             "angkatan": "2024",
             "status_aktif": true,
-            "created_at": "...",
-            "updated_at": "..."
+            "created_at": "2026-06-21T10:00:00.000000Z",
+            "updated_at": "2026-06-21T10:00:00.000000Z"
         }
     ],
     "total": 1,
@@ -308,8 +308,8 @@ Mendapatkan detail satu data mahasiswa berdasarkan ID.
     "prodi": "Informatika",
     "angkatan": "2024",
     "status_aktif": true,
-    "created_at": "...",
-    "updated_at": "..."
+    "created_at": "2026-06-21T10:00:00.000000Z",
+    "updated_at": "2026-06-21T10:00:00.000000Z"
 }
 ```
 
@@ -480,8 +480,8 @@ Mengambil seluruh data master kelas dengan pagination (10 data per halaman), diu
             "tahun_angkatan": "2024",
             "fakultas": "Teknik",
             "prodi": "Informatika",
-            "created_at": "...",
-            "updated_at": "..."
+            "created_at": "2026-06-21T10:00:00.000000Z",
+            "updated_at": "2026-06-21T10:00:00.000000Z"
         }
     ],
     "total": 1,
@@ -508,8 +508,8 @@ Mengambil detail satu data kelas berdasarkan ID.
     "tahun_angkatan": "2024",
     "fakultas": "Teknik",
     "prodi": "Informatika",
-    "created_at": "...",
-    "updated_at": "..."
+    "created_at": "2026-06-21T10:00:00.000000Z",
+    "updated_at": "2026-06-21T10:00:00.000000Z"
 }
 ```
 
@@ -553,8 +553,8 @@ Menambahkan data master kelas baru ke sistem.
         "tahun_angkatan": "2024",
         "fakultas": "Teknik",
         "prodi": "Informatika",
-        "created_at": "...",
-        "updated_at": "..."
+        "created_at": "2026-06-21T10:00:00.000000Z",
+        "updated_at": "2026-06-21T10:00:00.000000Z"
     }
 }
 ```
@@ -656,8 +656,8 @@ Mengambil seluruh data master mata kuliah dengan pagination (10 data per halaman
             "semester": 1,
             "fakultas": "Teknik",
             "prodi": "Informatika",
-            "created_at": "...",
-            "updated_at": "..."
+            "created_at": "2026-06-21T10:00:00.000000Z",
+            "updated_at": "2026-06-21T10:00:00.000000Z"
         }
     ],
     "total": 1,
@@ -686,8 +686,8 @@ Mengambil detail satu data mata kuliah berdasarkan ID.
     "semester": 1,
     "fakultas": "Teknik",
     "prodi": "Informatika",
-    "created_at": "...",
-    "updated_at": "..."
+    "created_at": "2026-06-21T10:00:00.000000Z",
+    "updated_at": "2026-06-21T10:00:00.000000Z"
 }
 ```
 
@@ -736,8 +736,8 @@ Menambahkan data master mata kuliah baru ke sistem.
         "semester": 1,
         "fakultas": "Teknik",
         "prodi": "Informatika",
-        "created_at": "...",
-        "updated_at": "..."
+        "created_at": "2026-06-21T10:00:00.000000Z",
+        "updated_at": "2026-06-21T10:00:00.000000Z"
     }
 }
 ```
@@ -847,14 +847,14 @@ Mengambil seluruh data jadwal perkuliahan dengan Eager Loading (data mata kuliah
             "waktu_mulai": "08:00",
             "waktu_berakhir": "10:00",
             "token_enrollment": "ABCXYZ",
-            "created_at": "...",
-            "updated_at": "...",
+            "created_at": "2026-06-21T10:00:00.000000Z",
+            "updated_at": "2026-06-21T10:00:00.000000Z",
             "mata_kuliah": {
                 "id_mk": "uuid-string",
                 "kode_mk": "IF101",
                 "nama_mk": "Algoritma dan Pemrograman",
                 "sks": 3,
-                "deskripsi": "...",
+                "deskripsi": "Deskripsi mata kuliah",
                 "semester": 1,
                 "fakultas": "Teknik",
                 "prodi": "Informatika"
@@ -906,14 +906,14 @@ Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi ma
     "waktu_mulai": "08:00",
     "waktu_berakhir": "10:00",
     "token_enrollment": "ABCXYZ",
-    "created_at": "...",
-    "updated_at": "...",
+    "created_at": "2026-06-21T10:00:00.000000Z",
+    "updated_at": "2026-06-21T10:00:00.000000Z",
     "mata_kuliah": {
         "id_mk": "uuid-string",
         "kode_mk": "IF101",
         "nama_mk": "Algoritma dan Pemrograman",
         "sks": 3,
-        "deskripsi": "...",
+        "deskripsi": "Deskripsi mata kuliah",
         "semester": 1,
         "fakultas": "Teknik",
         "prodi": "Informatika"
@@ -990,11 +990,20 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
         "waktu_berakhir": "10:00",
         "tanggal_mulai": "2026-07-01",
         "token_enrollment": "ABCXYZ",
-        "created_at": "...",
-        "updated_at": "...",
-        "mata_kuliah": { "..." : "..." },
-        "kelas": { "..." : "..." },
-        "dosen": { "..." : "..." }
+        "created_at": "2026-06-21T10:00:00.000000Z",
+        "updated_at": "2026-06-21T10:00:00.000000Z",
+        "mata_kuliah": {
+        "id_mk": "550e8400-e29b-41d4-a716-446655440010",
+        "nama_mk": "Pemrograman Web"
+    },
+        "kelas": {
+        "id_kelas": "550e8400-e29b-41d4-a716-446655440011",
+        "nama_kelas": "TI-4A"
+    },
+        "dosen": {
+        "id_user": "550e8400-e29b-41d4-a716-446655440012",
+        "nama_lengkap": "Dr. Budi Santoso"
+    }
     }
 }
 ```
@@ -1113,10 +1122,17 @@ Mahasiswa mendaftar (enroll) ke jadwal perkuliahan menggunakan token (6 karakter
         "kehadiran": "0/0",
         "nilai_akhir": 0.00,
         "status_kelayakan": "Belum Ditentukan",
-        "created_at": "...",
-        "updated_at": "...",
-        "jadwal": { "..." : "..." },
-        "mahasiswa": { "..." : "..." }
+        "created_at": "2026-06-21T10:00:00.000000Z",
+        "updated_at": "2026-06-21T10:00:00.000000Z",
+        "jadwal": {
+            "id_jadwal": "550e8400-e29b-41d4-a716-446655440001",
+            "hari": "Senin",
+            "waktu_mulai": "08:00"
+        },
+        "mahasiswa": {
+            "id_user": "550e8400-e29b-41d4-a716-446655440013",
+            "nama_lengkap": "Budi Rahardjo"
+        }
     }
 }
 ```
@@ -1185,8 +1201,8 @@ Mengambil daftar seluruh peserta yang terdaftar pada jadwal tertentu. Data mahas
             "kehadiran": "0/0",
             "nilai_akhir": 0.00,
             "status_kelayakan": "Belum Ditentukan",
-            "created_at": "...",
-            "updated_at": "...",
+            "created_at": "2026-06-21T10:00:00.000000Z",
+            "updated_at": "2026-06-21T10:00:00.000000Z",
             "mahasiswa": {
                 "id_user": "uuid-string",
                 "nama_lengkap": "Budi Rahardjo",
@@ -1247,8 +1263,8 @@ Menambahkan data sesi pertemuan untuk suatu jadwal perkuliahan. Sesi ini akan di
         "jam_berakhir": "10:00",
         "metode_pertemuan": "synchronous",
         "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
-        "created_at": "...",
-        "updated_at": "..."
+        "created_at": "2026-06-21T10:00:00.000000Z",
+        "updated_at": "2026-06-21T10:00:00.000000Z"
     }
 }
 ```
@@ -1300,8 +1316,8 @@ Mengambil seluruh data sesi pertemuan dengan pagination (10 data per halaman), d
                 "jam_berakhir": "10:00",
                 "metode_pertemuan": "synchronous",
                 "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
-                "created_at": "...",
-                "updated_at": "...",
+                "created_at": "2026-06-21T10:00:00.000000Z",
+                "updated_at": "2026-06-21T10:00:00.000000Z",
                 "jadwal_perkuliahan": {
                     "id_jadwal": "uuid-jadwal",
                     "id_mk": "uuid-mk",
@@ -1316,8 +1332,8 @@ Mengambil seluruh data sesi pertemuan dengan pagination (10 data per halaman), d
                     "waktu_mulai": "08:00",
                     "waktu_berakhir": "10:00",
                     "token_enrollment": "ABCXYZ",
-                    "created_at": "...",
-                    "updated_at": "..."
+                    "created_at": "2026-06-21T10:00:00.000000Z",
+                    "updated_at": "2026-06-21T10:00:00.000000Z"
                 }
             }
         ],
@@ -1350,8 +1366,8 @@ Mengambil detail satu data sesi pertemuan berdasarkan ID, termasuk data relasi j
         "jam_berakhir": "10:00",
         "metode_pertemuan": "synchronous",
         "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
-        "created_at": "...",
-        "updated_at": "...",
+        "created_at": "2026-06-21T10:00:00.000000Z",
+        "updated_at": "2026-06-21T10:00:00.000000Z",
         "jadwal_perkuliahan": {
             "id_jadwal": "uuid-jadwal",
             "id_mk": "uuid-mk",
@@ -1366,8 +1382,8 @@ Mengambil detail satu data sesi pertemuan berdasarkan ID, termasuk data relasi j
             "waktu_mulai": "08:00",
             "waktu_berakhir": "10:00",
             "token_enrollment": "ABCXYZ",
-            "created_at": "...",
-            "updated_at": "..."
+            "created_at": "2026-06-21T10:00:00.000000Z",
+            "updated_at": "2026-06-21T10:00:00.000000Z"
         }
     }
 }
@@ -1422,8 +1438,8 @@ Memperbarui data sesi pertemuan yang sudah ada. Field `id_jadwal` tidak dapat di
         "jam_berakhir": "11:00",
         "metode_pertemuan": "synchronous",
         "link_kelas_daring": "https://meet.google.com/xyz-abcd-efg",
-        "created_at": "...",
-        "updated_at": "..."
+        "created_at": "2026-06-21T10:00:00.000000Z",
+        "updated_at": "2026-06-21T10:00:00.000000Z"
     }
 }
 ```
@@ -1504,7 +1520,10 @@ Endpoint untuk daftar tugas (admin).
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1533,7 +1552,10 @@ Endpoint untuk buat tugas.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1562,7 +1584,10 @@ Endpoint untuk update tugas.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1581,7 +1606,10 @@ Endpoint untuk hapus tugas.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1600,7 +1628,10 @@ Endpoint untuk daftar tugas di sesi.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1619,7 +1650,10 @@ Endpoint untuk detail tugas.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1638,7 +1672,10 @@ Endpoint untuk cek deadline tugas.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1657,7 +1694,10 @@ Endpoint untuk get launch url tugas.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1678,7 +1718,10 @@ Endpoint untuk daftar forum diskusi sesi.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1705,7 +1748,10 @@ Endpoint untuk buat post forum.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1724,7 +1770,10 @@ Endpoint untuk detail post forum.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1743,7 +1792,10 @@ Endpoint untuk balasan forum.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1768,7 +1820,10 @@ Endpoint untuk update post.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1787,7 +1842,10 @@ Endpoint untuk hapus post.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1806,7 +1864,10 @@ Endpoint untuk cari forum.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1839,7 +1900,10 @@ Endpoint untuk simpan nilai cbt.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1858,7 +1922,10 @@ Endpoint untuk nilai cbt per tugas.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1877,7 +1944,10 @@ Endpoint untuk nilai cbt per peserta.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1896,7 +1966,10 @@ Endpoint untuk detail nilai cbt.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1921,7 +1994,10 @@ Endpoint untuk update nilai cbt.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1940,7 +2016,10 @@ Endpoint untuk hapus nilai cbt.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1959,7 +2038,10 @@ Endpoint untuk statistik nilai tugas.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1978,7 +2060,10 @@ Endpoint untuk ranking nilai tugas.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -1999,7 +2084,10 @@ Endpoint untuk daftar pertanyaan evaluasi.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2018,7 +2106,10 @@ Endpoint untuk daftar pertanyaan aktif.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2037,7 +2128,10 @@ Endpoint untuk daftar kategori pertanyaan.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2056,7 +2150,10 @@ Endpoint untuk detail pertanyaan.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2084,7 +2181,10 @@ Endpoint untuk buat pertanyaan.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2112,7 +2212,10 @@ Endpoint untuk update pertanyaan.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2131,7 +2234,10 @@ Endpoint untuk hapus pertanyaan.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2150,7 +2256,10 @@ Endpoint untuk toggle status aktif pertanyaan.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2180,7 +2289,10 @@ Endpoint untuk update urutan bulk.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2213,7 +2325,10 @@ Endpoint untuk simpan jawaban evaluasi.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2232,7 +2347,10 @@ Endpoint untuk jawaban per peserta.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2251,7 +2369,10 @@ Endpoint untuk jawaban per pertanyaan.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2270,7 +2391,10 @@ Endpoint untuk detail jawaban.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2295,7 +2419,10 @@ Endpoint untuk update jawaban.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2314,7 +2441,10 @@ Endpoint untuk hapus jawaban.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2333,7 +2463,10 @@ Endpoint untuk statistik jawaban pertanyaan.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2352,7 +2485,10 @@ Endpoint untuk statistik kategori evaluasi.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2371,7 +2507,10 @@ Endpoint untuk cek status evaluasi peserta.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2390,7 +2529,10 @@ Endpoint untuk rekap evaluasi.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2411,7 +2553,10 @@ Endpoint untuk daftar template.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2430,7 +2575,10 @@ Endpoint untuk daftar template aktif.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2449,7 +2597,10 @@ Endpoint untuk detail template.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2472,7 +2623,10 @@ Endpoint untuk buat template.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2498,7 +2652,10 @@ Endpoint untuk update template.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2517,7 +2674,10 @@ Endpoint untuk hapus template.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2536,7 +2696,10 @@ Endpoint untuk toggle status aktif template.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2557,7 +2720,10 @@ Endpoint untuk upload background template.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2576,7 +2742,10 @@ Endpoint untuk download background template.
 {
     "status": "success",
     "message": "Berhasil",
-    "data": {}
+    "data": {
+        "id": "550e8400-e29b-41d4-a716-446655440099",
+        "keterangan": "Data berhasil diproses"
+    }
 }
 ```
 
@@ -2612,8 +2781,8 @@ Mengambil semua sertifikat dengan dukungan filter dan pagination (15 data per ha
                 "nomor_sertifikat": "SERT/2026/06/0001",
                 "tanggal_terbit": "2026-06-17",
                 "file_url": "sertifikats/filename.pdf",
-                "created_at": "...",
-                "updated_at": "...",
+                "created_at": "2026-06-21T10:00:00.000000Z",
+                "updated_at": "2026-06-21T10:00:00.000000Z",
                 "peserta": {
                     "id_user": "uuid-string",
                     "nama_lengkap": "Budi Santoso",
@@ -2651,8 +2820,14 @@ Mengambil semua sertifikat untuk satu peserta tertentu (tanpa pagination).
             "id_sertifikat": "uuid-string",
             "nomor_sertifikat": "SERT/2026/06/0001",
             "tanggal_terbit": "2026-06-17",
-            "peserta": { ... },
-            "template": { ... }
+            "peserta": {
+                "id_peserta": "550e8400-e29b-41d4-a716-446655440020",
+                "nama_lengkap": "Budi Rahardjo"
+            },
+            "template": {
+                "id_template": "550e8400-e29b-41d4-a716-446655440021",
+                "nama_template": "Sertifikat Kelulusan"
+            }
         }
     ]
 }
@@ -2677,8 +2852,14 @@ Mengambil detail satu data sertifikat.
         "nomor_sertifikat": "SERT/2026/06/0001",
         "tanggal_terbit": "2026-06-17",
         "file_url": "sertifikats/filename.pdf",
-        "peserta": { ... },
-        "template": { ... }
+        "peserta": {
+                "id_peserta": "550e8400-e29b-41d4-a716-446655440020",
+                "nama_lengkap": "Budi Rahardjo"
+            },
+        "template": {
+                "id_template": "550e8400-e29b-41d4-a716-446655440021",
+                "nama_template": "Sertifikat Kelulusan"
+            }
     }
 }
 ```
@@ -2711,7 +2892,10 @@ Menerbitkan sertifikat baru untuk satu peserta. Nomor sertifikat akan digenerate
 {
     "status": "success",
     "message": "Sertifikat berhasil diterbitkan",
-    "data": { ... }
+    "data": {
+        "id_sertifikat": "550e8400-e29b-41d4-a716-446655440003",
+        "nomor_sertifikat": "SERT/2026/06/0002"
+    }
 }
 ```
 
@@ -2741,7 +2925,16 @@ Menerbitkan sertifikat untuk banyak peserta sekaligus.
 {
     "status": "success",
     "message": "2 sertifikat berhasil diterbitkan",
-    "data": [ { ... }, { ... } ],
+    "data": [
+        {
+            "id_sertifikat": "550e8400-e29b-41d4-a716-446655440003",
+            "nomor_sertifikat": "SERT/2026/06/0002"
+        },
+        {
+            "id_sertifikat": "550e8400-e29b-41d4-a716-446655440004",
+            "nomor_sertifikat": "SERT/2026/06/0003"
+        }
+    ],
     "total": 2
 }
 ```
@@ -2767,7 +2960,10 @@ Memperbarui data tanggal terbit sertifikat.
 {
     "status": "success",
     "message": "Sertifikat berhasil diupdate",
-    "data": { ... }
+    "data": {
+        "id_sertifikat": "550e8400-e29b-41d4-a716-446655440003",
+        "nomor_sertifikat": "SERT/2026/06/0002"
+    }
 }
 ```
 
@@ -2788,7 +2984,10 @@ Upload atau timpa file PDF sertifikat yang sudah ada.
 {
     "status": "success",
     "message": "File sertifikat berhasil diupload",
-    "data": { ... }
+    "data": {
+        "id_sertifikat": "550e8400-e29b-41d4-a716-446655440003",
+        "nomor_sertifikat": "SERT/2026/06/0002"
+    }
 }
 ```
 
@@ -2831,8 +3030,14 @@ Verifikasi keaslian sertifikat berdasarkan nomor sertifikat. Endpoint ini bisa d
     "data": {
         "nomor_sertifikat": "SERT/2026/06/0001",
         "tanggal_terbit": "17 June 2026",
-        "peserta": { ... },
-        "template": { ... }
+        "peserta": {
+                "id_peserta": "550e8400-e29b-41d4-a716-446655440020",
+                "nama_lengkap": "Budi Rahardjo"
+            },
+        "template": {
+                "id_template": "550e8400-e29b-41d4-a716-446655440021",
+                "nama_template": "Sertifikat Kelulusan"
+            }
     }
 }
 ```
