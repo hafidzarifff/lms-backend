@@ -63,6 +63,14 @@ class ForumDiskusi extends Model
     }
 
     /**
+     * Relasi ke reads (status baca pesan)
+     */
+    public function reads(): HasMany
+    {
+        return $this->hasMany(ForumDiskusiRead::class, 'id_pesan', 'id_pesan');
+    }
+
+    /**
      * Scope untuk mendapatkan pesan utama (bukan reply)
      */
     public function scopeTopLevel($query)

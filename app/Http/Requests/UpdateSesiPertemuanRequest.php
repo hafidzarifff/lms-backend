@@ -32,6 +32,7 @@ class UpdateSesiPertemuanRequest extends FormRequest
             'jam_mulai' => ['required', 'date_format:H:i'],
             'jam_berakhir' => ['required', 'date_format:H:i', 'after:jam_mulai'],
             'metode_pertemuan' => ['required', 'in:synchronous,asynchronous'],
+            'status' => ['required', 'in:TERJADWAL,BERJALAN,SELESAI'],
             'materi' => ['nullable', 'string'],
             'url_cbt' => ['nullable', 'url'],
             'link_kelas_daring' => ['required_if:metode_pertemuan,synchronous', 'nullable', 'url'],

@@ -22,6 +22,9 @@ class ForumDiskusiController extends Controller
 
         $pesan = ForumDiskusi::where('id_sesi', $idSesi)
             ->with(['pengirim', 'parentPesan.pengirim'])
+            ->withExists(['reads as is_read' => function($q) {
+                $q->where('id_user', Auth::id());
+            }])
             ->orderBy('waktu_kirim', 'asc')
             ->paginate($perPage);
 
@@ -55,6 +58,80 @@ class ForumDiskusiController extends Controller
             'success' => true,
             'data' => $pesan,
         ]);
+    }
+
+    /**
+     * Get semua pesan untuk dosen yang login (diambil dari semua jadwal yang dia ajar)
+     */
+    public function getAllForDosen(Request $request)
+    {
+        $request->validate([
+            'per_page' => 'nullable|integer|min:1|max:1000',
+        ]);
+
+        $perPage = $request->input('per_page', 100);
+
+        // Ambil semua id_jadwal yang diajar oleh Dosen
+        $jadwalIds = \App\Models\JadwalPerkuliahan::where('id_dosen', Auth::id())
+            ->pluck('id_jadwal');
+
+        // Ambil semua id_sesi dari jadwal-jadwal tersebut
+        $sesiIds = \App\Models\SesiPertemuan::whereIn('id_jadwal', $jadwalIds)
+            ->pluck('id_sesi');
+
+        $pesan = ForumDiskusi::whereIn('id_sesi', $sesiIds)
+            ->with(['pengirim', 'parentPesan.pengirim', 'sesi.jadwalPerkuliahan.mataKuliah', 'sesi.jadwalPerkuliahan.kelas'])
+            ->withExists(['reads as is_read' => function($q) {
+                $q->where('id_user', Auth::id());
+            }])
+            ->orderBy('waktu_kirim', 'desc')
+            ->paginate($perPage);
+
+        \Illuminate\Support\Facades\Log::info('getAllForDosen check', [
+            'dosen_id' => Auth::id(),
+            'jadwal_count' => count($jadwalIds),
+            'sesi_count' => count($sesiIds),
+            'pesan_count' => count($pesan->items()),
+            'sesiIds' => $sesiIds,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $pesan,
+        ]);
+    }
+
+    /**
+     * Tandai semua pesan di satu sesi sebagai sudah dibaca
+     */
+    public function markAsRead(Request $request, $idSesi)
+    {
+        $userId = Auth::id();
+        $pesanIds = ForumDiskusi::where('id_sesi', $idSesi)->pluck('id_pesan');
+        
+        $existingReads = \App\Models\ForumDiskusiRead::whereIn('id_pesan', $pesanIds)
+            ->where('id_user', $userId)
+            ->pluck('id_pesan')
+            ->toArray();
+            
+        $newReads = [];
+        foreach($pesanIds as $idPesan) {
+            if(!in_array($idPesan, $existingReads)) {
+                $newReads[] = [
+                    'id' => (string) \Illuminate\Support\Str::uuid(),
+                    'id_pesan' => $idPesan,
+                    'id_user' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+        }
+        
+        if(count($newReads) > 0) {
+            \App\Models\ForumDiskusiRead::insert($newReads);
+        }
+        
+        return response()->json(['success' => true]);
     }
 
     /**

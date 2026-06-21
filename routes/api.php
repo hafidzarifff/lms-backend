@@ -119,7 +119,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // ============================================================
     // Fitur Forum Diskusi
     // ============================================================
+    Route::get('/forum/debug', function(\Illuminate\Http\Request $request) {
+        // Mock Auth for testing
+        $user = \App\Models\Pengguna::where('nama_lengkap', 'Dr. Budi Santoso')->first();
+        Auth::login($user);
+
+        $controller = new \App\Http\Controllers\Api\ForumDiskusiController();
+        return $controller->getAllForDosen($request);
+    });
+    Route::get('/forum/dosen/all', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'getAllForDosen']);
     Route::get('/sesi/{idSesi}/forum', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'index']);
+    Route::post('/sesi/{idSesi}/forum/read', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'markAsRead']);
     Route::get('/jadwal/{idJadwal}/forum', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'getByJadwal']);
     Route::post('/forum', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'store']);
     Route::get('/forum/{idPesan}', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'show']);
