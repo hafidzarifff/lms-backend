@@ -76,6 +76,7 @@ class TemplateSertifikatController extends Controller
             'nama_template' => 'required|string|max:100',
             'file_background' => 'nullable|image|mimes:jpeg,jpg,png|max:5120', // max 5MB
             'is_aktif' => 'nullable|boolean',
+            'layout_data' => 'nullable|string', // Accept as JSON string or array, depend on frontend
         ]);
 
         if ($validator->fails()) {
@@ -92,7 +93,13 @@ class TemplateSertifikatController extends Controller
             if ($request->hasFile('file_background')) {
                 $file = $request->file('file_background');
                 $fileName = 'templates/sertifikat/' . Str::uuid() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('public', $fileName);
+                $filePath = $file->storeAs('', $fileName, 'public');
+            }
+
+            // Handle layout_data jika dikirim sebagai string JSON
+            $layoutData = $request->layout_data;
+            if (is_string($layoutData)) {
+                $layoutData = json_decode($layoutData, true);
             }
 
             $template = TemplateSertifikat::create([
@@ -100,6 +107,7 @@ class TemplateSertifikatController extends Controller
                 'nama_template' => $request->nama_template,
                 'file_background' => $filePath,
                 'is_aktif' => $request->is_aktif ?? true,
+                'layout_data' => $layoutData,
             ]);
 
             return response()->json([
@@ -133,6 +141,7 @@ class TemplateSertifikatController extends Controller
         $validator = Validator::make($request->all(), [
             'nama_template' => 'nullable|string|max:100',
             'is_aktif' => 'nullable|boolean',
+            'layout_data' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -150,6 +159,10 @@ class TemplateSertifikatController extends Controller
 
         if ($request->has('is_aktif')) {
             $updateData['is_aktif'] = $request->is_aktif;
+        }
+
+        if ($request->has('layout_data')) {
+            $updateData['layout_data'] = $request->layout_data;
         }
 
         $template->update($updateData);
@@ -189,13 +202,13 @@ class TemplateSertifikatController extends Controller
         try {
             // Hapus file lama jika ada
             if ($template->file_background) {
-                Storage::delete($template->file_background);
+                Storage::disk('public')->delete($template->file_background);
             }
 
             // Upload file baru
             $file = $request->file('file_background');
             $fileName = 'templates/sertifikat/' . Str::uuid() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('public', $fileName);
+            $filePath = $file->storeAs('', $fileName, 'public');
 
             $template->update([
                 'file_background' => $filePath
@@ -231,7 +244,7 @@ class TemplateSertifikatController extends Controller
 
         // Hapus file background jika ada
         if ($template->file_background) {
-            Storage::delete($template->file_background);
+            Storage::disk('public')->delete($template->file_background);
         }
 
         $template->delete();
@@ -288,21 +301,22 @@ class TemplateSertifikatController extends Controller
             ], 404);
         }
 
-        if (!Storage::exists($template->file_background)) {
+        if (!Storage::disk('public')->exists($template->file_background)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'File background tidak ditemukan'
             ], 404);
         }
 
-        $url = Storage::url($template->file_background);
+        $path = storage_path('app/public/' . $template->file_background);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => [
-                'url' => $url,
-                'nama_file' => basename($template->file_background)
-            ]
-        ]);
+        if (!file_exists($path)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'File background tidak ditemukan di server'
+            ], 404);
+        }
+
+        return response()->file($path);
     }
 }

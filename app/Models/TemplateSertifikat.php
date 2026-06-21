@@ -21,10 +21,12 @@ class TemplateSertifikat extends Model
         'nama_template',
         'file_background',
         'is_aktif',
+        'layout_data',
     ];
 
     protected $casts = [
         'is_aktif' => 'boolean',
+        'layout_data' => 'array',
     ];
 
     /**

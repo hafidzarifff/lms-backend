@@ -18,7 +18,14 @@ class SertifikatController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Sertifikat::with(['peserta:id_user,nama_lengkap,nim,email', 'template:id_template,nama_template']);
+        $query = Sertifikat::with([
+            'peserta.mahasiswa:id_user,nama_lengkap,nomor_induk,email',
+            'peserta.jadwal:id_jadwal,id_mk,id_kelas,id_dosen',
+            'peserta.jadwal.mataKuliah:id_mk,nama_mk,semester',
+            'peserta.jadwal.kelas:id_kelas,nama_kelas',
+            'peserta.jadwal.dosen:id_user,nama_lengkap,nomor_induk',
+            'template:id_template,nama_template'
+        ]);
 
         // Filter by peserta
         if ($request->has('id_peserta')) {
@@ -88,7 +95,7 @@ class SertifikatController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id_peserta' => 'required|uuid|exists:pengguna,id_user',
+            'id_peserta' => 'required|uuid|exists:peserta_kelas,id_peserta',
             'id_template' => 'required|uuid|exists:template_sertifikat,id_template',
             'tanggal_terbit' => 'nullable|date',
             'file_sertifikat' => 'nullable|file|mimes:pdf|max:10240', // max 10MB
@@ -161,7 +168,7 @@ class SertifikatController extends Controller
         $validator = Validator::make($request->all(), [
             'id_template' => 'required|uuid|exists:template_sertifikat,id_template',
             'peserta' => 'required|array|min:1',
-            'peserta.*.id_peserta' => 'required|uuid|exists:pengguna,id_user',
+            'peserta.*.id_peserta' => 'required|uuid|exists:peserta_kelas,id_peserta',
             'tanggal_terbit' => 'nullable|date',
         ]);
 

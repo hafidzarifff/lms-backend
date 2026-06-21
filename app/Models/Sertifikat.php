@@ -30,11 +30,11 @@ class Sertifikat extends Model
     ];
 
     /**
-     * Relasi ke peserta (mahasiswa)
+     * Relasi ke peserta_kelas
      */
     public function peserta(): BelongsTo
     {
-        return $this->belongsTo(Pengguna::class, 'id_peserta', 'id_user');
+        return $this->belongsTo(PesertaKelas::class, 'id_peserta', 'id_peserta');
     }
 
     /**
