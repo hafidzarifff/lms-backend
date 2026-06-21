@@ -66,6 +66,9 @@ class UpdateJadwalRequest extends FormRequest
 
             // Waktu berakhir wajib diisi, format HH:mm, dan harus setelah waktu_mulai
             'waktu_berakhir' => ['required', 'date_format:H:i', 'after:waktu_mulai'],
+
+            // Tanggal mulai bisa diupdate, bertipe date
+            'tanggal_mulai' => ['nullable', 'date'],
         ];
     }
 
@@ -108,6 +111,8 @@ class UpdateJadwalRequest extends FormRequest
             'waktu_berakhir.required'    => 'Waktu berakhir wajib diisi.',
             'waktu_berakhir.date_format' => 'Format waktu berakhir tidak valid. Gunakan format HH:mm.',
             'waktu_berakhir.after'       => 'Waktu berakhir harus setelah waktu mulai.',
+
+            'tanggal_mulai.date'         => 'Format tanggal mulai tidak valid.',
         ];
     }
 }

@@ -43,6 +43,7 @@ class JadwalPerkuliahan extends Model
         'waktu_mulai',
         'waktu_berakhir',
         'token_enrollment',
+        'tanggal_mulai',
     ];
 
     /**

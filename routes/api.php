@@ -70,6 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ============================================================
     // Fitur Presensi Mahasiswa
     // ============================================================
+    Route::post('/presensi/bulk-save', [\App\Http\Controllers\Api\PresensiController::class, 'bulkSave']);
     Route::post('/presensi/catat', [\App\Http\Controllers\Api\PresensiController::class, 'catat']);
     Route::put('/presensi/{id}/status', [\App\Http\Controllers\Api\PresensiController::class, 'updateStatus']);
     Route::get('/presensi/sesi/{id_sesi}', [\App\Http\Controllers\Api\PresensiController::class, 'getBySesi']);
@@ -80,10 +81,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // ============================================================
     // Fitur Materi Pembelajaran
     // ============================================================
+    Route::get('/materi/download', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'downloadFile']);
     Route::post('/materi/upload', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'upload']);
     Route::put('/materi/{id}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'update']);
     Route::delete('/materi/{id}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'hapus']);
     Route::get('/materi/sesi/{id_sesi}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'getBySesi']);
+    Route::get('/materi/jadwal/{id_jadwal}', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'getByJadwal']);
     Route::get('/materi/{id}/download', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'generateLinkDownload']);
 
     // ============================================================
@@ -114,6 +117,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Fitur Forum Diskusi
     // ============================================================
     Route::get('/sesi/{idSesi}/forum', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'index']);
+    Route::get('/jadwal/{idJadwal}/forum', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'getByJadwal']);
     Route::post('/forum', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'store']);
     Route::get('/forum/{idPesan}', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'show']);
     Route::get('/forum/{idPesan}/replies', [\App\Http\Controllers\Api\ForumDiskusiController::class, 'getReplies']);

@@ -65,6 +65,9 @@ class StoreJadwalRequest extends FormRequest
 
             // Waktu berakhir wajib diisi, format HH:mm, dan harus setelah waktu_mulai
             'waktu_berakhir' => ['required', 'date_format:H:i', 'after:waktu_mulai'],
+
+            // Tanggal mulai wajib diisi, bertipe date
+            'tanggal_mulai' => ['required', 'date'],
         ];
     }
 
@@ -107,6 +110,9 @@ class StoreJadwalRequest extends FormRequest
             'waktu_berakhir.required'    => 'Waktu berakhir wajib diisi.',
             'waktu_berakhir.date_format' => 'Format waktu berakhir tidak valid. Gunakan format HH:mm.',
             'waktu_berakhir.after'       => 'Waktu berakhir harus setelah waktu mulai.',
+
+            'tanggal_mulai.required'     => 'Tanggal mulai wajib diisi.',
+            'tanggal_mulai.date'         => 'Format tanggal mulai tidak valid.',
         ];
     }
 }

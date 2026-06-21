@@ -964,7 +964,8 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
     "tahun": "2025/2026",
     "hari": "Senin",
     "waktu_mulai": "08:00",
-    "waktu_berakhir": "10:00"
+    "waktu_berakhir": "10:00",
+    "tanggal_mulai": "2026-07-01"
 }
 ```
 *Catatan: Field `sks` dan `token_enrollment` tidak perlu dikirim. SKS otomatis diambil dari mata kuliah, token otomatis di-generate oleh sistem. `semester` berupa integer (1-14).*
@@ -987,6 +988,7 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
         "hari": "Senin",
         "waktu_mulai": "08:00",
         "waktu_berakhir": "10:00",
+        "tanggal_mulai": "2026-07-01",
         "token_enrollment": "ABCXYZ",
         "created_at": "...",
         "updated_at": "...",
@@ -1035,7 +1037,8 @@ Memperbarui data jadwal perkuliahan yang sudah ada. Token enrollment tidak berub
     "tahun": "2025/2026",
     "hari": "Selasa",
     "waktu_mulai": "10:00",
-    "waktu_berakhir": "12:00"
+    "waktu_berakhir": "12:00",
+    "tanggal_mulai": "2026-07-01"
 }
 ```
 

@@ -9,6 +9,7 @@ use App\Models\JadwalPerkuliahan;
 use App\Models\MasterMataKuliah;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class JadwalPerkuliahanController extends Controller
 {
@@ -82,6 +83,7 @@ class JadwalPerkuliahanController extends Controller
                 'kelas:id_kelas,kode_kelas,nama_kelas',
                 'dosen:id_user,nama_lengkap,nomor_induk',
             ])
+            ->withCount('pesertaKelas')
             ->when($request->query('search'), function ($q, $search) {
                 $q->where(function ($sub) use ($search) {
                     $sub->where('fakultas', 'ilike', "%{$search}%")
@@ -144,6 +146,7 @@ class JadwalPerkuliahanController extends Controller
                     'waktu_mulai'      => $j->waktu_mulai,
                     'waktu_berakhir'   => $j->waktu_berakhir,
                     'token_enrollment' => $j->token_enrollment,
+                    'total_mahasiswa'  => $j->peserta_kelas_count,
                 ])->values(),
             ];
         })->values();
@@ -216,9 +219,41 @@ class JadwalPerkuliahanController extends Controller
 
         $validatedData['token_enrollment'] = $token;
 
-        // Simpan data baru ke tabel jadwal_perkuliahan
-        // (id_jadwal UUID akan di-generate otomatis oleh trait HasUuids di Model)
-        $jadwal = JadwalPerkuliahan::create($validatedData);
+        $jadwal = DB::transaction(function () use ($validatedData) {
+            // Simpan data baru ke tabel jadwal_perkuliahan
+            // (id_jadwal UUID akan di-generate otomatis oleh trait HasUuids di Model)
+            $jadwal = JadwalPerkuliahan::create($validatedData);
+
+            // ============================================================
+            // Generate 16 sesi pertemuan berdasarkan tanggal_mulai
+            // ============================================================
+            $sesiPertemuan = [];
+            $tanggalMulai = \Carbon\Carbon::parse($jadwal->tanggal_mulai);
+            $waktuMulai = $jadwal->waktu_mulai;
+            $waktuBerakhir = $jadwal->waktu_berakhir;
+            $now = now();
+
+            for ($i = 1; $i <= 16; $i++) {
+                $sesiPertemuan[] = [
+                    'id_sesi'             => (string) Str::uuid(),
+                    'id_jadwal'           => $jadwal->id_jadwal,
+                    'pertemuan_ke'        => $i,
+                    'judul_sesi'          => "Pertemuan ke-{$i}",
+                    'tanggal_pelaksanaan' => $tanggalMulai->copy()->addWeeks($i - 1)->format('Y-m-d'),
+                    'jam_mulai'           => $waktuMulai,
+                    'jam_berakhir'        => $waktuBerakhir,
+                    'metode_pertemuan'    => 'asynchronous',
+                    'materi'              => '-',
+                    'status'              => 'TERJADWAL',
+                    'created_at'          => $now,
+                    'updated_at'          => $now,
+                ];
+            }
+
+            \App\Models\SesiPertemuan::insert($sesiPertemuan);
+
+            return $jadwal;
+        });
 
         // Muat relasi agar response lengkap dengan data terkait
         $jadwal->load(['mataKuliah', 'kelas', 'dosen']);
@@ -261,8 +296,22 @@ class JadwalPerkuliahanController extends Controller
             $validatedData['sks'] = $mataKuliah->sks;
         }
 
+        // Cek apakah waktu berubah
+        $waktuMulaiBerubah = isset($validatedData['waktu_mulai']) && $validatedData['waktu_mulai'] !== $jadwal->waktu_mulai;
+        $waktuBerakhirBerubah = isset($validatedData['waktu_berakhir']) && $validatedData['waktu_berakhir'] !== $jadwal->waktu_berakhir;
+
         // Update data jadwal (token_enrollment tidak diubah karena tidak ada di validated data)
         $jadwal->update($validatedData);
+
+        // Jika waktu berubah, update semua sesi pertemuan yang masih TERJADWAL
+        if ($waktuMulaiBerubah || $waktuBerakhirBerubah) {
+            \App\Models\SesiPertemuan::where('id_jadwal', $id_jadwal)
+                ->where('status', 'TERJADWAL')
+                ->update([
+                    'jam_mulai' => $jadwal->waktu_mulai,
+                    'jam_berakhir' => $jadwal->waktu_berakhir,
+                ]);
+        }
 
         return response()->json([
             'message' => 'Jadwal perkuliahan berhasil diperbarui.',

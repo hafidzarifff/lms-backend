@@ -82,13 +82,68 @@ class PresensiController extends Controller
      */
     public function getBySesi($id_sesi): JsonResponse
     {
-        $presensi = Presensi::where('id_sesi', $id_sesi)
-            ->with('pesertaKelas.mahasiswa')
+        $sesi = SesiPertemuan::find($id_sesi);
+        if (!$sesi) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sesi tidak ditemukan.',
+            ], 404);
+        }
+
+        $peserta = PesertaKelas::where('id_jadwal', $sesi->id_jadwal)
+            ->with('mahasiswa')
             ->get();
+
+        $presensi = Presensi::where('id_sesi', $id_sesi)
+            ->get()
+            ->keyBy('id_peserta');
+
+        $data = $peserta->map(function ($p) use ($presensi) {
+            $kehadiran = $presensi->get($p->id_peserta);
+            return [
+                'id_peserta' => $p->id_peserta,
+                'nim' => $p->mahasiswa->nomor_induk ?? '-',
+                'nama' => $p->mahasiswa->nama_lengkap ?? 'Unknown',
+                'status_kehadiran' => $kehadiran ? $kehadiran->status_kehadiran : null,
+                'id_presensi' => $kehadiran ? $kehadiran->id_presensi : null,
+            ];
+        });
 
         return response()->json([
             'status' => 'success',
-            'data' => $presensi,
+            'data' => $data,
+        ], 200);
+    }
+
+    /**
+     * Catat presensi secara massal (bulk).
+     */
+    public function bulkSave(Request $request): JsonResponse
+    {
+        $request->validate([
+            'id_sesi' => 'required|uuid|exists:sesi_pertemuan,id_sesi',
+            'presensi' => 'required|array',
+            'presensi.*.id_peserta' => 'required|uuid|exists:peserta_kelas,id_peserta',
+            'presensi.*.status_kehadiran' => 'required|in:hadir,izin,sakit,alpha',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            foreach ($request->presensi as $item) {
+                Presensi::updateOrCreate(
+                    [
+                        'id_sesi' => $request->id_sesi,
+                        'id_peserta' => $item['id_peserta'],
+                    ],
+                    [
+                        'status_kehadiran' => $item['status_kehadiran'],
+                    ]
+                );
+            }
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Presensi berhasil disimpan.',
         ], 200);
     }
 

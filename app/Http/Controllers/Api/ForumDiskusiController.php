@@ -15,16 +15,40 @@ class ForumDiskusiController extends Controller
     public function index(Request $request, $idSesi)
     {
         $request->validate([
-            'per_page' => 'nullable|integer|min:1|max:100',
+            'per_page' => 'nullable|integer|min:1|max:200',
         ]);
 
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('per_page', 100);
 
         $pesan = ForumDiskusi::where('id_sesi', $idSesi)
-            ->topLevel()
-            ->with(['pengirim', 'replies.pengirim'])
-            ->withCount('replies')
-            ->orderBy('waktu_kirim', 'desc')
+            ->with(['pengirim', 'parentPesan.pengirim'])
+            ->orderBy('waktu_kirim', 'asc')
+            ->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $pesan,
+        ]);
+    }
+
+    /**
+     * Get semua pesan untuk satu jadwal (seluruh sesi di dalamnya)
+     */
+    public function getByJadwal(Request $request, $idJadwal)
+    {
+        $request->validate([
+            'per_page' => 'nullable|integer|min:1|max:200',
+        ]);
+
+        $perPage = $request->input('per_page', 100);
+
+        // Ambil semua id_sesi dari jadwal tersebut
+        $sesiIds = \App\Models\SesiPertemuan::where('id_jadwal', $idJadwal)
+            ->pluck('id_sesi');
+
+        $pesan = ForumDiskusi::whereIn('id_sesi', $sesiIds)
+            ->with(['pengirim', 'parentPesan.pengirim', 'sesi'])
+            ->orderBy('waktu_kirim', 'desc') // Biasa untuk list table, urut dari yang terbaru
             ->paginate($perPage);
 
         return response()->json([
@@ -130,8 +154,8 @@ class ForumDiskusiController extends Controller
     {
         $pesan = ForumDiskusi::findOrFail($idPesan);
 
-        // Cek apakah user adalah pengirim
-        if ($pesan->id_pengirim !== Auth::id()) {
+        // Cek apakah user adalah pengirim atau admin
+        if ($pesan->id_pengirim !== Auth::id() && Auth::user()->role->value !== 'Admin') {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki izin untuk menghapus pesan ini',

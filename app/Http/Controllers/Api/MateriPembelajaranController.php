@@ -19,24 +19,28 @@ class MateriPembelajaranController extends Controller
         $request->validate([
             'id_sesi' => 'required|uuid|exists:sesi_pertemuan,id_sesi',
             'judul_materi' => 'required|string|max:200',
-            'file_materi' => 'nullable|file|max:51200', // max 50MB
+            'deskripsi' => 'nullable|string',
+            'file_materi' => 'nullable|array',
+            'file_materi.*' => 'file|max:51200|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx', // max 50MB per file
             'link_video_pembelajaran' => 'nullable|url',
         ]);
 
-        $fileMateri = null;
+        $fileMateri = [];
 
-        // Handle file upload
+        // Handle multiple file upload
         if ($request->hasFile('file_materi')) {
-            $file = $request->file('file_materi');
-            $filename = 'materi/' . Str::uuid() . '_' . $file->getClientOriginalName();
-            Storage::disk('public')->put($filename, file_get_contents($file));
-            $fileMateri = $filename;
+            foreach ($request->file('file_materi') as $file) {
+                $filename = 'materi/' . Str::uuid() . '_' . $file->getClientOriginalName();
+                Storage::disk('public')->put($filename, file_get_contents($file));
+                $fileMateri[] = $filename;
+            }
         }
 
         $materi = MateriPembelajaran::create([
             'id_sesi' => $request->id_sesi,
             'judul_materi' => $request->judul_materi,
-            'file_materi' => $fileMateri,
+            'deskripsi' => $request->deskripsi,
+            'file_materi' => empty($fileMateri) ? null : $fileMateri,
             'link_video_pembelajaran' => $request->link_video_pembelajaran,
         ]);
 
@@ -54,7 +58,12 @@ class MateriPembelajaranController extends Controller
     {
         $request->validate([
             'judul_materi' => 'nullable|string|max:200',
-            'file_materi' => 'nullable|file|max:51200', // max 50MB
+            'deskripsi' => 'nullable|string',
+            'file_materi' => 'nullable|array',
+            'file_materi.*' => 'file|max:51200|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx', // max 50MB per file
+            'kept_files' => 'nullable|array',
+            'kept_files.*' => 'string',
+            'has_kept_files' => 'nullable|boolean',
             'link_video_pembelajaran' => 'nullable|url',
         ]);
 
@@ -73,22 +82,35 @@ class MateriPembelajaranController extends Controller
             $updateData['judul_materi'] = $request->judul_materi;
         }
 
+        if ($request->has('deskripsi')) {
+            $updateData['deskripsi'] = $request->deskripsi;
+        }
+
         if ($request->filled('link_video_pembelajaran')) {
             $updateData['link_video_pembelajaran'] = $request->link_video_pembelajaran;
         }
 
-        // Handle file upload
-        if ($request->hasFile('file_materi')) {
-            // Delete old file
-            if ($materi->file_materi) {
-                Storage::disk('public')->delete($materi->file_materi);
+        if ($request->has('has_kept_files')) {
+            $existingFiles = $materi->file_materi ?? [];
+            $keptFiles = $request->input('kept_files', []);
+            $filesToDelete = array_diff($existingFiles, $keptFiles);
+            foreach ($filesToDelete as $fileToDelete) {
+                Storage::disk('public')->delete($fileToDelete);
             }
-
-            $file = $request->file('file_materi');
-            $filename = 'materi/' . Str::uuid() . '_' . $file->getClientOriginalName();
-            Storage::disk('public')->put($filename, file_get_contents($file));
-            $updateData['file_materi'] = $filename;
+            $finalFiles = $keptFiles;
+        } else {
+            $finalFiles = $materi->file_materi ?? [];
         }
+
+        if ($request->hasFile('file_materi')) {
+            foreach ($request->file('file_materi') as $file) {
+                $filename = 'materi/' . Str::uuid() . '_' . $file->getClientOriginalName();
+                Storage::disk('public')->put($filename, file_get_contents($file));
+                $finalFiles[] = $filename;
+            }
+        }
+
+        $updateData['file_materi'] = empty($finalFiles) ? null : array_values($finalFiles);
 
         $materi->update($updateData);
 
@@ -113,9 +135,11 @@ class MateriPembelajaranController extends Controller
             ], 404);
         }
 
-        // Delete file if exists
-        if ($materi->file_materi) {
-            Storage::disk('public')->delete($materi->file_materi);
+        // Delete files if exist
+        if (!empty($materi->file_materi)) {
+            foreach ($materi->file_materi as $file) {
+                Storage::disk('public')->delete($file);
+            }
         }
 
         $materi->delete();
@@ -132,6 +156,41 @@ class MateriPembelajaranController extends Controller
     public function getBySesi($id_sesi): JsonResponse
     {
         $materi = MateriPembelajaran::where('id_sesi', $id_sesi)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $materi,
+        ], 200);
+    }
+
+    /**
+     * Get semua materi berdasarkan jadwal (semua sesi dalam jadwal).
+     */
+    public function getByJadwal($id_jadwal): JsonResponse
+    {
+        $sesiIds = \App\Models\SesiPertemuan::where('id_jadwal', $id_jadwal)
+            ->orderBy('pertemuan_ke', 'asc')
+            ->pluck('id_sesi');
+
+        $materi = MateriPembelajaran::whereIn('id_sesi', $sesiIds)
+            ->with('sesiPertemuan:id_sesi,pertemuan_ke,judul_sesi')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id_materi,
+                    'id_sesi' => $item->id_sesi,
+                    'pertemuan' => $item->sesiPertemuan ? 'Pertemuan ke-' . $item->sesiPertemuan->pertemuan_ke : '-',
+                    'pertemuan_ke' => $item->sesiPertemuan->pertemuan_ke ?? 0,
+                    'judul' => $item->judul_materi,
+                    'deskripsi' => $item->deskripsi,
+                    'file_materi' => $item->file_materi,
+                    'jumlah_file' => is_array($item->file_materi) ? count($item->file_materi) : 0,
+                    'link_video' => $item->link_video_pembelajaran,
+                    'tanggal' => $item->created_at ? $item->created_at->format('d F Y') : '-',
+                    'created_at' => $item->created_at,
+                ];
+            });
 
         return response()->json([
             'status' => 'success',
@@ -160,24 +219,43 @@ class MateriPembelajaranController extends Controller
             ], 404);
         }
 
-        // Check if file exists
-        if (!Storage::disk('public')->exists($materi->file_materi)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'File materi tidak ditemukan.',
-            ], 404);
+        $urls = [];
+        if (!empty($materi->file_materi)) {
+            foreach ($materi->file_materi as $file) {
+                if (Storage::disk('public')->exists($file)) {
+                    // Try to generate temporary URL if supported, otherwise fallback to standard URL
+                    try {
+                        $url = Storage::disk('public')->temporaryUrl($file, now()->addHour());
+                    } catch (\Exception $e) {
+                        $url = url('storage/' . $file);
+                    }
+                    $urls[] = [
+                        'file' => $file,
+                        'url' => $url
+                    ];
+                }
+            }
         }
-
-        // Generate temporary download URL (valid for 1 hour)
-        $downloadUrl = Storage::disk('public')->temporaryUrl(
-            $materi->file_materi,
-            now()->addHour()
-        );
 
         return response()->json([
             'status' => 'success',
-            'download_url' => $downloadUrl,
-            'expired_at' => now()->addHour()->toIso8601String(),
+            'download_urls' => $urls,
         ], 200);
+    }
+
+    /**
+     * Force download file materi
+     */
+    public function downloadFile(Request $request)
+    {
+        $path = $request->query('path');
+        if (!$path || !Storage::disk('public')->exists($path)) {
+            return response()->json(['message' => 'File tidak ditemukan'], 404);
+        }
+        
+        $filename = basename($path);
+        $cleanName = preg_replace('/^[a-f0-9\-]+_/', '', $filename);
+
+        return Storage::disk('public')->download($path, $cleanName);
     }
 }

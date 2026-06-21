@@ -20,6 +20,7 @@ class MateriPembelajaran extends Model
     protected $fillable = [
         'id_sesi',
         'judul_materi',
+        'deskripsi',
         'file_materi',
         'link_video_pembelajaran',
     ];
@@ -30,5 +31,12 @@ class MateriPembelajaran extends Model
     public function sesiPertemuan(): BelongsTo
     {
         return $this->belongsTo(SesiPertemuan::class, 'id_sesi', 'id_sesi');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'file_materi' => 'array',
+        ];
     }
 }

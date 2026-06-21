@@ -24,6 +24,9 @@ class SesiPertemuan extends Model
         'jam_mulai',
         'jam_berakhir',
         'metode_pertemuan',
+        'materi',
+        'url_cbt',
+        'status',
         'link_kelas_daring'
     ];
 
@@ -74,12 +77,8 @@ class SesiPertemuan extends Model
     {
         return $this->hasMany(MateriPembelajaran::class, 'id_sesi', 'id_sesi');
     }
-<<<<<<< HEAD
-=======
-
     public function forumDiskusi()
     {
         return $this->hasMany(ForumDiskusi::class, 'id_sesi', 'id_sesi');
     }
->>>>>>> 5a6992ff7dab70d031aeaf89582083163a1fb51a
 }
