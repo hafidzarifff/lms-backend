@@ -1399,10 +1399,13 @@ Memperbarui data sesi pertemuan yang sudah ada. Field `id_jadwal` tidak dapat di
     "jam_mulai": "09:00",
     "jam_berakhir": "11:00",
     "metode_pertemuan": "synchronous",
+    "status": "TERJADWAL",
+    "materi": "Materi PDF tentang pengenalan perkuliahan",
+    "url_cbt": "https://cbt.uika.ac.id/exam/123",
     "link_kelas_daring": "https://meet.google.com/xyz-abcd-efg"
 }
 ```
-*Catatan: Field `id_jadwal` tidak boleh dikirim karena tidak dapat diubah. Tanggal pelaksanaan boleh tanggal lampau (berbeda dengan endpoint POST).*
+*Catatan: Field `id_jadwal` tidak boleh dikirim karena tidak dapat diubah. Tanggal pelaksanaan boleh tanggal lampau (berbeda dengan endpoint POST). `status` dapat berupa TERJADWAL, BERJALAN, atau SELESAI.*
 
 - **Response Sukses (200 OK):**
 ```json
@@ -1660,7 +1663,7 @@ Endpoint untuk get launch url tugas.
 
 ---
 
-## 📜 Fitur Forum Diskusi
+## Fitur Forum Diskusi
 
 ### 44. Daftar Forum Diskusi Sesi
 Endpoint untuk daftar forum diskusi sesi.
@@ -2393,7 +2396,7 @@ Endpoint untuk rekap evaluasi.
 
 ---
 
-## 📜 Fitur Template Sertifikat
+## Fitur Template Sertifikat
 
 ### 78. Daftar Template
 Endpoint untuk daftar template.
