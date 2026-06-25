@@ -1,26 +1,29 @@
-# Dokumentasi API Authentication - Project LMS
+# Dokumentasi API - Project LMS
 
-Dokumentasi ini berisi informasi detail mengenai endpoint autentikasi yang telah diimplementasikan pada backend menggunakan Laravel Sanctum.
+Dokumentasi ini berisi informasi detail mengenai seluruh endpoint API yang telah diimplementasikan pada backend menggunakan Laravel Sanctum. Endpoint dikelompokkan berdasarkan role pengguna.
 
-## 📌 Informasi Umum
-- **Base URL:** `http://localhost:8000/api` (Sesuaikan dengan host/port development)
+## Informasi Umum
+
+- **Base URL:** `http://localhost:8000/api`
 - **Content-Type:** `application/json`
 - **Accept:** `application/json`
+- **Autentikasi:** Menggunakan Bearer Token via Laravel Sanctum
 
 ---
 
-## 🔐 Endpoints
+## Autentikasi (Semua Role)
 
 ### 1. Login
+
 Digunakan untuk mendapatkan token akses. User bisa login menggunakan salah satu dari: **Email**, **Username**, atau **Nomor Induk**.
 
 - **URL:** `/login`
 - **Method:** `POST`
-- **Rate Limit:** 5 request per menit.
+- **Rate Limit:** 5 request per menit
 - **Request Body:**
 ```json
 {
-    "identifier": "admin@lms.com", 
+    "identifier": "admin@lms.com",
     "password": "password123"
 }
 ```
@@ -53,7 +56,6 @@ Digunakan untuk mendapatkan token akses. User bisa login menggunakan salah satu 
 ```
 
 - **Response Error (403 Forbidden):**
-Muncul jika akun belum disetujui, ditolak, atau dinonaktifkan.
 ```json
 {
     "success": false,
@@ -61,11 +63,11 @@ Muncul jika akun belum disetujui, ditolak, atau dinonaktifkan.
 }
 ```
 
-- **Response Validasi Gagal (422 Unprocessable Entity):**
+- **Response Error (422 Unprocessable Entity):**
 ```json
 {
     "success": false,
-    "message": "Email, Username, atau Nomor Induk wajib diisi. (and other validation messages)",
+    "message": "Email, Username, atau Nomor Induk wajib diisi.",
     "errors": {
         "identifier": ["Email, Username, atau Nomor Induk wajib diisi."],
         "password": ["Password minimal 8 karakter."]
@@ -73,15 +75,26 @@ Muncul jika akun belum disetujui, ditolak, atau dinonaktifkan.
 }
 ```
 
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Endpoint tidak ditemukan."
+}
+```
+
+
 ---
 
 ### 2. Logout
+
 Menghapus token akses yang sedang digunakan.
 
 - **URL:** `/logout`
 - **Method:** `POST`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -91,15 +104,33 @@ Menghapus token akses yang sedang digunakan.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+```json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+```
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Endpoint tidak ditemukan."
+}
+```
+
 ---
 
 ### 3. Get User Profile
-Mendapatkan data user yang sedang login (Middleware `auth:sanctum`).
+
+Mendapatkan data user yang sedang login.
 
 - **URL:** `/user`
 - **Method:** `GET`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -115,9 +146,26 @@ Mendapatkan data user yang sedang login (Middleware `auth:sanctum`).
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data user tidak ditemukan."
+}
+```
+
 ---
 
 ### 4. Registrasi Manual Dosen
+
 Digunakan oleh Dosen untuk mendaftarkan akun baru secara mandiri. Akun yang terdaftar akan berstatus **Menunggu** dan tidak bisa login sampai disetujui oleh Admin.
 
 - **URL:** `/register/dosen`
@@ -147,9 +195,30 @@ Digunakan oleh Dosen untuk mendaftarkan akun baru secara mandiri. Akun yang terd
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Endpoint registrasi tidak ditemukan."
+}
+```
+
 ---
 
-### 5. Daftar Antrean Verifikasi Dosen (Admin)
+## Role: Admin
+
+### Manajemen Dosen
+
+#### 5. Daftar Antrean Verifikasi Dosen
+
 Melihat daftar dosen yang telah melakukan registrasi. Admin dapat memfilter berdasarkan status persetujuan.
 
 - **URL:** `/verifikasi-dosen`
@@ -157,7 +226,8 @@ Melihat daftar dosen yang telah melakukan registrasi. Admin dapat memfilter berd
 - **Headers:**
     - `Authorization: Bearer <token>`
 - **Query Params:**
-    - `status` (optional): `Menunggu`, `Disetujui`, atau `Ditolak`.
+    - `status` (optional): `Menunggu`, `Disetujui`, atau `Ditolak`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -179,9 +249,26 @@ Melihat daftar dosen yang telah melakukan registrasi. Admin dapat memfilter berd
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data verifikasi dosen tidak ditemukan."
+}
+```
+
 ---
 
-### 6. Proses Verifikasi Dosen (Admin)
+#### 6. Proses Verifikasi Dosen
+
 Menyetujui atau menolak registrasi akun dosen. Jika disetujui, akun otomatis menjadi aktif dan dosen bisa login.
 
 - **URL:** `/verifikasi-dosen/{id}`
@@ -204,6 +291,14 @@ Menyetujui atau menolak registrasi akun dosen. Jika disetujui, akun otomatis men
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -212,181 +307,11 @@ Menyetujui atau menolak registrasi akun dosen. Jika disetujui, akun otomatis men
 }
 ```
 
-- **Response Validasi Gagal (422 Unprocessable Entity):**
-```json
-{
-    "success": false,
-    "message": "Status persetujuan wajib diisi. (and other validation messages)",
-    "errors": {
-        "status_persetujuan": ["Status persetujuan wajib diisi."]
-    }
-}
-```
-
 ---
 
-### 7. Tambah Data Mahasiswa (Admin)
-Menambahkan data mahasiswa baru secara manual. Sistem akan otomatis men-generate **Email** dan **Password default** agar mahasiswa bisa langsung login.
+#### 7. Update Data Dosen
 
-- **URL:** `/mahasiswa`
-- **Method:** `POST`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body:**
-```json
-{
-    "nama_lengkap": "Budi Rahardjo",
-    "nomor_induk": "20241001",
-    "fakultas": "Teknik",
-    "prodi": "Informatika",
-    "angkatan": "2024"
-}
-```
-*Catatan: Email otomatis akan berformat `{nomor_induk}@mhs.uika.ac.id` dan Password default berformat `Mhs{nomor_induk}`.*
-
-- **Response Sukses (201 Created):**
-```json
-{
-    "success": true,
-    "message": "Data mahasiswa berhasil ditambahkan. Email dan sandi default telah dibuat."
-}
-```
-
----
-
-### 8. Daftar Data Mahasiswa (Admin)
-Mendapatkan list data seluruh mahasiswa dengan sistem pagination (50 data per halaman).
-
-- **URL:** `/mahasiswa`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "current_page": 1,
-    "data": [
-        {
-            "id_user": "uuid-string",
-            "nama_lengkap": "Budi Rahardjo",
-            "nomor_induk": "20241001",
-            "email": "20241001@mhs.uika.ac.id",
-            "role": "Mahasiswa",
-            "fakultas": "Teknik",
-            "prodi": "Informatika",
-            "angkatan": "2024",
-            "status_aktif": true,
-            "created_at": "2026-06-21T10:00:00.000000Z",
-            "updated_at": "2026-06-21T10:00:00.000000Z"
-        }
-    ],
-    "total": 1,
-    "per_page": 50
-}
-```
-
----
-
-### 9. Detail Data Mahasiswa (Admin)
-Mendapatkan detail satu data mahasiswa berdasarkan ID.
-
-- **URL:** `/mahasiswa/{id}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "id_user": "uuid-string",
-    "nama_lengkap": "Budi Rahardjo",
-    "nomor_induk": "20241001",
-    "email": "20241001@mhs.uika.ac.id",
-    "role": "Mahasiswa",
-    "fakultas": "Teknik",
-    "prodi": "Informatika",
-    "angkatan": "2024",
-    "status_aktif": true,
-    "created_at": "2026-06-21T10:00:00.000000Z",
-    "updated_at": "2026-06-21T10:00:00.000000Z"
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Data mahasiswa tidak ditemukan."
-}
-```
-
----
-
-### 10. Update Data Mahasiswa (Admin)
-Memperbarui data profil mahasiswa. Jika `nomor_induk` diubah, maka `email` akan di-generate ulang secara otomatis. Password tidak akan berubah.
-
-- **URL:** `/mahasiswa/{id}`
-- **Method:** `PUT`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body:**
-```json
-{
-    "nama_lengkap": "Budi Rahardjo Updated",
-    "nomor_induk": "20241002",
-    "fakultas": "Teknik",
-    "prodi": "Sistem Informasi",
-    "angkatan": "2024",
-    "status_aktif": false
-}
-```
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Data mahasiswa berhasil diperbarui."
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Data mahasiswa tidak ditemukan."
-}
-```
-
----
-
-### 11. Hapus Data Mahasiswa (Admin)
-Menghapus data mahasiswa secara permanen dari sistem.
-
-- **URL:** `/mahasiswa/{id}`
-- **Method:** `DELETE`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Response Sukses (200 OK):**
-```json
-{
-    "success": true,
-    "message": "Data mahasiswa berhasil dihapus."
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Data mahasiswa tidak ditemukan."
-}
-```
-
----
-
-### 12. Update Data Dosen (Admin)
-Memperbarui data profil dosen (nama_lengkap, nomor_induk/NIDN, email, fakultas, prodi, status_aktif, status_persetujuan). Password tidak akan berubah.
+Memperbarui data profil dosen. Password tidak akan berubah.
 
 - **URL:** `/dosen/{id}`
 - **Method:** `PUT`
@@ -413,6 +338,14 @@ Memperbarui data profil dosen (nama_lengkap, nomor_induk/NIDN, email, fakultas, 
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -421,27 +354,17 @@ Memperbarui data profil dosen (nama_lengkap, nomor_induk/NIDN, email, fakultas, 
 }
 ```
 
-- **Response Validasi Gagal (422 Unprocessable Entity):**
-```json
-{
-    "success": false,
-    "message": "Nama lengkap wajib diisi. (and other validation messages)",
-    "errors": {
-        "nama_lengkap": ["Nama lengkap wajib diisi."],
-        "nomor_induk": ["Nomor induk sudah terdaftar."]
-    }
-}
-```
-
 ---
 
-### 13. Hapus Data Dosen (Admin)
+#### 8. Hapus Data Dosen
+
 Menghapus data dosen secara permanen dari sistem.
 
 - **URL:** `/dosen/{id}`
 - **Method:** `DELETE`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -450,6 +373,14 @@ Menghapus data dosen secara permanen dari sistem.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -460,13 +391,243 @@ Menghapus data dosen secara permanen dari sistem.
 
 ---
 
-### 14. Daftar Master Kelas (Admin)
-Mengambil seluruh data master kelas dengan pagination (10 data per halaman), diurutkan dari yang terbaru.
+### Manajemen Mahasiswa
+
+#### 9. Tambah Data Mahasiswa
+
+Menambahkan data mahasiswa baru secara manual. Sistem akan otomatis men-generate **Email** dan **Password default**.
+
+- **URL:** `/mahasiswa`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nama_lengkap": "Budi Rahardjo",
+    "nomor_induk": "20241001",
+    "fakultas": "Teknik",
+    "prodi": "Informatika",
+    "angkatan": "2024"
+}
+```
+*Catatan: Email otomatis berformat `{nomor_induk}@mhs.uika.ac.id` dan Password default berformat `Mhs{nomor_induk}`.*
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "success": true,
+    "message": "Data mahasiswa berhasil ditambahkan. Email dan sandi default telah dibuat."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Endpoint tidak ditemukan."
+}
+```
+
+---
+
+#### 10. Daftar Data Mahasiswa
+
+Mendapatkan list data seluruh mahasiswa dengan pagination (50 data per halaman).
+
+- **URL:** `/mahasiswa`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "current_page": 1,
+    "data": [
+        {
+            "id_user": "uuid-string",
+            "nama_lengkap": "Budi Rahardjo",
+            "nomor_induk": "20241001",
+            "email": "20241001@mhs.uika.ac.id",
+            "role": "Mahasiswa",
+            "fakultas": "Teknik",
+            "prodi": "Informatika",
+            "angkatan": "2024",
+            "status_aktif": true,
+            "created_at": "2026-06-21T10:00:00.000000Z",
+            "updated_at": "2026-06-21T10:00:00.000000Z"
+        }
+    ],
+    "total": 1,
+    "per_page": 50
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data mahasiswa tidak ditemukan."
+}
+```
+
+---
+
+#### 11. Detail Data Mahasiswa
+
+Mendapatkan detail satu data mahasiswa berdasarkan ID.
+
+- **URL:** `/mahasiswa/{id}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "id_user": "uuid-string",
+    "nama_lengkap": "Budi Rahardjo",
+    "nomor_induk": "20241001",
+    "email": "20241001@mhs.uika.ac.id",
+    "role": "Mahasiswa",
+    "fakultas": "Teknik",
+    "prodi": "Informatika",
+    "angkatan": "2024",
+    "status_aktif": true,
+    "created_at": "2026-06-21T10:00:00.000000Z",
+    "updated_at": "2026-06-21T10:00:00.000000Z"
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data mahasiswa tidak ditemukan."
+}
+```
+
+---
+
+#### 12. Update Data Mahasiswa
+
+Memperbarui data profil mahasiswa. Jika `nomor_induk` diubah, `email` akan di-generate ulang secara otomatis.
+
+- **URL:** `/mahasiswa/{id}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nama_lengkap": "Budi Rahardjo Updated",
+    "nomor_induk": "20241002",
+    "fakultas": "Teknik",
+    "prodi": "Sistem Informasi",
+    "angkatan": "2024",
+    "status_aktif": false
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Data mahasiswa berhasil diperbarui."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data mahasiswa tidak ditemukan."
+}
+```
+
+---
+
+#### 13. Hapus Data Mahasiswa
+
+Menghapus data mahasiswa secara permanen dari sistem.
+
+- **URL:** `/mahasiswa/{id}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Data mahasiswa berhasil dihapus."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data mahasiswa tidak ditemukan."
+}
+```
+
+---
+
+### Manajemen Kelas
+
+#### 14. Daftar Master Kelas
+
+Mengambil seluruh data master kelas dengan pagination (10 data per halaman).
 
 - **URL:** `/kelas`
 - **Method:** `GET`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -489,15 +650,33 @@ Mengambil seluruh data master kelas dengan pagination (10 data per halaman), diu
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data kelas tidak ditemukan."
+}
+```
+
 ---
 
-### 15. Detail Master Kelas (Admin)
+#### 15. Detail Master Kelas
+
 Mengambil detail satu data kelas berdasarkan ID.
 
 - **URL:** `/kelas/{id_kelas}`
 - **Method:** `GET`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -513,6 +692,14 @@ Mengambil detail satu data kelas berdasarkan ID.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -523,7 +710,8 @@ Mengambil detail satu data kelas berdasarkan ID.
 
 ---
 
-### 16. Tambah Master Kelas (Admin)
+#### 16. Tambah Master Kelas
+
 Menambahkan data master kelas baru ke sistem.
 
 - **URL:** `/kelas`
@@ -559,21 +747,26 @@ Menambahkan data master kelas baru ke sistem.
 }
 ```
 
-- **Response Validasi Gagal (422 Unprocessable Entity):**
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
 ```json
 {
     "success": false,
-    "message": "The nama kelas field is required. (and other validation messages)",
-    "errors": {
-        "nama_kelas": ["The nama kelas field is required."],
-        "kode_kelas": ["The kode kelas has already been taken."]
-    }
+    "message": "Data kelas tidak ditemukan."
 }
 ```
 
 ---
 
-### 17. Update Master Kelas (Admin)
+#### 17. Update Master Kelas
+
 Memperbarui data master kelas yang sudah ada.
 
 - **URL:** `/kelas/{id_kelas}`
@@ -599,6 +792,14 @@ Memperbarui data master kelas yang sudah ada.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -609,13 +810,15 @@ Memperbarui data master kelas yang sudah ada.
 
 ---
 
-### 18. Hapus Master Kelas (Admin)
+#### 18. Hapus Master Kelas
+
 Menghapus data master kelas secara permanen dari sistem.
 
 - **URL:** `/kelas/{id_kelas}`
 - **Method:** `DELETE`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -624,6 +827,14 @@ Menghapus data master kelas secara permanen dari sistem.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -634,13 +845,17 @@ Menghapus data master kelas secara permanen dari sistem.
 
 ---
 
-### 19. Daftar Master Mata Kuliah (Admin)
-Mengambil seluruh data master mata kuliah dengan pagination (10 data per halaman), diurutkan dari yang terbaru.
+### Manajemen Mata Kuliah
+
+#### 19. Daftar Master Mata Kuliah
+
+Mengambil seluruh data master mata kuliah dengan pagination (10 data per halaman).
 
 - **URL:** `/mata-kuliah`
 - **Method:** `GET`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -665,15 +880,33 @@ Mengambil seluruh data master mata kuliah dengan pagination (10 data per halaman
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data mata kuliah tidak ditemukan."
+}
+```
+
 ---
 
-### 20. Detail Master Mata Kuliah (Admin)
+#### 20. Detail Master Mata Kuliah
+
 Mengambil detail satu data mata kuliah berdasarkan ID.
 
 - **URL:** `/mata-kuliah/{id_mk}`
 - **Method:** `GET`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -691,6 +924,14 @@ Mengambil detail satu data mata kuliah berdasarkan ID.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -701,7 +942,8 @@ Mengambil detail satu data mata kuliah berdasarkan ID.
 
 ---
 
-### 21. Tambah Master Mata Kuliah (Admin)
+#### 21. Tambah Master Mata Kuliah
+
 Menambahkan data master mata kuliah baru ke sistem.
 
 - **URL:** `/mata-kuliah`
@@ -720,7 +962,7 @@ Menambahkan data master mata kuliah baru ke sistem.
     "prodi": "Informatika"
 }
 ```
-*Catatan: Field `deskripsi`, `semester`, `fakultas`, dan `prodi` bersifat opsional (nullable). `semester` harus berupa integer antara 1-14.*
+*Catatan: Field `deskripsi`, `semester`, `fakultas`, dan `prodi` bersifat opsional (nullable). `semester` harus integer antara 1-14.*
 
 - **Response Sukses (201 Created):**
 ```json
@@ -742,22 +984,26 @@ Menambahkan data master mata kuliah baru ke sistem.
 }
 ```
 
-- **Response Validasi Gagal (422 Unprocessable Entity):**
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
 ```json
 {
     "success": false,
-    "message": "The kode mk field is required. (and other validation messages)",
-    "errors": {
-        "kode_mk": ["The kode mk has already been taken."],
-        "sks": ["The sks field must be at least 1."],
-        "semester": ["The semester field must be between 1 and 14."]
-    }
+    "message": "Data mata kuliah tidak ditemukan."
 }
 ```
 
 ---
 
-### 22. Update Master Mata Kuliah (Admin)
+#### 22. Update Master Mata Kuliah
+
 Memperbarui data master mata kuliah yang sudah ada.
 
 - **URL:** `/mata-kuliah/{id_mk}`
@@ -785,6 +1031,14 @@ Memperbarui data master mata kuliah yang sudah ada.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -795,13 +1049,15 @@ Memperbarui data master mata kuliah yang sudah ada.
 
 ---
 
-### 23. Hapus Master Mata Kuliah (Admin)
+#### 23. Hapus Master Mata Kuliah
+
 Menghapus data master mata kuliah secara permanen dari sistem.
 
 - **URL:** `/mata-kuliah/{id_mk}`
 - **Method:** `DELETE`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -810,6 +1066,14 @@ Menghapus data master mata kuliah secara permanen dari sistem.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -820,13 +1084,17 @@ Menghapus data master mata kuliah secara permanen dari sistem.
 
 ---
 
-### 24. Daftar Jadwal Perkuliahan (Admin)
-Mengambil seluruh data jadwal perkuliahan dengan Eager Loading (data mata kuliah, kelas, dan dosen ikut ditampilkan). Pagination 10 data per halaman, diurutkan dari yang terbaru.
+### Manajemen Jadwal Perkuliahan
+
+#### 24. Daftar Jadwal Perkuliahan
+
+Mengambil seluruh data jadwal perkuliahan dengan Eager Loading. Pagination 10 data per halaman.
 
 - **URL:** `/jadwal-perkuliahan`
 - **Method:** `GET`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -853,25 +1121,17 @@ Mengambil seluruh data jadwal perkuliahan dengan Eager Loading (data mata kuliah
                 "id_mk": "uuid-string",
                 "kode_mk": "IF101",
                 "nama_mk": "Algoritma dan Pemrograman",
-                "sks": 3,
-                "deskripsi": "Deskripsi mata kuliah",
-                "semester": 1,
-                "fakultas": "Teknik",
-                "prodi": "Informatika"
+                "sks": 3
             },
             "kelas": {
                 "id_kelas": "uuid-string",
                 "nama_kelas": "Kelas A",
-                "kode_kelas": "KLS-A",
-                "tahun_angkatan": "2024",
-                "fakultas": "Teknik",
-                "prodi": "Informatika"
+                "kode_kelas": "KLS-A"
             },
             "dosen": {
                 "id_user": "uuid-string",
                 "nama_lengkap": "Dr. Budi Santoso",
-                "email": "budi@univ.ac.id",
-                "role": "Dosen"
+                "email": "budi@univ.ac.id"
             }
         }
     ],
@@ -880,15 +1140,33 @@ Mengambil seluruh data jadwal perkuliahan dengan Eager Loading (data mata kuliah
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Data jadwal perkuliahan tidak ditemukan."
+}
+```
+
 ---
 
-### 25. Detail Jadwal Perkuliahan (Admin)
-Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi mata kuliah, kelas, dan dosen.
+#### 25. Detail Jadwal Perkuliahan
+
+Mengambil detail satu jadwal perkuliahan berdasarkan ID.
 
 - **URL:** `/jadwal-perkuliahan/{id_jadwal}`
 - **Method:** `GET`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -911,29 +1189,28 @@ Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi ma
     "mata_kuliah": {
         "id_mk": "uuid-string",
         "kode_mk": "IF101",
-        "nama_mk": "Algoritma dan Pemrograman",
-        "sks": 3,
-        "deskripsi": "Deskripsi mata kuliah",
-        "semester": 1,
-        "fakultas": "Teknik",
-        "prodi": "Informatika"
+        "nama_mk": "Algoritma dan Pemrograman"
     },
     "kelas": {
         "id_kelas": "uuid-string",
         "nama_kelas": "Kelas A",
-        "kode_kelas": "KLS-A",
-        "tahun_angkatan": "2024",
-        "fakultas": "Teknik",
-        "prodi": "Informatika"
+        "kode_kelas": "KLS-A"
     },
     "dosen": {
         "id_user": "uuid-string",
         "nama_lengkap": "Dr. Budi Santoso",
-        "email": "budi@univ.ac.id",
-        "role": "Dosen"
+        "email": "budi@univ.ac.id"
     }
 }
 ```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
 
 - **Response Error (404 Not Found):**
 ```json
@@ -945,8 +1222,9 @@ Mengambil detail satu jadwal perkuliahan berdasarkan ID, termasuk data relasi ma
 
 ---
 
-### 26. Tambah Jadwal Perkuliahan (Admin)
-Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata kuliah yang dipilih. Token enrollment di-generate otomatis sebagai 6 karakter huruf kapital acak dan unik.
+#### 26. Tambah Jadwal Perkuliahan
+
+Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata kuliah. Token enrollment di-generate otomatis 6 karakter huruf kapital unik.
 
 - **URL:** `/jadwal-perkuliahan`
 - **Method:** `POST`
@@ -968,7 +1246,7 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
     "tanggal_mulai": "2026-07-01"
 }
 ```
-*Catatan: Field `sks` dan `token_enrollment` tidak perlu dikirim. SKS otomatis diambil dari mata kuliah, token otomatis di-generate oleh sistem. `semester` berupa integer (1-14).*
+*Catatan: Field `sks` dan `token_enrollment` tidak perlu dikirim. `semester` berupa integer (1-14).*
 
 - **Response Sukses (201 Created):**
 ```json
@@ -991,44 +1269,32 @@ Menambahkan data jadwal perkuliahan baru. SKS diambil otomatis dari master mata 
         "tanggal_mulai": "2026-07-01",
         "token_enrollment": "ABCXYZ",
         "created_at": "2026-06-21T10:00:00.000000Z",
-        "updated_at": "2026-06-21T10:00:00.000000Z",
-        "mata_kuliah": {
-        "id_mk": "550e8400-e29b-41d4-a716-446655440010",
-        "nama_mk": "Pemrograman Web"
-    },
-        "kelas": {
-        "id_kelas": "550e8400-e29b-41d4-a716-446655440011",
-        "nama_kelas": "TI-4A"
-    },
-        "dosen": {
-        "id_user": "550e8400-e29b-41d4-a716-446655440012",
-        "nama_lengkap": "Dr. Budi Santoso"
-    }
+        "updated_at": "2026-06-21T10:00:00.000000Z"
     }
 }
 ```
 
-- **Response Validasi Gagal (422 Unprocessable Entity):**
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
 ```json
 {
     "success": false,
-    "message": "Mata kuliah wajib dipilih. (and other validation messages)",
-    "errors": {
-        "id_mk": ["Mata kuliah wajib dipilih."],
-        "id_dosen": ["Pengguna yang dipilih bukan berstatus Dosen."],
-        "semester": ["Semester harus berupa angka.", "Semester minimal bernilai 1.", "Semester maksimal bernilai 14."],
-        "fakultas": ["Fakultas wajib diisi."],
-        "prodi": ["Program studi wajib diisi."],
-        "tahun": ["Tahun ajaran wajib diisi."],
-        "waktu_berakhir": ["Waktu berakhir harus setelah waktu mulai."]
-    }
+    "message": "Data mata kuliah, kelas, atau dosen tidak ditemukan."
 }
 ```
 
 ---
 
-### 27. Update Jadwal Perkuliahan (Admin)
-Memperbarui data jadwal perkuliahan yang sudah ada. Token enrollment tidak berubah. Jika mata kuliah (`id_mk`) diubah, maka SKS otomatis menyesuaikan dari mata kuliah baru.
+#### 27. Update Jadwal Perkuliahan
+
+Memperbarui data jadwal perkuliahan yang sudah ada. Token enrollment tidak berubah.
 
 - **URL:** `/jadwal-perkuliahan/{id_jadwal}`
 - **Method:** `PUT`
@@ -1059,6 +1325,14 @@ Memperbarui data jadwal perkuliahan yang sudah ada. Token enrollment tidak berub
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -1069,13 +1343,15 @@ Memperbarui data jadwal perkuliahan yang sudah ada. Token enrollment tidak berub
 
 ---
 
-### 28. Hapus Jadwal Perkuliahan (Admin)
+#### 28. Hapus Jadwal Perkuliahan
+
 Menghapus data jadwal perkuliahan secara permanen dari sistem.
 
 - **URL:** `/jadwal-perkuliahan/{id_jadwal}`
 - **Method:** `DELETE`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -1084,6 +1360,14 @@ Menghapus data jadwal perkuliahan secara permanen dari sistem.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -1094,98 +1378,17 @@ Menghapus data jadwal perkuliahan secara permanen dari sistem.
 
 ---
 
-### 29. Pendaftaran Peserta Kelas (Mahasiswa)
-Mahasiswa mendaftar (enroll) ke jadwal perkuliahan menggunakan token (6 karakter uppercase).
+### Manajemen Peserta Kelas
 
-- **URL:** `/peserta-kelas/enroll`
-- **Method:** `POST`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body:**
-```json
-{
-    "token_enrollment": "ABCXYZ"
-}
-```
+#### 29. Daftar Peserta Kelas by Jadwal
 
-- **Response Sukses (201 Created):**
-```json
-{
-    "success": true,
-    "message": "Berhasil mendaftar ke kelas.",
-    "data": {
-        "id_peserta": "uuid-string",
-        "id_jadwal": "uuid-jadwal",
-        "id_mahasiswa": "uuid-mahasiswa",
-        "tanggal_daftar": "2026-06-04T07:55:00.000000Z",
-        "evaluasi_selesai": false,
-        "kehadiran": "0/0",
-        "nilai_akhir": 0.00,
-        "status_kelayakan": "Belum Ditentukan",
-        "created_at": "2026-06-21T10:00:00.000000Z",
-        "updated_at": "2026-06-21T10:00:00.000000Z",
-        "jadwal": {
-            "id_jadwal": "550e8400-e29b-41d4-a716-446655440001",
-            "hari": "Senin",
-            "waktu_mulai": "08:00"
-        },
-        "mahasiswa": {
-            "id_user": "550e8400-e29b-41d4-a716-446655440013",
-            "nama_lengkap": "Budi Rahardjo"
-        }
-    }
-}
-```
-
-- **Response Error (403 Forbidden):**
-```json
-{
-    "success": false,
-    "message": "Hanya pengguna dengan role Mahasiswa yang dapat melakukan enrollment.",
-    "data": null
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "success": false,
-    "message": "Token enrollment tidak valid atau jadwal tidak ditemukan.",
-    "data": null
-}
-```
-
-- **Response Error (409 Conflict):**
-```json
-{
-    "success": false,
-    "message": "Anda sudah terdaftar di kelas ini.",
-    "data": null
-}
-```
-
-- **Response Validasi Gagal (422 Unprocessable Entity):**
-```json
-{
-    "success": false,
-    "message": "Validasi gagal.",
-    "data": {
-        "token_enrollment": [
-            "Token enrollment wajib diisi."
-        ]
-    }
-}
-```
-
----
-
-### 30. Daftar Peserta Kelas by Jadwal
-Mengambil daftar seluruh peserta yang terdaftar pada jadwal tertentu. Data mahasiswa di-eager load untuk mencegah N+1 query.
+Mengambil daftar seluruh peserta yang terdaftar pada jadwal tertentu.
 
 - **URL:** `/jadwal/{id_jadwal}/peserta`
 - **Method:** `GET`
 - **Headers:**
     - `Authorization: Bearer <token>`
+
 - **Response Sukses (200 OK):**
 ```json
 {
@@ -1214,6 +1417,14 @@ Mengambil daftar seluruh peserta yang terdaftar pada jadwal tertentu. Data mahas
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
 - **Response Error (404 Not Found):**
 ```json
 {
@@ -1221,294 +1432,15 @@ Mengambil daftar seluruh peserta yang terdaftar pada jadwal tertentu. Data mahas
     "message": "Data jadwal perkuliahan tidak ditemukan.",
     "data": null
 }
-}
 ```
 
 ---
 
-### 31. Tambah Sesi Pertemuan
-Menambahkan data sesi pertemuan untuk suatu jadwal perkuliahan. Sesi ini akan diperiksa apakah berbenturan waktunya atau apakah pertemuannya duplikat.
+### Manajemen Tugas (Admin)
 
-- **URL:** `/sesi-pertemuan`
-- **Method:** `POST`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body:**
-```json
-{
-    "id_jadwal": "550e8400-e29b-41d4-a716-446655440000",
-    "pertemuan_ke": 1,
-    "judul_sesi": "Pengantar Perkuliahan",
-    "tanggal_pelaksanaan": "2026-06-15",
-    "jam_mulai": "08:00",
-    "jam_berakhir": "10:00",
-    "metode_pertemuan": "synchronous",
-    "link_kelas_daring": "https://meet.google.com/abc-defg-hij"
-}
-```
-*Catatan: Nilai `id_jadwal` di atas hanya contoh format UUID. Pastikan Anda menggunakan `id_jadwal` asli yang sudah terdaftar di database (ambil melalui endpoint `GET /jadwal-perkuliahan`).*
+#### 30. Daftar Tugas
 
-- **Response Sukses (201 Created):**
-```json
-{
-    "status": "success",
-    "message": "Sesi pertemuan berhasil dibuat.",
-    "data": {
-        "id_sesi": "uuid-string",
-        "id_jadwal": "550e8400-e29b-41d4-a716-446655440000",
-        "pertemuan_ke": 1,
-        "judul_sesi": "Pengantar Perkuliahan",
-        "tanggal_pelaksanaan": "2026-06-15",
-        "jam_mulai": "08:00",
-        "jam_berakhir": "10:00",
-        "metode_pertemuan": "synchronous",
-        "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
-        "created_at": "2026-06-21T10:00:00.000000Z",
-        "updated_at": "2026-06-21T10:00:00.000000Z"
-    }
-}
-```
-
-- **Response Error (422 Unprocessable Entity - Bentrok Waktu):**
-```json
-{
-    "status": "error",
-    "message": "Waktu sesi bentrok dengan sesi lain pada tanggal yang sama."
-}
-```
-
-- **Response Error (422 Unprocessable Entity - Duplikasi Pertemuan Ke):**
-```json
-{
-    "status": "error",
-    "message": "Pertemuan ke-1 sudah ada untuk jadwal ini."
-}
-```
-
----
-
-### 32. Daftar Sesi Pertemuan
-Mengambil seluruh data sesi pertemuan dengan pagination (10 data per halaman), diurutkan berdasarkan tanggal pelaksanaan (terbaru) dan nomor pertemuan. Mendukung filter berdasarkan `id_jadwal`, `tanggal`, dan `metode_pertemuan`.
-
-- **URL:** `/sesi-pertemuan`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Query Params (Optional):**
-    - `per_page` (integer, default: 10): Jumlah data per halaman
-    - `id_jadwal` (uuid): Filter berdasarkan ID jadwal perkuliahan
-    - `tanggal` (date, format: YYYY-MM-DD): Filter berdasarkan tanggal pelaksanaan
-    - `metode_pertemuan` (string): Filter berdasarkan metode (`synchronous` atau `asynchronous`)
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "current_page": 1,
-        "data": [
-            {
-                "id_sesi": "uuid-string",
-                "id_jadwal": "uuid-jadwal",
-                "pertemuan_ke": 1,
-                "judul_sesi": "Pengantar Perkuliahan",
-                "tanggal_pelaksanaan": "2026-06-15",
-                "jam_mulai": "08:00",
-                "jam_berakhir": "10:00",
-                "metode_pertemuan": "synchronous",
-                "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
-                "created_at": "2026-06-21T10:00:00.000000Z",
-                "updated_at": "2026-06-21T10:00:00.000000Z",
-                "jadwal_perkuliahan": {
-                    "id_jadwal": "uuid-jadwal",
-                    "id_mk": "uuid-mk",
-                    "id_kelas": "uuid-kelas",
-                    "id_dosen": "uuid-dosen",
-                    "sks": 3,
-                    "fakultas": "Teknik",
-                    "prodi": "Informatika",
-                    "tahun": "2025/2026",
-                    "semester": 1,
-                    "hari": "Senin",
-                    "waktu_mulai": "08:00",
-                    "waktu_berakhir": "10:00",
-                    "token_enrollment": "ABCXYZ",
-                    "created_at": "2026-06-21T10:00:00.000000Z",
-                    "updated_at": "2026-06-21T10:00:00.000000Z"
-                }
-            }
-        ],
-        "total": 1,
-        "per_page": 10
-    }
-}
-```
-
----
-
-### 33. Detail Sesi Pertemuan
-Mengambil detail satu data sesi pertemuan berdasarkan ID, termasuk data relasi jadwal perkuliahan.
-
-- **URL:** `/sesi-pertemuan/{id_sesi}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "id_sesi": "uuid-string",
-        "id_jadwal": "uuid-jadwal",
-        "pertemuan_ke": 1,
-        "judul_sesi": "Pengantar Perkuliahan",
-        "tanggal_pelaksanaan": "2026-06-15",
-        "jam_mulai": "08:00",
-        "jam_berakhir": "10:00",
-        "metode_pertemuan": "synchronous",
-        "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
-        "created_at": "2026-06-21T10:00:00.000000Z",
-        "updated_at": "2026-06-21T10:00:00.000000Z",
-        "jadwal_perkuliahan": {
-            "id_jadwal": "uuid-jadwal",
-            "id_mk": "uuid-mk",
-            "id_kelas": "uuid-kelas",
-            "id_dosen": "uuid-dosen",
-            "sks": 3,
-            "fakultas": "Teknik",
-            "prodi": "Informatika",
-            "tahun": "2025/2026",
-            "semester": 1,
-            "hari": "Senin",
-            "waktu_mulai": "08:00",
-            "waktu_berakhir": "10:00",
-            "token_enrollment": "ABCXYZ",
-            "created_at": "2026-06-21T10:00:00.000000Z",
-            "updated_at": "2026-06-21T10:00:00.000000Z"
-        }
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "status": "error",
-    "message": "Sesi pertemuan tidak ditemukan."
-}
-```
-
----
-
-### 34. Update Sesi Pertemuan
-Memperbarui data sesi pertemuan yang sudah ada. Field `id_jadwal` tidak dapat diubah. Validasi duplikasi pertemuan ke dan bentrok waktu tetap berlaku untuk record lain.
-
-- **URL:** `/sesi-pertemuan/{id_sesi}`
-- **Method:** `PUT`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body:**
-```json
-{
-    "pertemuan_ke": 1,
-    "judul_sesi": "Pengantar Perkuliahan (Updated)",
-    "tanggal_pelaksanaan": "2026-06-16",
-    "jam_mulai": "09:00",
-    "jam_berakhir": "11:00",
-    "metode_pertemuan": "synchronous",
-    "status": "TERJADWAL",
-    "materi": "Materi PDF tentang pengenalan perkuliahan",
-    "url_cbt": "https://cbt.uika.ac.id/exam/123",
-    "link_kelas_daring": "https://meet.google.com/xyz-abcd-efg"
-}
-```
-*Catatan: Field `id_jadwal` tidak boleh dikirim karena tidak dapat diubah. Tanggal pelaksanaan boleh tanggal lampau (berbeda dengan endpoint POST). `status` dapat berupa TERJADWAL, BERJALAN, atau SELESAI.*
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Sesi pertemuan berhasil diperbarui.",
-    "data": {
-        "id_sesi": "uuid-string",
-        "id_jadwal": "uuid-jadwal",
-        "pertemuan_ke": 1,
-        "judul_sesi": "Pengantar Perkuliahan (Updated)",
-        "tanggal_pelaksanaan": "2026-06-16",
-        "jam_mulai": "09:00",
-        "jam_berakhir": "11:00",
-        "metode_pertemuan": "synchronous",
-        "link_kelas_daring": "https://meet.google.com/xyz-abcd-efg",
-        "created_at": "2026-06-21T10:00:00.000000Z",
-        "updated_at": "2026-06-21T10:00:00.000000Z"
-    }
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "status": "error",
-    "message": "Sesi pertemuan tidak ditemukan."
-}
-```
-
-- **Response Error (422 Unprocessable Entity - ID Jadwal Diubah):**
-```json
-{
-    "message": "ID Jadwal tidak boleh diubah.",
-    "errors": {
-        "id_jadwal": ["ID Jadwal tidak boleh diubah."]
-    }
-}
-```
-
-- **Response Error (422 Unprocessable Entity - Bentrok Waktu):**
-```json
-{
-    "status": "error",
-    "message": "Waktu sesi bentrok dengan sesi lain pada tanggal yang sama."
-}
-```
-
-- **Response Error (422 Unprocessable Entity - Duplikasi Pertemuan Ke):**
-```json
-{
-    "status": "error",
-    "message": "Pertemuan ke-1 sudah ada untuk jadwal ini."
-}
-```
-
----
-
-### 35. Hapus Sesi Pertemuan
-Menghapus data sesi pertemuan secara permanen dari sistem.
-
-- **URL:** `/sesi-pertemuan/{id_sesi}`
-- **Method:** `DELETE`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Sesi pertemuan berhasil dihapus."
-}
-```
-
-- **Response Error (404 Not Found):**
-```json
-{
-    "status": "error",
-    "message": "Sesi pertemuan tidak ditemukan."
-}
-```
-
----
-
-## 📜 Fitur Tugas
-
-### 36. Daftar Tugas (Admin)
-Endpoint untuk daftar tugas (admin).
+Mengambil semua data tugas yang ada di sistem.
 
 - **URL:** `/admin/tugas`
 - **Method:** `GET`
@@ -1519,560 +1451,43 @@ Endpoint untuk daftar tugas (admin).
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 37. Buat Tugas
-Endpoint untuk buat tugas.
-
-- **URL:** `/sesi/{sesi_id}/tugas`
-- **Method:** `POST`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
-```json
-{
-    "judul_tugas": "string, max 200, required",
-    "deskripsi_tugas": "string, optional",
-    "batas_waktu": "YYYY-MM-DD HH:MM:SS, required",
-    "link_cbt": "url, optional",
-    "token_cbt": "string, max 10, optional"
-}
-```
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 38. Update Tugas
-Endpoint untuk update tugas.
-
-- **URL:** `/tugas/{id}`
-- **Method:** `PUT`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
-```json
-{
-    "judul_tugas": "string, max 200, optional",
-    "deskripsi_tugas": "string, optional",
-    "batas_waktu": "YYYY-MM-DD HH:MM:SS, optional",
-    "link_cbt": "url, optional",
-    "token_cbt": "string, max 10, optional"
-}
-```
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 39. Hapus Tugas
-Endpoint untuk hapus tugas.
-
-- **URL:** `/tugas/{id}`
-- **Method:** `DELETE`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 40. Daftar Tugas di Sesi
-Endpoint untuk daftar tugas di sesi.
-
-- **URL:** `/sesi/{sesi_id}/tugas`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 41. Detail Tugas
-Endpoint untuk detail tugas.
-
-- **URL:** `/tugas/{id}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 42. Cek Deadline Tugas
-Endpoint untuk cek deadline tugas.
-
-- **URL:** `/tugas/{id}/deadline`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 43. Get Launch URL Tugas
-Endpoint untuk get launch url tugas.
-
-- **URL:** `/tugas/{id}/launch/{id_peserta}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-## Fitur Forum Diskusi
-
-### 44. Daftar Forum Diskusi Sesi
-Endpoint untuk daftar forum diskusi sesi.
-
-- **URL:** `/sesi/{idSesi}/forum`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 45. Buat Post Forum
-Endpoint untuk buat post forum.
-
-- **URL:** `/forum`
-- **Method:** `POST`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
-```json
-{
-    "id_sesi": "uuid, required",
-    "isi_pesan": "string, max 5000, required",
-    "id_parent_pesan": "uuid, optional"
-}
-```
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 46. Detail Post Forum
-Endpoint untuk detail post forum.
-
-- **URL:** `/forum/{idPesan}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 47. Balasan Forum
-Endpoint untuk balasan forum.
-
-- **URL:** `/forum/{idPesan}/replies`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 48. Update Post
-Endpoint untuk update post.
-
-- **URL:** `/forum/{idPesan}`
-- **Method:** `PUT`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
-```json
-{
-    "isi_pesan": "string, max 5000, required"
-}
-```
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 49. Hapus Post
-Endpoint untuk hapus post.
-
-- **URL:** `/forum/{idPesan}`
-- **Method:** `DELETE`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 50. Cari Forum
-Endpoint untuk cari forum.
-
-- **URL:** `/sesi/{idSesi}/forum/search`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-## 📜 Fitur Nilai CBT
-
-### 51. Simpan Nilai CBT
-Endpoint untuk simpan nilai cbt.
-
-- **URL:** `/nilai-cbt`
-- **Method:** `POST`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
-```json
-{
-    "nilai": [
+    "message": "Daftar tugas berhasil diambil.",
+    "data": [
         {
-            "id_tugas": "uuid, required",
-            "id_peserta": "uuid, required",
-            "nilai": "numeric 0-100, required"
+            "id": "uuid-string",
+            "judul_tugas": "Tugas Pertemuan 1",
+            "deskripsi_tugas": "Kerjakan soal algoritma berikut.",
+            "batas_waktu": "2026-07-01 23:59:59",
+            "link_cbt": "https://cbt.uika.ac.id/exam/123",
+            "token_cbt": "ABC123"
         }
     ]
 }
 ```
 
-- **Response Sukses (200 OK):**
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
 ```json
 {
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
+    "status": "error",
+    "message": "Data tugas tidak ditemukan."
 }
 ```
 
 ---
 
-### 52. Nilai CBT per Tugas
-Endpoint untuk nilai cbt per tugas.
+### Manajemen Pertanyaan Evaluasi
 
-- **URL:** `/nilai-cbt/tugas/{id_tugas}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
+#### 31. Daftar Pertanyaan Evaluasi
 
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 53. Nilai CBT per Peserta
-Endpoint untuk nilai cbt per peserta.
-
-- **URL:** `/nilai-cbt/peserta/{id_peserta}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 54. Detail Nilai CBT
-Endpoint untuk detail nilai cbt.
-
-- **URL:** `/nilai-cbt/{id_tugas}/{id_peserta}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 55. Update Nilai CBT
-Endpoint untuk update nilai cbt.
-
-- **URL:** `/nilai-cbt/{id_nilai}`
-- **Method:** `PUT`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
-```json
-{
-    "nilai": "numeric 0-100, required"
-}
-```
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 56. Hapus Nilai CBT
-Endpoint untuk hapus nilai cbt.
-
-- **URL:** `/nilai-cbt/{id_nilai}`
-- **Method:** `DELETE`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 57. Statistik Nilai Tugas
-Endpoint untuk statistik nilai tugas.
-
-- **URL:** `/nilai-cbt/tugas/{id_tugas}/statistik`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 58. Ranking Nilai Tugas
-Endpoint untuk ranking nilai tugas.
-
-- **URL:** `/nilai-cbt/tugas/{id_tugas}/ranking/{limit?}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-## 📜 Fitur Pertanyaan Evaluasi
-
-### 59. Daftar Pertanyaan Evaluasi
-Endpoint untuk daftar pertanyaan evaluasi.
+Mengambil seluruh data pertanyaan evaluasi.
 
 - **URL:** `/pertanyaan-evaluasi`
 - **Method:** `GET`
@@ -2083,18 +1498,40 @@ Endpoint untuk daftar pertanyaan evaluasi.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
+    "message": "Daftar pertanyaan berhasil diambil.",
+    "data": [
+        {
+            "id_pertanyaan": "uuid-string",
+            "kategori": "Pengajaran",
+            "teks_pertanyaan": "Bagaimana kualitas pengajaran dosen?",
+            "urutan": 1,
+            "is_aktif": true
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data pertanyaan evaluasi tidak ditemukan."
 }
 ```
 
 ---
 
-### 60. Daftar Pertanyaan Aktif
-Endpoint untuk daftar pertanyaan aktif.
+#### 32. Daftar Pertanyaan Aktif
+
+Mengambil daftar pertanyaan evaluasi yang berstatus aktif.
 
 - **URL:** `/pertanyaan-evaluasi/aktif`
 - **Method:** `GET`
@@ -2105,18 +1542,40 @@ Endpoint untuk daftar pertanyaan aktif.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
+    "message": "Daftar pertanyaan aktif berhasil diambil.",
+    "data": [
+        {
+            "id_pertanyaan": "uuid-string",
+            "kategori": "Pengajaran",
+            "teks_pertanyaan": "Bagaimana kualitas pengajaran dosen?",
+            "urutan": 1,
+            "is_aktif": true
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data pertanyaan aktif tidak ditemukan."
 }
 ```
 
 ---
 
-### 61. Daftar Kategori Pertanyaan
-Endpoint untuk daftar kategori pertanyaan.
+#### 33. Daftar Kategori Pertanyaan
+
+Mengambil daftar kategori pertanyaan evaluasi yang tersedia.
 
 - **URL:** `/pertanyaan-evaluasi/kategori`
 - **Method:** `GET`
@@ -2127,18 +1586,32 @@ Endpoint untuk daftar kategori pertanyaan.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
+    "message": "Daftar kategori berhasil diambil.",
+    "data": ["Pengajaran", "Kedisiplinan", "Materi"]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data kategori tidak ditemukan."
 }
 ```
 
 ---
 
-### 62. Detail Pertanyaan
-Endpoint untuk detail pertanyaan.
+#### 34. Detail Pertanyaan
+
+Mengambil detail satu pertanyaan evaluasi berdasarkan ID.
 
 - **URL:** `/pertanyaan-evaluasi/{id_pertanyaan}`
 - **Method:** `GET`
@@ -2149,30 +1622,50 @@ Endpoint untuk detail pertanyaan.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Detail pertanyaan berhasil diambil.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "id_pertanyaan": "uuid-string",
+        "kategori": "Pengajaran",
+        "teks_pertanyaan": "Bagaimana kualitas pengajaran dosen?",
+        "urutan": 1,
+        "is_aktif": true
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data pertanyaan tidak ditemukan."
 }
 ```
 
 ---
 
-### 63. Buat Pertanyaan
-Endpoint untuk buat pertanyaan.
+#### 35. Buat Pertanyaan
+
+Menambahkan pertanyaan evaluasi baru.
 
 - **URL:** `/pertanyaan-evaluasi`
 - **Method:** `POST`
 - **Headers:**
     - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
+- **Request Body:**
 ```json
 {
-    "kategori": "string, max 50, required",
-    "teks_pertanyaan": "string, required",
-    "urutan": "integer, min 1, required",
-    "is_aktif": "boolean, optional"
+    "kategori": "Pengajaran",
+    "teks_pertanyaan": "Bagaimana kualitas pengajaran dosen?",
+    "urutan": 1,
+    "is_aktif": true
 }
 ```
 
@@ -2180,30 +1673,50 @@ Endpoint untuk buat pertanyaan.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Pertanyaan evaluasi berhasil dibuat.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "id_pertanyaan": "uuid-string",
+        "kategori": "Pengajaran",
+        "teks_pertanyaan": "Bagaimana kualitas pengajaran dosen?",
+        "urutan": 1,
+        "is_aktif": true
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Endpoint tidak ditemukan."
 }
 ```
 
 ---
 
-### 64. Update Pertanyaan
-Endpoint untuk update pertanyaan.
+#### 36. Update Pertanyaan
+
+Memperbarui data pertanyaan evaluasi yang sudah ada.
 
 - **URL:** `/pertanyaan-evaluasi/{id_pertanyaan}`
 - **Method:** `PUT`
 - **Headers:**
     - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
+- **Request Body:**
 ```json
 {
-    "kategori": "string, max 50, optional",
-    "teks_pertanyaan": "string, optional",
-    "urutan": "integer, optional",
-    "is_aktif": "boolean, optional"
+    "kategori": "Kedisiplinan",
+    "teks_pertanyaan": "Bagaimana kedisiplinan dosen dalam mengajar?",
+    "urutan": 2,
+    "is_aktif": true
 }
 ```
 
@@ -2211,18 +1724,38 @@ Endpoint untuk update pertanyaan.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Pertanyaan evaluasi berhasil diperbarui.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "id_pertanyaan": "uuid-string",
+        "kategori": "Kedisiplinan",
+        "teks_pertanyaan": "Bagaimana kedisiplinan dosen dalam mengajar?",
+        "urutan": 2,
+        "is_aktif": true
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data pertanyaan tidak ditemukan."
 }
 ```
 
 ---
 
-### 65. Hapus Pertanyaan
-Endpoint untuk hapus pertanyaan.
+#### 37. Hapus Pertanyaan
+
+Menghapus pertanyaan evaluasi secara permanen.
 
 - **URL:** `/pertanyaan-evaluasi/{id_pertanyaan}`
 - **Method:** `DELETE`
@@ -2233,18 +1766,31 @@ Endpoint untuk hapus pertanyaan.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
+    "message": "Pertanyaan evaluasi berhasil dihapus."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data pertanyaan tidak ditemukan."
 }
 ```
 
 ---
 
-### 66. Toggle Status Aktif Pertanyaan
-Endpoint untuk toggle status aktif pertanyaan.
+#### 38. Toggle Status Aktif Pertanyaan
+
+Mengubah status aktif pertanyaan evaluasi menjadi aktif atau nonaktif.
 
 - **URL:** `/pertanyaan-evaluasi/{id_pertanyaan}/toggle`
 - **Method:** `PUT`
@@ -2255,66 +1801,51 @@ Endpoint untuk toggle status aktif pertanyaan.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Status pertanyaan berhasil diubah.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "id_pertanyaan": "uuid-string",
+        "is_aktif": false
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data pertanyaan tidak ditemukan."
 }
 ```
 
 ---
 
-### 67. Update Urutan Bulk
-Endpoint untuk update urutan bulk.
+#### 39. Update Urutan Bulk
+
+Memperbarui urutan beberapa pertanyaan sekaligus.
 
 - **URL:** `/pertanyaan-evaluasi/bulk-urutan`
 - **Method:** `POST`
 - **Headers:**
     - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
+- **Request Body:**
 ```json
 {
     "urutan": [
         {
-            "id_pertanyaan": "uuid, required",
-            "urutan": "integer, required"
-        }
-    ]
-}
-```
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-## 📜 Fitur Jawaban Evaluasi
-
-### 68. Simpan Jawaban Evaluasi
-Endpoint untuk simpan jawaban evaluasi.
-
-- **URL:** `/jawaban-evaluasi`
-- **Method:** `POST`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
-```json
-{
-    "id_peserta": "uuid, required",
-    "jawaban": [
+            "id_pertanyaan": "uuid-pertanyaan-1",
+            "urutan": 1
+        },
         {
-            "id_pertanyaan": "uuid, required",
-            "skor": "integer 1-5, required"
+            "id_pertanyaan": "uuid-pertanyaan-2",
+            "urutan": 2
         }
     ]
 }
@@ -2324,224 +1855,33 @@ Endpoint untuk simpan jawaban evaluasi.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
+    "message": "Urutan pertanyaan berhasil diperbarui."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data pertanyaan tidak ditemukan."
 }
 ```
 
 ---
 
-### 69. Jawaban per Peserta
-Endpoint untuk jawaban per peserta.
+### Manajemen Template Sertifikat
 
-- **URL:** `/jawaban-evaluasi/peserta/{id_peserta}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
+#### 40. Daftar Template Sertifikat
 
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 70. Jawaban per Pertanyaan
-Endpoint untuk jawaban per pertanyaan.
-
-- **URL:** `/jawaban-evaluasi/pertanyaan/{id_pertanyaan}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 71. Detail Jawaban
-Endpoint untuk detail jawaban.
-
-- **URL:** `/jawaban-evaluasi/{id_pertanyaan}/{id_peserta}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 72. Update Jawaban
-Endpoint untuk update jawaban.
-
-- **URL:** `/jawaban-evaluasi/{id_evaluasi}`
-- **Method:** `PUT`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
-```json
-{
-    "skor": "integer 1-5, required"
-}
-```
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 73. Hapus Jawaban
-Endpoint untuk hapus jawaban.
-
-- **URL:** `/jawaban-evaluasi/{id_evaluasi}`
-- **Method:** `DELETE`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 74. Statistik Jawaban Pertanyaan
-Endpoint untuk statistik jawaban pertanyaan.
-
-- **URL:** `/jawaban-evaluasi/pertanyaan/{id_pertanyaan}/statistik`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 75. Statistik Kategori Evaluasi
-Endpoint untuk statistik kategori evaluasi.
-
-- **URL:** `/jawaban-evaluasi/statistik-kategori`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 76. Cek Status Evaluasi Peserta
-Endpoint untuk cek status evaluasi peserta.
-
-- **URL:** `/jawaban-evaluasi/peserta/{id_peserta}/status`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-### 77. Rekap Evaluasi
-Endpoint untuk rekap evaluasi.
-
-- **URL:** `/jawaban-evaluasi/rekap`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
-}
-```
-
----
-
-## Fitur Template Sertifikat
-
-### 78. Daftar Template
-Endpoint untuk daftar template.
+Mengambil seluruh data template sertifikat.
 
 - **URL:** `/template-sertifikat`
 - **Method:** `GET`
@@ -2552,18 +1892,40 @@ Endpoint untuk daftar template.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
+    "message": "Daftar template berhasil diambil.",
+    "data": [
+        {
+            "id_template": "uuid-string",
+            "nama_template": "Sertifikat Kelulusan",
+            "file_background": "backgrounds/template1.png",
+            "is_aktif": true,
+            "created_at": "2026-06-21T10:00:00.000000Z"
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data template tidak ditemukan."
 }
 ```
 
 ---
 
-### 79. Daftar Template Aktif
-Endpoint untuk daftar template aktif.
+#### 41. Daftar Template Aktif
+
+Mengambil daftar template sertifikat yang berstatus aktif.
 
 - **URL:** `/template-sertifikat/aktif`
 - **Method:** `GET`
@@ -2574,18 +1936,38 @@ Endpoint untuk daftar template aktif.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
+    "message": "Daftar template aktif berhasil diambil.",
+    "data": [
+        {
+            "id_template": "uuid-string",
+            "nama_template": "Sertifikat Kelulusan",
+            "is_aktif": true
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data template aktif tidak ditemukan."
 }
 ```
 
 ---
 
-### 80. Detail Template
-Endpoint untuk detail template.
+#### 42. Detail Template Sertifikat
+
+Mengambil detail satu data template sertifikat berdasarkan ID.
 
 - **URL:** `/template-sertifikat/{id_template}`
 - **Method:** `GET`
@@ -2596,18 +1978,39 @@ Endpoint untuk detail template.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Detail template berhasil diambil.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "id_template": "uuid-string",
+        "nama_template": "Sertifikat Kelulusan",
+        "file_background": "backgrounds/template1.png",
+        "is_aktif": true,
+        "created_at": "2026-06-21T10:00:00.000000Z",
+        "updated_at": "2026-06-21T10:00:00.000000Z"
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data template tidak ditemukan."
 }
 ```
 
 ---
 
-### 81. Buat Template
-Endpoint untuk buat template.
+#### 43. Buat Template Sertifikat
+
+Membuat template sertifikat baru.
 
 - **URL:** `/template-sertifikat`
 - **Method:** `POST`
@@ -2622,28 +2025,46 @@ Endpoint untuk buat template.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Template sertifikat berhasil dibuat.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "id_template": "uuid-string",
+        "nama_template": "Sertifikat Kelulusan",
+        "is_aktif": true
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Endpoint tidak ditemukan."
 }
 ```
 
 ---
 
-### 82. Update Template
-Endpoint untuk update template.
+#### 44. Update Template Sertifikat
+
+Memperbarui data template sertifikat yang sudah ada.
 
 - **URL:** `/template-sertifikat/{id_template}`
 - **Method:** `PUT`
 - **Headers:**
     - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
+- **Request Body:**
 ```json
 {
-    "nama_template": "string, max 100, optional",
-    "is_aktif": "boolean, optional"
+    "nama_template": "Sertifikat Kelulusan Updated",
+    "is_aktif": false
 }
 ```
 
@@ -2651,18 +2072,36 @@ Endpoint untuk update template.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Template sertifikat berhasil diperbarui.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "id_template": "uuid-string",
+        "nama_template": "Sertifikat Kelulusan Updated",
+        "is_aktif": false
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data template tidak ditemukan."
 }
 ```
 
 ---
 
-### 83. Hapus Template
-Endpoint untuk hapus template.
+#### 45. Hapus Template Sertifikat
+
+Menghapus template sertifikat secara permanen.
 
 - **URL:** `/template-sertifikat/{id_template}`
 - **Method:** `DELETE`
@@ -2673,18 +2112,31 @@ Endpoint untuk hapus template.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
-    "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
-    }
+    "message": "Template sertifikat berhasil dihapus."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data template tidak ditemukan."
 }
 ```
 
 ---
 
-### 84. Toggle Status Aktif Template
-Endpoint untuk toggle status aktif template.
+#### 46. Toggle Status Aktif Template
+
+Mengubah status aktif template sertifikat.
 
 - **URL:** `/template-sertifikat/{id_template}/toggle`
 - **Method:** `PUT`
@@ -2695,18 +2147,35 @@ Endpoint untuk toggle status aktif template.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Status template berhasil diubah.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "id_template": "uuid-string",
+        "is_aktif": false
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data template tidak ditemukan."
 }
 ```
 
 ---
 
-### 85. Upload Background Template
-Endpoint untuk upload background template.
+#### 47. Upload Background Template
+
+Mengunggah gambar background untuk template sertifikat.
 
 - **URL:** `/template-sertifikat/{id_template}/background`
 - **Method:** `POST`
@@ -2719,18 +2188,35 @@ Endpoint untuk upload background template.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Background template berhasil diupload.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "id_template": "uuid-string",
+        "file_background": "backgrounds/template1.png"
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data template tidak ditemukan."
 }
 ```
 
 ---
 
-### 86. Download Background Template
-Endpoint untuk download background template.
+#### 48. Download Background Template
+
+Mengunduh file background dari template sertifikat.
 
 - **URL:** `/template-sertifikat/{id_template}/download-background`
 - **Method:** `GET`
@@ -2741,19 +2227,35 @@ Endpoint untuk download background template.
 ```json
 {
     "status": "success",
-    "message": "Berhasil",
+    "message": "Background template berhasil diunduh.",
     "data": {
-        "id": "550e8400-e29b-41d4-a716-446655440099",
-        "keterangan": "Data berhasil diproses"
+        "url": "/storage/backgrounds/template1.png"
     }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data template atau file background tidak ditemukan."
 }
 ```
 
 ---
 
-## 📜 Fitur Sertifikat
+### Manajemen Sertifikat
 
-### 87. Daftar Sertifikat
+#### 49. Daftar Sertifikat
+
 Mengambil semua sertifikat dengan dukungan filter dan pagination (15 data per halaman).
 
 - **URL:** `/sertifikat`
@@ -2761,10 +2263,10 @@ Mengambil semua sertifikat dengan dukungan filter dan pagination (15 data per ha
 - **Headers:**
     - `Authorization: Bearer <token>`
 - **Query Params:**
-    - `id_peserta` (opsional): Filter berdasarkan ID peserta (UUID)
-    - `id_template` (opsional): Filter berdasarkan ID template (UUID)
-    - `dari_tanggal` (opsional): Filter rentang tanggal terbit awal (YYYY-MM-DD)
-    - `sampai_tanggal` (opsional): Filter rentang tanggal terbit akhir (YYYY-MM-DD)
+    - `id_peserta` (opsional): Filter berdasarkan ID peserta
+    - `id_template` (opsional): Filter berdasarkan ID template
+    - `dari_tanggal` (opsional): Filter awal rentang tanggal (YYYY-MM-DD)
+    - `sampai_tanggal` (opsional): Filter akhir rentang tanggal (YYYY-MM-DD)
     - `per_page` (opsional): Jumlah item per halaman (default 15)
 
 - **Response Sukses (200 OK):**
@@ -2781,8 +2283,6 @@ Mengambil semua sertifikat dengan dukungan filter dan pagination (15 data per ha
                 "nomor_sertifikat": "SERT/2026/06/0001",
                 "tanggal_terbit": "2026-06-17",
                 "file_url": "sertifikats/filename.pdf",
-                "created_at": "2026-06-21T10:00:00.000000Z",
-                "updated_at": "2026-06-21T10:00:00.000000Z",
                 "peserta": {
                     "id_user": "uuid-string",
                     "nama_lengkap": "Budi Santoso",
@@ -2801,81 +2301,27 @@ Mengambil semua sertifikat dengan dukungan filter dan pagination (15 data per ha
 }
 ```
 
----
-
-### 88. Daftar Sertifikat per Peserta
-Mengambil semua sertifikat untuk satu peserta tertentu (tanpa pagination).
-
-- **URL:** `/sertifikat/peserta/{id_peserta}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
+- **Response Error (401 Unauthorized):**
+`json
 {
-    "status": "success",
-    "data": [
-        {
-            "id_sertifikat": "uuid-string",
-            "nomor_sertifikat": "SERT/2026/06/0001",
-            "tanggal_terbit": "2026-06-17",
-            "peserta": {
-                "id_peserta": "550e8400-e29b-41d4-a716-446655440020",
-                "nama_lengkap": "Budi Rahardjo"
-            },
-            "template": {
-                "id_template": "550e8400-e29b-41d4-a716-446655440021",
-                "nama_template": "Sertifikat Kelulusan"
-            }
-        }
-    ]
+    "success": false,
+    "message": "Unauthenticated."
 }
-```
-
----
-
-### 89. Detail Sertifikat
-Mengambil detail satu data sertifikat.
-
-- **URL:** `/sertifikat/{id_sertifikat}`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "id_sertifikat": "uuid-string",
-        "nomor_sertifikat": "SERT/2026/06/0001",
-        "tanggal_terbit": "2026-06-17",
-        "file_url": "sertifikats/filename.pdf",
-        "peserta": {
-                "id_peserta": "550e8400-e29b-41d4-a716-446655440020",
-                "nama_lengkap": "Budi Rahardjo"
-            },
-        "template": {
-                "id_template": "550e8400-e29b-41d4-a716-446655440021",
-                "nama_template": "Sertifikat Kelulusan"
-            }
-    }
-}
-```
+`
 
 - **Response Error (404 Not Found):**
 ```json
 {
     "status": "error",
-    "message": "Sertifikat tidak ditemukan"
+    "message": "Data sertifikat tidak ditemukan."
 }
 ```
 
 ---
 
-### 90. Terbitkan Sertifikat
-Menerbitkan sertifikat baru untuk satu peserta. Nomor sertifikat akan digenerate otomatis.
+#### 50. Terbitkan Sertifikat
+
+Menerbitkan sertifikat baru untuk satu peserta. Nomor sertifikat digenerate otomatis.
 
 - **URL:** `/sertifikat`
 - **Method:** `POST`
@@ -2893,22 +2339,39 @@ Menerbitkan sertifikat baru untuk satu peserta. Nomor sertifikat akan digenerate
     "status": "success",
     "message": "Sertifikat berhasil diterbitkan",
     "data": {
-        "id_sertifikat": "550e8400-e29b-41d4-a716-446655440003",
+        "id_sertifikat": "uuid-string",
         "nomor_sertifikat": "SERT/2026/06/0002"
     }
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data peserta atau template tidak ditemukan."
+}
+```
+
 ---
 
-### 91. Terbitkan Sertifikat Bulk
+#### 51. Terbitkan Sertifikat Bulk
+
 Menerbitkan sertifikat untuk banyak peserta sekaligus.
 
 - **URL:** `/sertifikat/bulk`
 - **Method:** `POST`
 - **Headers:**
     - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
+- **Request Body:**
 ```json
 {
     "id_template": "uuid-string",
@@ -2927,11 +2390,11 @@ Menerbitkan sertifikat untuk banyak peserta sekaligus.
     "message": "2 sertifikat berhasil diterbitkan",
     "data": [
         {
-            "id_sertifikat": "550e8400-e29b-41d4-a716-446655440003",
+            "id_sertifikat": "uuid-string-1",
             "nomor_sertifikat": "SERT/2026/06/0002"
         },
         {
-            "id_sertifikat": "550e8400-e29b-41d4-a716-446655440004",
+            "id_sertifikat": "uuid-string-2",
             "nomor_sertifikat": "SERT/2026/06/0003"
         }
     ],
@@ -2939,16 +2402,33 @@ Menerbitkan sertifikat untuk banyak peserta sekaligus.
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data template atau peserta tidak ditemukan."
+}
+```
+
 ---
 
-### 92. Update Sertifikat
+#### 52. Update Sertifikat
+
 Memperbarui data tanggal terbit sertifikat.
 
 - **URL:** `/sertifikat/{id_sertifikat}`
 - **Method:** `PUT`
 - **Headers:**
     - `Authorization: Bearer <token>`
-- **Request Body (JSON):**
+- **Request Body:**
 ```json
 {
     "tanggal_terbit": "2026-06-18"
@@ -2961,15 +2441,32 @@ Memperbarui data tanggal terbit sertifikat.
     "status": "success",
     "message": "Sertifikat berhasil diupdate",
     "data": {
-        "id_sertifikat": "550e8400-e29b-41d4-a716-446655440003",
+        "id_sertifikat": "uuid-string",
         "nomor_sertifikat": "SERT/2026/06/0002"
     }
 }
 ```
 
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data sertifikat tidak ditemukan."
+}
+```
+
 ---
 
-### 93. Upload File Sertifikat
+#### 53. Upload File Sertifikat
+
 Upload atau timpa file PDF sertifikat yang sudah ada.
 
 - **URL:** `/sertifikat/{id_sertifikat}/upload`
@@ -2985,75 +2482,32 @@ Upload atau timpa file PDF sertifikat yang sudah ada.
     "status": "success",
     "message": "File sertifikat berhasil diupload",
     "data": {
-        "id_sertifikat": "550e8400-e29b-41d4-a716-446655440003",
+        "id_sertifikat": "uuid-string",
         "nomor_sertifikat": "SERT/2026/06/0002"
     }
 }
 ```
 
----
-
-### 94. Download File Sertifikat
-Mendapatkan URL untuk mengunduh file sertifikat.
-
-- **URL:** `/sertifikat/{id_sertifikat}/download`
-- **Method:** `GET`
-- **Headers:**
-    - `Authorization: Bearer <token>`
-
-- **Response Sukses (200 OK):**
-```json
+- **Response Error (401 Unauthorized):**
+`json
 {
-    "status": "success",
-    "data": {
-        "url": "/storage/sertifikats/uuid_filename.pdf",
-        "nomor_sertifikat": "SERT/2026/06/0001",
-        "nama_file": "uuid_filename.pdf"
-    }
+    "success": false,
+    "message": "Unauthenticated."
 }
-```
+`
 
----
-
-### 95. Verifikasi Sertifikat
-Verifikasi keaslian sertifikat berdasarkan nomor sertifikat. Endpoint ini bisa diakses secara publik (tidak perlu token jika diatur di routing).
-
-- **URL:** `/sertifikat/verify/{nomor_sertifikat}`
-- **Method:** `GET`
-
-- **Response Sukses (200 OK - Valid):**
-```json
-{
-    "status": "success",
-    "valid": true,
-    "message": "Sertifikat valid",
-    "data": {
-        "nomor_sertifikat": "SERT/2026/06/0001",
-        "tanggal_terbit": "17 June 2026",
-        "peserta": {
-                "id_peserta": "550e8400-e29b-41d4-a716-446655440020",
-                "nama_lengkap": "Budi Rahardjo"
-            },
-        "template": {
-                "id_template": "550e8400-e29b-41d4-a716-446655440021",
-                "nama_template": "Sertifikat Kelulusan"
-            }
-    }
-}
-```
-
-- **Response Error (404 Not Found - Tidak Valid):**
+- **Response Error (404 Not Found):**
 ```json
 {
     "status": "error",
-    "message": "Sertifikat tidak valid atau tidak ditemukan",
-    "valid": false
+    "message": "Data sertifikat tidak ditemukan."
 }
 ```
 
 ---
 
-### 96. Statistik Sertifikat
+#### 54. Statistik Sertifikat
+
 Mendapatkan statistik penggunaan sertifikat secara keseluruhan.
 
 - **URL:** `/sertifikat/statistik`
@@ -3083,15 +2537,2126 @@ Mendapatkan statistik penggunaan sertifikat secara keseluruhan.
 }
 ```
 
-## 🎭 Roles & Permissions (Abilities)
-Setiap token yang dihasilkan memiliki **Abilities** sesuai dengan role user:
-- **Admin:** `admin:*`
-- **Dosen:** `dosen:*`
-- **Mahasiswa:** `mahasiswa:*`
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
 
-FE dapat mengecek scope token ini jika diperlukan untuk permission-based UI.
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data statistik sertifikat tidak ditemukan."
+}
+```
 
-## 🛠️ Tips untuk Frontend (FE)
-1. **Header:** Pastikan selalu mengirim header `Accept: application/json` agar Laravel mengembalikan response dalam format JSON (terutama saat error validasi).
-2. **Storage:** Simpan `token` di LocalStorage atau Cookie yang aman (HttpOnly lebih disarankan jika di production).
+---
+
+## Role: Dosen
+
+### Manajemen Sesi Pertemuan
+
+#### 55. Tambah Sesi Pertemuan
+
+Menambahkan data sesi pertemuan untuk suatu jadwal perkuliahan. Sesi diperiksa terhadap bentrok waktu dan duplikasi nomor pertemuan.
+
+- **URL:** `/sesi-pertemuan`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "id_jadwal": "uuid-jadwal",
+    "pertemuan_ke": 1,
+    "judul_sesi": "Pengantar Perkuliahan",
+    "tanggal_pelaksanaan": "2026-06-15",
+    "jam_mulai": "08:00",
+    "jam_berakhir": "10:00",
+    "metode_pertemuan": "synchronous",
+    "link_kelas_daring": "https://meet.google.com/abc-defg-hij"
+}
+```
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "status": "success",
+    "message": "Sesi pertemuan berhasil dibuat.",
+    "data": {
+        "id_sesi": "uuid-string",
+        "id_jadwal": "uuid-jadwal",
+        "pertemuan_ke": 1,
+        "judul_sesi": "Pengantar Perkuliahan",
+        "tanggal_pelaksanaan": "2026-06-15",
+        "jam_mulai": "08:00",
+        "jam_berakhir": "10:00",
+        "metode_pertemuan": "synchronous",
+        "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
+        "created_at": "2026-06-21T10:00:00.000000Z",
+        "updated_at": "2026-06-21T10:00:00.000000Z"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data jadwal perkuliahan tidak ditemukan."
+}
+```
+
+---
+
+#### 56. Daftar Sesi Pertemuan
+
+Mengambil seluruh data sesi pertemuan dengan pagination dan filter opsional.
+
+- **URL:** `/sesi-pertemuan`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Query Params (Optional):**
+    - `per_page` (integer, default: 10)
+    - `id_jadwal` (uuid)
+    - `tanggal` (YYYY-MM-DD)
+    - `metode_pertemuan` (`synchronous` atau `asynchronous`)
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id_sesi": "uuid-string",
+                "id_jadwal": "uuid-jadwal",
+                "pertemuan_ke": 1,
+                "judul_sesi": "Pengantar Perkuliahan",
+                "tanggal_pelaksanaan": "2026-06-15",
+                "jam_mulai": "08:00",
+                "jam_berakhir": "10:00",
+                "metode_pertemuan": "synchronous",
+                "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
+                "jadwal_perkuliahan": {
+                    "id_jadwal": "uuid-jadwal",
+                    "hari": "Senin",
+                    "waktu_mulai": "08:00",
+                    "waktu_berakhir": "10:00"
+                }
+            }
+        ],
+        "total": 1,
+        "per_page": 10
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+#### 57. Detail Sesi Pertemuan
+
+Mengambil detail satu data sesi pertemuan berdasarkan ID.
+
+- **URL:** `/sesi-pertemuan/{id_sesi}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "id_sesi": "uuid-string",
+        "id_jadwal": "uuid-jadwal",
+        "pertemuan_ke": 1,
+        "judul_sesi": "Pengantar Perkuliahan",
+        "tanggal_pelaksanaan": "2026-06-15",
+        "jam_mulai": "08:00",
+        "jam_berakhir": "10:00",
+        "metode_pertemuan": "synchronous",
+        "link_kelas_daring": "https://meet.google.com/abc-defg-hij",
+        "jadwal_perkuliahan": {
+            "id_jadwal": "uuid-jadwal",
+            "semester": 1,
+            "hari": "Senin",
+            "waktu_mulai": "08:00",
+            "waktu_berakhir": "10:00"
+        }
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+#### 58. Update Sesi Pertemuan
+
+Memperbarui data sesi pertemuan. Field `id_jadwal` tidak dapat diubah.
+
+- **URL:** `/sesi-pertemuan/{id_sesi}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "pertemuan_ke": 1,
+    "judul_sesi": "Pengantar Perkuliahan (Updated)",
+    "tanggal_pelaksanaan": "2026-06-16",
+    "jam_mulai": "09:00",
+    "jam_berakhir": "11:00",
+    "metode_pertemuan": "synchronous",
+    "status": "TERJADWAL",
+    "materi": "Materi PDF tentang pengenalan perkuliahan",
+    "url_cbt": "https://cbt.uika.ac.id/exam/123",
+    "link_kelas_daring": "https://meet.google.com/xyz-abcd-efg"
+}
+```
+*Catatan: `status` dapat berupa TERJADWAL, BERJALAN, atau SELESAI.*
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Sesi pertemuan berhasil diperbarui.",
+    "data": {
+        "id_sesi": "uuid-string",
+        "id_jadwal": "uuid-jadwal",
+        "pertemuan_ke": 1,
+        "judul_sesi": "Pengantar Perkuliahan (Updated)",
+        "tanggal_pelaksanaan": "2026-06-16",
+        "jam_mulai": "09:00",
+        "jam_berakhir": "11:00",
+        "metode_pertemuan": "synchronous",
+        "link_kelas_daring": "https://meet.google.com/xyz-abcd-efg"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+#### 59. Hapus Sesi Pertemuan
+
+Menghapus data sesi pertemuan secara permanen.
+
+- **URL:** `/sesi-pertemuan/{id_sesi}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Sesi pertemuan berhasil dihapus."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+### Manajemen Tugas
+
+#### 60. Buat Tugas
+
+Menambahkan tugas baru untuk satu sesi pertemuan.
+
+- **URL:** `/sesi/{sesi_id}/tugas`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "judul_tugas": "Tugas Pertemuan 1",
+    "deskripsi_tugas": "Kerjakan soal algoritma berikut.",
+    "batas_waktu": "2026-07-01 23:59:59",
+    "link_cbt": "https://cbt.uika.ac.id/exam/123",
+    "token_cbt": "ABC123"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Tugas berhasil dibuat.",
+    "data": {
+        "id": "uuid-string",
+        "judul_tugas": "Tugas Pertemuan 1",
+        "batas_waktu": "2026-07-01 23:59:59"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+#### 61. Daftar Tugas di Sesi
+
+Mengambil semua tugas yang terdaftar pada satu sesi pertemuan.
+
+- **URL:** `/sesi/{sesi_id}/tugas`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Daftar tugas berhasil diambil.",
+    "data": [
+        {
+            "id": "uuid-string",
+            "judul_tugas": "Tugas Pertemuan 1",
+            "deskripsi_tugas": "Kerjakan soal algoritma berikut.",
+            "batas_waktu": "2026-07-01 23:59:59",
+            "link_cbt": "https://cbt.uika.ac.id/exam/123"
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+#### 62. Detail Tugas
+
+Mengambil detail satu data tugas berdasarkan ID.
+
+- **URL:** `/tugas/{id}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Detail tugas berhasil diambil.",
+    "data": {
+        "id": "uuid-string",
+        "judul_tugas": "Tugas Pertemuan 1",
+        "deskripsi_tugas": "Kerjakan soal algoritma berikut.",
+        "batas_waktu": "2026-07-01 23:59:59",
+        "link_cbt": "https://cbt.uika.ac.id/exam/123",
+        "token_cbt": "ABC123"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data tugas tidak ditemukan."
+}
+```
+
+---
+
+#### 63. Update Tugas
+
+Memperbarui data tugas yang sudah ada.
+
+- **URL:** `/tugas/{id}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "judul_tugas": "Tugas Pertemuan 1 Updated",
+    "deskripsi_tugas": "Kerjakan soal algoritma yang diperbarui.",
+    "batas_waktu": "2026-07-05 23:59:59",
+    "link_cbt": "https://cbt.uika.ac.id/exam/456",
+    "token_cbt": "DEF456"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Tugas berhasil diperbarui.",
+    "data": {
+        "id": "uuid-string",
+        "judul_tugas": "Tugas Pertemuan 1 Updated"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data tugas tidak ditemukan."
+}
+```
+
+---
+
+#### 64. Hapus Tugas
+
+Menghapus data tugas secara permanen.
+
+- **URL:** `/tugas/{id}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Tugas berhasil dihapus."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data tugas tidak ditemukan."
+}
+```
+
+---
+
+#### 65. Cek Deadline Tugas
+
+Memeriksa apakah deadline tugas sudah lewat atau belum.
+
+- **URL:** `/tugas/{id}/deadline`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Informasi deadline berhasil diambil.",
+    "data": {
+        "id": "uuid-string",
+        "batas_waktu": "2026-07-01 23:59:59",
+        "is_expired": false,
+        "sisa_waktu": "8 hari lagi"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data tugas tidak ditemukan."
+}
+```
+
+---
+
+#### 66. Get Launch URL Tugas
+
+Mendapatkan URL untuk membuka tugas CBT peserta tertentu.
+
+- **URL:** `/tugas/{id}/launch/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "URL tugas berhasil digenerate.",
+    "data": {
+        "launch_url": "https://cbt.uika.ac.id/exam/123?token=ABC123&peserta=uuid-peserta"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data tugas atau peserta tidak ditemukan."
+}
+```
+
+---
+
+### Manajemen Nilai CBT
+
+#### 67. Simpan Nilai CBT
+
+Menyimpan nilai CBT untuk satu atau lebih peserta.
+
+- **URL:** `/nilai-cbt`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nilai": [
+        {
+            "id_tugas": "uuid-tugas",
+            "id_peserta": "uuid-peserta",
+            "nilai": 85
+        }
+    ]
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Nilai CBT berhasil disimpan.",
+    "data": {
+        "total_disimpan": 1
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data tugas atau peserta tidak ditemukan."
+}
+```
+
+---
+
+#### 68. Nilai CBT per Tugas
+
+Mengambil semua nilai CBT untuk satu tugas tertentu.
+
+- **URL:** `/   `
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Nilai CBT per tugas berhasil diambil.",
+    "data": [
+        {
+            "id_nilai": "uuid-string",
+            "id_tugas": "uuid-tugas",
+            "id_peserta": "uuid-peserta",
+            "nilai": 85,
+            "peserta": {
+                "nama_lengkap": "Budi Rahardjo",
+                "nomor_induk": "20241001"
+            }
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data tugas tidak ditemukan."
+}
+```
+
+---
+
+#### 69. Detail Nilai CBT
+
+Mengambil detail nilai CBT satu peserta untuk satu tugas.
+
+- **URL:** `/nilai-cbt/{id_tugas}/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Detail nilai CBT berhasil diambil.",
+    "data": {
+        "id_nilai": "uuid-string",
+        "id_tugas": "uuid-tugas",
+        "id_peserta": "uuid-peserta",
+        "nilai": 85
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data nilai CBT tidak ditemukan."
+}
+```
+
+---
+
+#### 70. Update Nilai CBT
+
+Memperbarui nilai CBT yang sudah ada.
+
+- **URL:** `/nilai-cbt/{id_nilai}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nilai": 90
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Nilai CBT berhasil diperbarui.",
+    "data": {
+        "id_nilai": "uuid-string",
+        "nilai": 90
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data nilai CBT tidak ditemukan."
+}
+```
+
+---
+
+#### 71. Hapus Nilai CBT
+
+Menghapus nilai CBT secara permanen.
+
+- **URL:** `/nilai-cbt/{id_nilai}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Nilai CBT berhasil dihapus."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data nilai CBT tidak ditemukan."
+}
+```
+
+---
+
+#### 72. Statistik Nilai Tugas
+
+Mengambil statistik nilai CBT untuk satu tugas tertentu.
+
+- **URL:** `/nilai-cbt/tugas/{id_tugas}/statistik`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Statistik nilai tugas berhasil diambil.",
+    "data": {
+        "id_tugas": "uuid-tugas",
+        "jumlah_peserta": 30,
+        "rata_rata": 78.5,
+        "nilai_tertinggi": 100,
+        "nilai_terendah": 45
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data tugas tidak ditemukan."
+}
+```
+
+---
+
+#### 73. Ranking Nilai Tugas
+
+Mengambil ranking nilai CBT peserta untuk satu tugas.
+
+- **URL:** `/nilai-cbt/tugas/{id_tugas}/ranking/{limit?}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Ranking nilai tugas berhasil diambil.",
+    "data": [
+        {
+            "peringkat": 1,
+            "nama_lengkap": "Budi Rahardjo",
+            "nomor_induk": "20241001",
+            "nilai": 100
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data tugas tidak ditemukan."
+}
+```
+
+---
+
+### Forum Diskusi (Dosen)
+
+#### 74. Daftar Forum Diskusi Sesi
+
+Mengambil semua post forum diskusi dalam satu sesi pertemuan.
+
+- **URL:** `/sesi/{idSesi}/forum`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Daftar forum diskusi berhasil diambil.",
+    "data": [
+        {
+            "id_pesan": "uuid-string",
+            "id_sesi": "uuid-sesi",
+            "id_pengirim": "uuid-user",
+            "isi_pesan": "Selamat datang di forum diskusi pertemuan 1.",
+            "id_parent_pesan": null,
+            "pengirim": {
+                "nama_lengkap": "Dr. Budi Santoso",
+                "role": "Dosen"
+            },
+            "created_at": "2026-06-21T10:00:00.000000Z"
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+#### 75. Buat Post Forum
+
+Membuat post baru di forum diskusi sesi.
+
+- **URL:** `/forum`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "id_sesi": "uuid-sesi",
+    "isi_pesan": "Ini adalah pesan forum diskusi.",
+    "id_parent_pesan": null
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Post forum berhasil dibuat.",
+    "data": {
+        "id_pesan": "uuid-string",
+        "id_sesi": "uuid-sesi",
+        "isi_pesan": "Ini adalah pesan forum diskusi.",
+        "created_at": "2026-06-21T10:00:00.000000Z"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+#### 76. Detail Post Forum
+
+Mengambil detail satu post forum berdasarkan ID.
+
+- **URL:** `/forum/{idPesan}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Detail post forum berhasil diambil.",
+    "data": {
+        "id_pesan": "uuid-string",
+        "id_sesi": "uuid-sesi",
+        "id_pengirim": "uuid-user",
+        "isi_pesan": "Ini adalah pesan forum diskusi.",
+        "id_parent_pesan": null,
+        "pengirim": {
+            "nama_lengkap": "Dr. Budi Santoso",
+            "role": "Dosen"
+        },
+        "created_at": "2026-06-21T10:00:00.000000Z"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Post forum tidak ditemukan."
+}
+```
+
+---
+
+#### 77. Balasan Forum
+
+Mengambil semua balasan dari satu post forum.
+
+- **URL:** `/forum/{idPesan}/replies`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Balasan forum berhasil diambil.",
+    "data": [
+        {
+            "id_pesan": "uuid-string",
+            "id_parent_pesan": "uuid-parent",
+            "isi_pesan": "Ini balasan dari dosen.",
+            "pengirim": {
+                "nama_lengkap": "Dr. Budi Santoso",
+                "role": "Dosen"
+            },
+            "created_at": "2026-06-21T10:00:00.000000Z"
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Post forum tidak ditemukan."
+}
+```
+
+---
+
+#### 78. Update Post Forum
+
+Memperbarui isi post forum yang sudah ada.
+
+- **URL:** `/forum/{idPesan}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "isi_pesan": "Isi pesan yang telah diperbarui."
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Post forum berhasil diperbarui.",
+    "data": {
+        "id_pesan": "uuid-string",
+        "isi_pesan": "Isi pesan yang telah diperbarui.",
+        "updated_at": "2026-06-21T11:00:00.000000Z"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Post forum tidak ditemukan."
+}
+```
+
+---
+
+#### 79. Hapus Post Forum
+
+Menghapus post forum secara permanen.
+
+- **URL:** `/forum/{idPesan}`
+- **Method:** `DELETE`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Post forum berhasil dihapus."
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Post forum tidak ditemukan."
+}
+```
+
+---
+
+#### 80. Cari Forum
+
+Mencari post forum berdasarkan kata kunci di dalam satu sesi.
+
+- **URL:** `/sesi/{idSesi}/forum/search`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Query Params:**
+    - `q`: Kata kunci pencarian (required)
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Hasil pencarian forum berhasil diambil.",
+    "data": [
+        {
+            "id_pesan": "uuid-string",
+            "isi_pesan": "Ini adalah pesan yang cocok dengan pencarian.",
+            "pengirim": {
+                "nama_lengkap": "Budi Rahardjo"
+            },
+            "created_at": "2026-06-21T10:00:00.000000Z"
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+### Rekap Evaluasi (Dosen)
+
+#### 81. Statistik Jawaban Pertanyaan
+
+Mengambil statistik jawaban evaluasi untuk satu pertanyaan.
+
+- **URL:** `/jawaban-evaluasi/pertanyaan/{id_pertanyaan}/statistik`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Statistik jawaban berhasil diambil.",
+    "data": {
+        "id_pertanyaan": "uuid-string",
+        "teks_pertanyaan": "Bagaimana kualitas pengajaran dosen?",
+        "rata_rata_skor": 4.2,
+        "total_jawaban": 30
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data pertanyaan tidak ditemukan."
+}
+```
+
+---
+
+#### 82. Statistik Kategori Evaluasi
+
+Mengambil statistik evaluasi dikelompokkan per kategori pertanyaan.
+
+- **URL:** `/jawaban-evaluasi/statistik-kategori`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Statistik kategori evaluasi berhasil diambil.",
+    "data": [
+        {
+            "kategori": "Pengajaran",
+            "rata_rata_skor": 4.2,
+            "total_jawaban": 90
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data evaluasi tidak ditemukan."
+}
+```
+
+---
+
+#### 83. Rekap Evaluasi
+
+Mengambil rekap keseluruhan hasil evaluasi.
+
+- **URL:** `/jawaban-evaluasi/rekap`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Rekap evaluasi berhasil diambil.",
+    "data": {
+        "total_peserta_mengisi": 120,
+        "total_peserta_belum_mengisi": 30,
+        "rata_rata_keseluruhan": 4.1
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data rekap evaluasi tidak ditemukan."
+}
+```
+
+---
+
+## Role: Mahasiswa
+
+### Pendaftaran Kelas
+
+#### 84. Pendaftaran Peserta Kelas (Enroll)
+
+Mahasiswa mendaftar ke jadwal perkuliahan menggunakan token enrollment (6 karakter uppercase).
+
+- **URL:** `/peserta-kelas/enroll`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "token_enrollment": "ABCXYZ"
+}
+```
+
+- **Response Sukses (201 Created):**
+```json
+{
+    "success": true,
+    "message": "Berhasil mendaftar ke kelas.",
+    "data": {
+        "id_peserta": "uuid-string",
+        "id_jadwal": "uuid-jadwal",
+        "id_mahasiswa": "uuid-mahasiswa",
+        "tanggal_daftar": "2026-06-04T07:55:00.000000Z",
+        "evaluasi_selesai": false,
+        "kehadiran": "0/0",
+        "nilai_akhir": 0.00,
+        "status_kelayakan": "Belum Ditentukan",
+        "jadwal": {
+            "id_jadwal": "uuid-jadwal",
+            "hari": "Senin",
+            "waktu_mulai": "08:00"
+        },
+        "mahasiswa": {
+            "id_user": "uuid-mahasiswa",
+            "nama_lengkap": "Budi Rahardjo"
+        }
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "success": false,
+    "message": "Token enrollment tidak valid atau jadwal tidak ditemukan.",
+    "data": null
+}
+```
+
+---
+
+### Nilai CBT (Mahasiswa)
+
+#### 85. Nilai CBT per Peserta
+
+Mengambil semua nilai CBT milik mahasiswa yang sedang login.
+
+- **URL:** `/nilai-cbt/peserta/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Nilai CBT berhasil diambil.",
+    "data": [
+        {
+            "id_nilai": "uuid-string",
+            "id_tugas": "uuid-tugas",
+            "nilai": 85,
+            "tugas": {
+                "judul_tugas": "Tugas Pertemuan 1",
+                "batas_waktu": "2026-07-01 23:59:59"
+            }
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data peserta tidak ditemukan."
+}
+```
+
+---
+
+### Forum Diskusi (Mahasiswa)
+
+#### 86. Daftar Forum Diskusi Sesi (Mahasiswa)
+
+Mengambil semua post forum diskusi dalam satu sesi pertemuan.
+
+- **URL:** `/sesi/{idSesi}/forum`
+- **Method:** `G`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Daftar forum diskusi berhasil diambil.",
+    "data": [
+        {
+            "id_pesan": "uuid-string",
+            "id_sesi": "uuid-sesi",
+            "isi_pesan": "Selamat datang di forum diskusi.",
+            "pengirim": {
+                "nama_lengkap": "Dr. Budi Santoso",
+                "role": "Dosen"
+            },
+            "created_at": "2026-06-21T10:00:00.000000Z"
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+#### 87. Buat Post Forum (Mahasiswa)
+
+Membuat post atau balasan baru di forum diskusi sesi.
+
+- **URL:** `/forum`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "id_sesi": "uuid-sesi",
+    "isi_pesan": "Saya ingin bertanya tentang materi pertemuan ini.",
+    "id_parent_pesan": null
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Post forum berhasil dibuat.",
+    "data": {
+        "id_pesan": "uuid-string",
+        "id_sesi": "uuid-sesi",
+        "isi_pesan": "Saya ingin bertanya tentang materi pertemuan ini.",
+        "created_at": "2026-06-21T10:00:00.000000Z"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+#### 88. Detail Post Forum (Mahasiswa)
+
+Mengambil detail satu post forum berdasarkan ID.
+
+- **URL:** `/forum/{idPesan}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Detail post forum berhasil diambil.",
+    "data": {
+        "id_pesan": "uuid-string",
+        "isi_pesan": "Saya ingin bertanya tentang materi pertemuan ini.",
+        "pengirim": {
+            "nama_lengkap": "Budi Rahardjo",
+            "role": "Mahasiswa"
+        },
+        "created_at": "2026-06-21T10:00:00.000000Z"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Post forum tidak ditemukan."
+}
+```
+
+---
+
+#### 89. Balasan Forum (Mahasiswa)
+
+Mengambil semua balasan dari satu post forum.
+
+- **URL:** `/forum/{idPesan}/replies`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Balasan forum berhasil diambil.",
+    "data": [
+        {
+            "id_pesan": "uuid-string",
+            "id_parent_pesan": "uuid-parent",
+            "isi_pesan": "Ini jawaban dari dosen.",
+            "pengirim": {
+                "nama_lengkap": "Dr. Budi Santoso",
+                "role": "Dosen"
+            },
+            "created_at": "2026-06-21T10:00:00.000000Z"
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Post forum tidak ditemukan."
+}
+```
+
+---
+
+#### 90. Cari Forum (Mahasiswa)
+
+Mencari post forum berdasarkan kata kunci di dalam satu sesi.
+
+- **URL:** `/sesi/{idSesi}/forum/search`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Query Params:**
+    - `q`: Kata kunci pencarian (required)
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Hasil pencarian forum berhasil diambil.",
+    "data": [
+        {
+            "id_pesan": "uuid-string",
+            "isi_pesan": "Pesan yang cocok dengan pencarian.",
+            "pengirim": {
+                "nama_lengkap": "Dr. Budi Santoso"
+            },
+            "created_at": "2026-06-21T10:00:00.000000Z"
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sesi pertemuan tidak ditemukan."
+}
+```
+
+---
+
+### Evaluasi (Mahasiswa)
+
+#### 91. Simpan Jawaban Evaluasi
+
+Mahasiswa menyimpan jawaban evaluasi untuk satu peserta kelas.
+
+- **URL:** `/jawaban-evaluasi`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "id_peserta": "uuid-peserta",
+    "jawaban": [
+        {
+            "id_pertanyaan": "uuid-pertanyaan",
+            "skor": 4
+        }
+    ]
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Jawaban evaluasi berhasil disimpan.",
+    "data": {
+        "total_jawaban_disimpan": 5
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data peserta atau pertanyaan tidak ditemukan."
+}
+```
+
+---
+
+#### 92. Jawaban Evaluasi per Peserta
+
+Mengambil semua jawaban evaluasi yang telah diisi oleh satu peserta.
+
+- **URL:** `/jawaban-evaluasi/peserta/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Jawaban evaluasi berhasil diambil.",
+    "data": [
+        {
+            "id_evaluasi": "uuid-string",
+            "id_pertanyaan": "uuid-pertanyaan",
+            "skor": 4,
+            "pertanyaan": {
+                "teks_pertanyaan": "Bagaimana kualitas pengajaran dosen?",
+                "kategori": "Pengajaran"
+            }
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data peserta tidak ditemukan."
+}
+```
+
+---
+
+#### 93. Detail Jawaban Evaluasi
+
+Mengambil detail jawaban evaluasi peserta untuk satu pertanyaan.
+
+- **URL:** `/jawaban-evaluasi/{id_pertanyaan}/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Detail jawaban evaluasi berhasil diambil.",
+    "data": {
+        "id_evaluasi": "uuid-string",
+        "id_pertanyaan": "uuid-pertanyaan",
+        "id_peserta": "uuid-peserta",
+        "skor": 4
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data jawaban evaluasi tidak ditemukan."
+}
+```
+
+---
+
+#### 94. Update Jawaban Evaluasi
+
+Memperbarui jawaban evaluasi yang sudah dikirim.
+
+- **URL:** `/jawaban-evaluasi/{id_evaluasi}`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "skor": 5
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Jawaban evaluasi berhasil diperbarui.",
+    "data": {
+        "id_evaluasi": "uuid-string",
+        "skor": 5
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data jawaban evaluasi tidak ditemukan."
+}
+```
+
+---
+
+#### 95. Cek Status Evaluasi Peserta
+
+Memeriksa apakah peserta sudah mengisi evaluasi atau belum.
+
+- **URL:** `/jawaban-evaluasi/peserta/{id_peserta}/status`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "message": "Status evaluasi berhasil diambil.",
+    "data": {
+        "id_peserta": "uuid-peserta",
+        "sudah_mengisi": true,
+        "jumlah_jawaban": 5
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data peserta tidak ditemukan."
+}
+```
+
+---
+
+### Sertifikat (Mahasiswa)
+
+#### 96. Daftar Sertifikat per Peserta
+
+Mengambil semua sertifikat yang dimiliki oleh mahasiswa.
+
+- **URL:** `/sertifikat/peserta/{id_peserta}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": [
+        {
+            "id_sertifikat": "uuid-string",
+            "nomor_sertifikat": "SERT/2026/06/0001",
+            "tanggal_terbit": "2026-06-17",
+            "peserta": {
+                "id_peserta": "uuid-peserta",
+                "nama_lengkap": "Budi Rahardjo"
+            },
+            "template": {
+                "id_template": "uuid-template",
+                "nama_template": "Sertifikat Kelulusan"
+            }
+        }
+    ]
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Data peserta tidak ditemukan."
+}
+```
+
+---
+
+#### 97. Detail Sertifikat (Mahasiswa)
+
+Mengambil detail satu data sertifikat berdasarkan ID.
+
+- **URL:** `/sertifikat/{id_sertifikat}`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "id_sertifikat": "uuid-string",
+        "nomor_sertifikat": "SERT/2026/06/0001",
+        "tanggal_terbit": "2026-06-17",
+        "file_url": "sertifikats/filename.pdf",
+        "peserta": {
+            "id_peserta": "uuid-peserta",
+            "nama_lengkap": "Budi Rahardjo"
+        },
+        "template": {
+            "id_template": "uuid-template",
+            "nama_template": "Sertifikat Kelulusan"
+        }
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sertifikat tidak ditemukan."
+}
+```
+
+---
+
+#### 98. Download File Sertifikat (Mahasiswa)
+
+Mendapatkan URL untuk mengunduh file sertifikat.
+
+- **URL:** `/sertifikat/{id_sertifikat}/download`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "data": {
+        "url": "/storage/sertifikats/uuid_filename.pdf",
+        "nomor_sertifikat": "SERT/2026/06/0001",
+        "nama_file": "uuid_filename.pdf"
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sertifikat tidak ditemukan."
+}
+```
+
+---
+
+#### 99. Verifikasi Sertifikat (Publik)
+
+Verifikasi keaslian sertifikat berdasarkan nomor sertifikat. Endpoint ini dapat diakses tanpa token autentikasi.
+
+- **URL:** `/sertifikat/verify/{nomor_sertifikat}`
+- **Method:** `GET`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "status": "success",
+    "valid": true,
+    "message": "Sertifikat valid",
+    "data": {
+        "nomor_sertifikat": "SERT/2026/06/0001",
+        "tanggal_terbit": "17 June 2026",
+        "peserta": {
+            "id_peserta": "uuid-peserta",
+            "nama_lengkap": "Budi Rahardjo"
+        },
+        "template": {
+            "id_template": "uuid-template",
+            "nama_template": "Sertifikat Kelulusan"
+        }
+    }
+}
+```
+
+- **Response Error (401 Unauthorized):**
+`json
+{
+    "success": false,
+    "message": "Unauthenticated."
+}
+`
+
+- **Response Error (404 Not Found):**
+```json
+{
+    "status": "error",
+    "message": "Sertifikat tidak valid atau tidak ditemukan.",
+    "valid": false
+}
+```
+
+---
+
+## Roles dan Permissions (Abilities)
+
+Setiap token yang dihasilkan memiliki Abilities sesuai dengan role user:
+
+| Role | Ability Token | Akses |
+|---|---|---|
+| Admin | `admin:*` | Seluruh endpoint manajemen sistem |
+| Dosen | `dosen:*` | Sesi pertemuan, tugas, nilai CBT, forum diskusi |
+| Mahasiswa | `mahasiswa:*` | Enroll kelas, forum diskusi, evaluasi, sertifikat |
+
+## Tips untuk Frontend
+
+1. **Header:** Pastikan selalu mengirim header `Accept: application/json` agar Laravel mengembalikan response dalam format JSON.
+2. **Storage:** Simpan `token` di LocalStorage atau Cookie yang aman (HttpOnly lebih disarankan di production).
 3. **Interceptor:** Gunakan Axios Interceptor untuk otomatis menyisipkan header `Authorization: Bearer <token>` pada setiap request ke endpoint yang diproteksi.
+4. **Role Check:** Gunakan field `role` pada response login untuk menentukan halaman awal yang sesuai per role.
