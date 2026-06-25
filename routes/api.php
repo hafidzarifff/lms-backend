@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/register/dosen', [AuthController::class, 'registerDosen']);
+Route::get('/public/download', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'publicDownload']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -21,6 +22,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Fitur Management Mahasiswa (Admin)
     Route::post('/mahasiswa', [\App\Http\Controllers\Api\MahasiswaController::class, 'store']);
     Route::get('/mahasiswa', [\App\Http\Controllers\Api\MahasiswaController::class, 'index']);
+    
+    // Mahasiswa Dashboard & Mata Kuliah (Harus di atas /mahasiswa/{id} agar tidak tertangkap sebagai parameter ID)
+    Route::get('/mahasiswa/dashboard', [\App\Http\Controllers\Api\MahasiswaDashboardController::class, 'index']);
+    Route::get('/mahasiswa/mata-kuliah', [\App\Http\Controllers\Api\MahasiswaMataKuliahController::class, 'index']);
+
     Route::get('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'show']);
     Route::put('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'update']);
     Route::delete('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'destroy']);
@@ -70,7 +76,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Dashboard Stats (COUNT only — ringan, 1 request)
     Route::get('/dashboard/stats', [\App\Http\Controllers\Api\DashboardController::class, 'stats']);
 
-    // ============================================================
     // Fitur Presensi Mahasiswa
     // ============================================================
     Route::post('/presensi/bulk-save', [\App\Http\Controllers\Api\PresensiController::class, 'bulkSave']);
@@ -80,6 +85,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/presensi/peserta/{id_peserta}', [\App\Http\Controllers\Api\PresensiController::class, 'getByPeserta']);
     Route::post('/presensi/persentase', [\App\Http\Controllers\Api\PresensiController::class, 'hitungPersentase']);
     Route::post('/presensi/rekap', [\App\Http\Controllers\Api\PresensiController::class, 'rekapKehadiran']);
+    Route::get('/presensi/sesi/{id_sesi}/saya', [\App\Http\Controllers\Api\PresensiController::class, 'getSesiSaya']);
+    Route::post('/presensi/hadir-sendiri', [\App\Http\Controllers\Api\PresensiController::class, 'markHadirSendiri']);
 
     // ============================================================
     // Fitur Materi Pembelajaran
@@ -106,6 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Dosen & Mahasiswa: List tugas di sesi (GET shared)
     Route::middleware('role:Dosen,Mahasiswa')->group(function () {
         Route::get('/sesi/{sesi_id}/tugas', [\App\Http\Controllers\Api\TugasController::class, 'index']);
+        Route::get('/tugas/jadwal/{id_jadwal}', [\App\Http\Controllers\Api\TugasController::class, 'getByJadwal']);
         Route::get('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'show']);
         Route::get('/tugas/{id}/deadline', [\App\Http\Controllers\Api\TugasController::class, 'cekDeadline']);
         Route::get('/tugas/{id}/launch/{id_peserta}', [\App\Http\Controllers\Api\TugasController::class, 'getLaunchUrl']);

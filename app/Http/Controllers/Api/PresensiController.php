@@ -8,6 +8,7 @@ use App\Models\PesertaKelas;
 use App\Models\SesiPertemuan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PresensiController extends Controller
@@ -261,6 +262,87 @@ class PresensiController extends Controller
             'status' => 'success',
             'total_sesi' => $totalSesi,
             'rekap' => $rekap,
+        ], 200);
+    }
+
+    /**
+     * Get status kehadiran mahasiswa yang sedang login untuk sesi tertentu.
+     */
+    public function getSesiSaya(Request $request, $id_sesi): JsonResponse
+    {
+        $user = Auth::user();
+
+        $sesi = SesiPertemuan::find($id_sesi);
+        if (!$sesi) {
+            return response()->json(['status' => 'error', 'message' => 'Sesi tidak ditemukan.'], 404);
+        }
+
+        // Cari peserta kelas berdasarkan id_mahasiswa (user yang login) dan id_jadwal dari sesi
+        $peserta = PesertaKelas::where('id_jadwal', $sesi->id_jadwal)
+            ->where('id_mahasiswa', $user->id_user)
+            ->first();
+
+        if (!$peserta) {
+            return response()->json([
+                'status' => 'success',
+                'data' => null,
+                'message' => 'Anda bukan peserta kelas ini.',
+            ]);
+        }
+
+        $presensi = Presensi::where('id_sesi', $id_sesi)
+            ->where('id_peserta', $peserta->id_peserta)
+            ->first();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'id_peserta' => $peserta->id_peserta,
+                'status_kehadiran' => $presensi ? $presensi->status_kehadiran : null,
+                'id_presensi' => $presensi ? $presensi->id_presensi : null,
+            ],
+        ]);
+    }
+
+    /**
+     * Mahasiswa menandai diri sendiri telah hadir (untuk sesi Asynchronous).
+     */
+    public function markHadirSendiri(Request $request): JsonResponse
+    {
+        $request->validate([
+            'id_sesi' => 'required|uuid|exists:sesi_pertemuan,id_sesi',
+        ]);
+
+        $user = Auth::user();
+        $sesi = SesiPertemuan::find($request->id_sesi);
+
+        // Cari peserta kelas
+        $peserta = PesertaKelas::where('id_jadwal', $sesi->id_jadwal)
+            ->where('id_mahasiswa', $user->id_user)
+            ->first();
+
+        if (!$peserta) {
+            return response()->json(['status' => 'error', 'message' => 'Anda bukan peserta kelas ini.'], 403);
+        }
+
+        $presensi = Presensi::updateOrCreate(
+            [
+                'id_sesi' => $request->id_sesi,
+                'id_peserta' => $peserta->id_peserta,
+            ],
+            [
+                'status_kehadiran' => 'hadir',
+            ]
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Kehadiran berhasil dicatat.',
+            'data' => [
+                'id_peserta' => $peserta->id_peserta,
+                'status_kehadiran' => $presensi->status_kehadiran,
+                'id_presensi' => $presensi->id_presensi,
+            ],
         ], 200);
     }
 }

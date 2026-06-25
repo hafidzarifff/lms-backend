@@ -258,4 +258,25 @@ class MateriPembelajaranController extends Controller
 
         return Storage::disk('public')->download($path, $cleanName);
     }
+
+    public function publicDownload(Request $request)
+    {
+        $path = $request->query('path');
+        $title = $request->query('title');
+
+        if (!$path || !Storage::disk('public')->exists($path)) {
+            return response()->json(['message' => 'File tidak ditemukan'], 404);
+        }
+        
+        $filename = basename($path);
+        $cleanName = preg_replace('/^[a-f0-9\-]+_/', '', $filename);
+        
+        if ($title) {
+            // Ensure title is safe for filename
+            $safeTitle = preg_replace('/[^A-Za-z0-9\-_\s]/', '', $title);
+            $cleanName = $safeTitle . '-' . $cleanName;
+        }
+
+        return Storage::disk('public')->download($path, $cleanName);
+    }
 }

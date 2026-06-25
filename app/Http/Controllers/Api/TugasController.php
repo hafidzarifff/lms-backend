@@ -7,6 +7,7 @@ use App\Http\Requests\StoreTugasRequest;
 use App\Http\Requests\UpdateTugasRequest;
 use App\Models\Tugas;
 use App\Models\SesiPertemuan;
+use App\Models\JadwalPerkuliahan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -33,6 +34,33 @@ class TugasController extends Controller
 
         return response()->json([
             'success' => true,
+            'data' => $tugas,
+        ], 200);
+    }
+
+    /**
+     * GET /tugas/jadwal/:id_jadwal - List semua tugas di sebuah jadwal (Dosen & Mahasiswa)
+     */
+    public function getByJadwal(string $id_jadwal): JsonResponse
+    {
+        $jadwal = JadwalPerkuliahan::find($id_jadwal);
+
+        if (!$jadwal) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Jadwal perkuliahan tidak ditemukan.',
+            ], 404);
+        }
+
+        $sesiIds = SesiPertemuan::where('id_jadwal', $id_jadwal)->pluck('id_sesi');
+
+        $tugas = Tugas::whereIn('id_sesi', $sesiIds)
+            ->with('sesiPertemuan')
+            ->orderBy('batas_waktu', 'asc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
             'data' => $tugas,
         ], 200);
     }
