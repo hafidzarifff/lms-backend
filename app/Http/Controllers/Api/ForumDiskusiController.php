@@ -21,7 +21,7 @@ class ForumDiskusiController extends Controller
         $perPage = $request->input('per_page', 100);
 
         $pesan = ForumDiskusi::where('id_sesi', $idSesi)
-            ->with(['pengirim', 'parentPesan.pengirim'])
+            ->with(['pengirim', 'parentPesan.pengirim', 'sesi'])
             ->withExists(['reads as is_read' => function($q) {
                 $q->where('id_user', Auth::id());
             }])
@@ -163,7 +163,7 @@ class ForumDiskusiController extends Controller
      */
     public function show($idPesan)
     {
-        $pesan = ForumDiskusi::with(['pengirim', 'parentPesan', 'replies.pengirim'])
+        $pesan = ForumDiskusi::with(['pengirim', 'parentPesan', 'replies.pengirim', 'sesi'])
             ->withCount('replies')
             ->findOrFail($idPesan);
 
@@ -262,7 +262,7 @@ class ForumDiskusiController extends Controller
 
         $pesan = ForumDiskusi::where('id_sesi', $idSesi)
             ->where('isi_pesan', 'ilike', "%{$keyword}%")
-            ->with(['pengirim', 'parentPesan'])
+            ->with(['pengirim', 'parentPesan', 'sesi'])
             ->withCount('replies')
             ->orderBy('waktu_kirim', 'desc')
             ->paginate($perPage);

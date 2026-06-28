@@ -80,7 +80,7 @@ class NilaiCbtController extends Controller
     public function getByTugas($id_tugas)
     {
         $nilai = NilaiCbt::where('id_tugas', $id_tugas)
-            ->with(['peserta:id_user,nama_lengkap,nim,email', 'tugas:id_tugas,judul_tugas'])
+            ->with(['peserta:id_user,nama_lengkap,nomor_induk,email', 'tugas:id_tugas,judul_tugas'])
             ->orderBy('nilai', 'desc')
             ->get();
 
@@ -96,7 +96,7 @@ class NilaiCbtController extends Controller
     public function getByPeserta($id_peserta)
     {
         $nilai = NilaiCbt::where('id_peserta', $id_peserta)
-            ->with(['tugas:id_tugas,judul_tugas,batas_waktu', 'peserta:id_user,nama_lengkap,nim'])
+            ->with(['tugas:id_tugas,judul_tugas,batas_waktu', 'peserta:id_user,nama_lengkap,nomor_induk'])
             ->orderBy('waktu_sinkron', 'desc')
             ->get();
 
@@ -234,7 +234,7 @@ class NilaiCbtController extends Controller
             ->select(
                 'pengguna.id_user',
                 'pengguna.nama_lengkap',
-                'pengguna.nim',
+                'pengguna.nomor_induk',
                 'nilai_cbt.nilai',
                 'nilai_cbt.waktu_sinkron'
             )

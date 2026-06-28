@@ -163,41 +163,62 @@ class PesertaKelasController extends Controller
             ->get();
             
         $sesiIds = \App\Models\SesiPertemuan::where('id_jadwal', $id_jadwal)->pluck('id_sesi');
+        $totalSesi = $sesiIds->count();
         
-        $presensiTerakhir = \App\Models\Presensi::whereIn('id_sesi', $sesiIds)
+        $semuaPresensi = \App\Models\Presensi::whereIn('id_sesi', $sesiIds)
             ->orderBy('created_at', 'desc')
             ->get()
             ->groupBy('id_peserta');
 
-        $result = $peserta->map(function ($p) use ($presensiTerakhir) {
+        $tugasList = \App\Models\Tugas::whereIn('id_sesi', $sesiIds)->get();
+        $totalTugas = $tugasList->count();
+        $tugasIds = $tugasList->pluck('id_tugas');
+        
+        $semuaNilai = \App\Models\NilaiCbt::whereIn('id_tugas', $tugasIds)
+            ->get()
+            ->groupBy('id_peserta');
+
+        $result = $peserta->map(function ($p) use ($semuaPresensi, $totalSesi, $totalTugas, $semuaNilai) {
+            $presensiPeserta = $semuaPresensi->get($p->id_peserta) ?? collect();
+            $jumlahHadir = $presensiPeserta->where('status_kehadiran', 'hadir')->count();
+            
+            $kehadiranStr = $jumlahHadir . '/' . $totalSesi;
+            
+            $nilaiPeserta = $semuaNilai->get($p->id_mahasiswa) ?? collect();
+            $jumlahTugasLulus = $nilaiPeserta->where('nilai', '>=', 70)->count();
+
+            $totalNilai = $nilaiPeserta->sum('nilai');
+            $countNilai = $nilaiPeserta->count();
+            $rataRata = $countNilai > 0 ? ($totalNilai / $countNilai) : 0;
+
+            $totalItems = $totalTugas + $totalSesi;
             $progresPercent = 0;
-            if ($p->kehadiran) {
-                $parts = explode('/', $p->kehadiran);
-                if (count($parts) === 2 && (int)$parts[1] > 0) {
-                    $progresPercent = round(((int)$parts[0] / (int)$parts[1]) * 100);
-                }
+            if ($totalItems > 0) {
+                $progresPercent = round((($jumlahTugasLulus + $jumlahHadir) / $totalItems) * 100);
             }
 
             $log = "Belum ada log";
-            $latestPresensi = $presensiTerakhir->get($p->id_peserta)?->first();
+            $latestPresensi = $presensiPeserta->first();
             
             if ($latestPresensi) {
-                if ($latestPresensi->status_kehadiran === 'Hadir') {
+                if ($latestPresensi->status_kehadiran === 'hadir') {
                     $log = "Hadir Sesi Terakhir";
-                } elseif ($latestPresensi->status_kehadiran === 'Tidak Hadir' || $latestPresensi->status_kehadiran === 'Alpa') {
-                    $log = "Bolos Sesi Terakhir";
+                } elseif (in_array($latestPresensi->status_kehadiran, ['alpha', 'izin', 'sakit'])) {
+                    $log = "Absen Sesi Terakhir (" . ucfirst($latestPresensi->status_kehadiran) . ")";
                 } else {
-                    $log = "Sesi Terakhir: " . $latestPresensi->status_kehadiran;
+                    $log = "Sesi Terakhir: " . ucfirst($latestPresensi->status_kehadiran);
                 }
             }
 
             return [
                 'id' => $p->id_peserta,
+                'id_mahasiswa' => $p->id_mahasiswa,
                 'nim' => $p->mahasiswa?->nomor_induk ?? '-',
                 'nama' => $p->mahasiswa?->nama_lengkap ?? 'Tanpa Nama',
                 'log' => $log,
-                'rataRata' => number_format((float)$p->nilai_akhir, 2, '.', ''),
+                'rataRata' => number_format((float)$rataRata, 2, '.', ''),
                 'progres' => $progresPercent,
+                'kehadiran' => $kehadiranStr,
             ];
         });
 
@@ -233,7 +254,44 @@ class PesertaKelasController extends Controller
             ->orderBy('tanggal_daftar', 'asc')
             ->get();
 
-        $result = $peserta->map(function ($p) {
+        $sesiPertemuan = \App\Models\SesiPertemuan::whereIn('id_jadwal', $jadwalIds)->get();
+        $semuaSesiIds = $sesiPertemuan->pluck('id_sesi');
+        
+        $sesiIdsByJadwal = $sesiPertemuan->groupBy('id_jadwal')->map(function ($sesiList) {
+            return $sesiList->pluck('id_sesi');
+        });
+        
+        $semuaPresensi = \App\Models\Presensi::whereIn('id_sesi', $semuaSesiIds)->get()->groupBy('id_peserta');
+        
+        $tugasList = \App\Models\Tugas::whereIn('id_sesi', $semuaSesiIds)->get();
+        $sesiToJadwal = $sesiPertemuan->pluck('id_jadwal', 'id_sesi');
+        
+        $tugasIds = $tugasList->pluck('id_tugas');
+        $semuaNilai = \App\Models\NilaiCbt::whereIn('id_tugas', $tugasIds)->get()->groupBy('id_peserta');
+
+        $result = $peserta->map(function ($p) use ($sesiIdsByJadwal, $semuaPresensi, $tugasList, $sesiToJadwal, $semuaNilai) {
+            $jadwalId = $p->id_jadwal;
+            
+            $sesiJadwal = $sesiIdsByJadwal->get($jadwalId) ?? collect();
+            $totalSesi = $sesiJadwal->count();
+            
+            $presensiPeserta = $semuaPresensi->get($p->id_peserta) ?? collect();
+            $jumlahHadir = $presensiPeserta->where('status_kehadiran', 'hadir')->count();
+            
+            $tugasJadwal = $tugasList->filter(function ($t) use ($sesiToJadwal, $jadwalId) {
+                return $sesiToJadwal->get($t->id_sesi) === $jadwalId;
+            });
+            $totalTugas = $tugasJadwal->count();
+            
+            $nilaiPesertaSemua = $semuaNilai->get($p->id_mahasiswa) ?? collect();
+            $tugasJadwalIds = $tugasJadwal->pluck('id_tugas')->toArray();
+            $nilaiPeserta = $nilaiPesertaSemua->whereIn('id_tugas', $tugasJadwalIds);
+            
+            $totalTugasDinilai = $nilaiPeserta->count();
+            
+            $totalNilai = $nilaiPeserta->sum('nilai');
+            $rataRata = $totalTugasDinilai > 0 ? ($totalNilai / $totalTugasDinilai) : 0;
+
             return [
                 'id' => $p->id_peserta,
                 'nim' => $p->mahasiswa?->nomor_induk ?? '-',
@@ -241,8 +299,9 @@ class PesertaKelasController extends Controller
                 'fakultas' => $p->mahasiswa?->fakultas ?? '-',
                 'prodi' => $p->mahasiswa?->prodi ?? '-',
                 'mataKuliah' => ($p->jadwal?->mataKuliah?->nama_mk ?? 'Mata Kuliah') . ' - ' . ($p->jadwal?->kelas?->nama_kelas ?? 'Kelas'),
-                'kehadiran' => $p->kehadiran ?? '0/0',
-                'nilaiAkhir' => number_format((float)$p->nilai_akhir, 2, '.', ''),
+                'kehadiran' => $jumlahHadir . ' / ' . $totalSesi,
+                'tugas' => $totalTugasDinilai . ' / ' . $totalTugas,
+                'nilaiAkhir' => number_format((float)$rataRata, 2, '.', ''),
                 'status' => strtoupper($p->status_kelayakan ?? 'Belum Ditentukan'),
             ];
         });
