@@ -53,6 +53,59 @@ class SertifikatController extends Controller
     }
 
     /**
+     * Get sertifikat dikelompokkan per peserta
+     */
+    public function grouped(Request $request)
+    {
+        $query = \App\Models\PesertaKelas::where('status_kelayakan', 'Disetujui')
+            ->with([
+                'mahasiswa:id_user,nama_lengkap,nomor_induk,email',
+                'jadwal:id_jadwal,id_mk,id_kelas,id_dosen,fakultas,prodi',
+                'jadwal.mataKuliah:id_mk,nama_mk,semester',
+                'jadwal.kelas:id_kelas,nama_kelas',
+                'jadwal.dosen:id_user,nama_lengkap,nomor_induk',
+                'sertifikat',
+                'sertifikat.template:id_template,nama_template,tipe_sertifikat'
+            ]);
+
+        // Filter by Fakultas
+        if ($request->has('fakultas') && !empty($request->fakultas)) {
+            $query->whereHas('jadwal', function ($q) use ($request) {
+                $q->where('fakultas', $request->fakultas);
+            });
+        }
+
+        // Filter by Program Studi
+        if ($request->has('prodi') && !empty($request->prodi)) {
+            $query->whereHas('jadwal', function ($q) use ($request) {
+                $q->where('prodi', $request->prodi);
+            });
+        }
+
+        $peserta = $query->paginate($request->get('per_page', 15));
+
+        // Hitung status kelulusan untuk setiap peserta
+        $peserta->getCollection()->transform(function ($p) {
+            $sesiPertemuan = \App\Models\SesiPertemuan::where('id_jadwal', $p->id_jadwal)->get();
+            $tugasList = \App\Models\Tugas::whereIn('id_sesi', $sesiPertemuan->pluck('id_sesi'))->get();
+            $nilaiPeserta = \App\Models\NilaiCbt::whereIn('id_tugas', $tugasList->pluck('id_tugas'))
+                ->where('id_peserta', $p->id_mahasiswa)
+                ->get();
+            
+            $totalTugasDinilai = $nilaiPeserta->count();
+            $rataRata = $totalTugasDinilai > 0 ? ($nilaiPeserta->sum('nilai') / $totalTugasDinilai) : 0;
+            
+            $p->status_kelulusan = $rataRata >= 70 ? 'LULUS' : 'TIDAK LULUS';
+            return $p;
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $peserta
+        ]);
+    }
+
+    /**
      * Get sertifikat untuk peserta tertentu
      */
     public function getByPeserta($id_peserta)

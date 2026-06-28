@@ -75,4 +75,12 @@ class PesertaKelas extends Model
     {
         return $this->belongsTo(Pengguna::class, 'id_mahasiswa', 'id_user');
     }
+
+    /**
+     * Relasi ke tabel sertifikat.
+     */
+    public function sertifikat()
+    {
+        return $this->hasMany(Sertifikat::class, 'id_peserta', 'id_peserta');
+    }
 }

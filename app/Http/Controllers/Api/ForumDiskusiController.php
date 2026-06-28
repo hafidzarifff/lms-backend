@@ -87,14 +87,6 @@ class ForumDiskusiController extends Controller
             ->orderBy('waktu_kirim', 'desc')
             ->paginate($perPage);
 
-        \Illuminate\Support\Facades\Log::info('getAllForDosen check', [
-            'dosen_id' => Auth::id(),
-            'jadwal_count' => count($jadwalIds),
-            'sesi_count' => count($sesiIds),
-            'pesan_count' => count($pesan->items()),
-            'sesiIds' => $sesiIds,
-        ]);
-
         return response()->json([
             'success' => true,
             'data' => $pesan,

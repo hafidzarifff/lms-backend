@@ -202,6 +202,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Fitur Sertifikat
     // ============================================================
     Route::get('/sertifikat', [\App\Http\Controllers\SertifikatController::class, 'index']);
+    Route::get('/sertifikat/grouped', [\App\Http\Controllers\SertifikatController::class, 'grouped']);
     Route::get('/sertifikat/peserta/{id_peserta}', [\App\Http\Controllers\SertifikatController::class, 'getByPeserta']);
     Route::get('/sertifikat/{id_sertifikat}', [\App\Http\Controllers\SertifikatController::class, 'show']);
     Route::post('/sertifikat', [\App\Http\Controllers\SertifikatController::class, 'store']);

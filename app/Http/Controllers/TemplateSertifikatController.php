@@ -39,7 +39,14 @@ class TemplateSertifikatController extends Controller
     {
         $templates = TemplateSertifikat::aktif()
             ->orderBy('nama_template')
-            ->get();
+            ->get()
+            ->map(function ($t) {
+                $arr = $t->toArray();
+                $arr['background_url'] = $t->file_background
+                    ? asset('storage/' . $t->file_background)
+                    : null;
+                return $arr;
+            });
 
         return response()->json([
             'status' => 'success',
@@ -61,9 +68,14 @@ class TemplateSertifikatController extends Controller
             ], 404);
         }
 
+        $data = $template->toArray();
+        $data['background_url'] = $template->file_background
+            ? asset('storage/' . $template->file_background)
+            : null;
+
         return response()->json([
             'status' => 'success',
-            'data' => $template
+            'data' => $data
         ]);
     }
 
@@ -74,9 +86,10 @@ class TemplateSertifikatController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nama_template' => 'required|string|max:100',
+            'tipe_sertifikat' => 'required|in:pelatihan,kelulusan,nilai',
             'file_background' => 'nullable|image|mimes:jpeg,jpg,png|max:5120', // max 5MB
-            'is_aktif' => 'nullable|boolean',
-            'layout_data' => 'nullable|string', // Accept as JSON string or array, depend on frontend
+            'is_aktif' => 'nullable',
+            'layout_data' => 'nullable|string', // Accept as JSON string from FormData
         ]);
 
         if ($validator->fails()) {
@@ -98,15 +111,24 @@ class TemplateSertifikatController extends Controller
 
             // Handle layout_data jika dikirim sebagai string JSON
             $layoutData = $request->layout_data;
-            if (is_string($layoutData)) {
-                $layoutData = json_decode($layoutData, true);
+            if (is_string($layoutData) && !empty($layoutData)) {
+                $decoded = json_decode($layoutData, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $layoutData = $decoded;
+                }
+            }
+
+            $isAktif = filter_var($request->is_aktif ?? true, FILTER_VALIDATE_BOOLEAN);
+            if ($isAktif) {
+                TemplateSertifikat::where('tipe_sertifikat', $request->tipe_sertifikat)->update(['is_aktif' => false]);
             }
 
             $template = TemplateSertifikat::create([
                 'id_template' => Str::uuid(),
                 'nama_template' => $request->nama_template,
+                'tipe_sertifikat' => $request->tipe_sertifikat,
                 'file_background' => $filePath,
-                'is_aktif' => $request->is_aktif ?? true,
+                'is_aktif' => $isAktif,
                 'layout_data' => $layoutData,
             ]);
 
@@ -140,8 +162,9 @@ class TemplateSertifikatController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nama_template' => 'nullable|string|max:100',
-            'is_aktif' => 'nullable|boolean',
-            'layout_data' => 'nullable|array',
+            'tipe_sertifikat' => 'nullable|in:pelatihan,kelulusan,nilai',
+            'is_aktif' => 'nullable',
+            'layout_data' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -157,12 +180,31 @@ class TemplateSertifikatController extends Controller
             $updateData['nama_template'] = $request->nama_template;
         }
 
+        if ($request->has('tipe_sertifikat')) {
+            $updateData['tipe_sertifikat'] = $request->tipe_sertifikat;
+        }
+
         if ($request->has('is_aktif')) {
-            $updateData['is_aktif'] = $request->is_aktif;
+            $isAktif = filter_var($request->is_aktif, FILTER_VALIDATE_BOOLEAN);
+            $updateData['is_aktif'] = $isAktif;
+            if ($isAktif) {
+                $tipe = $request->tipe_sertifikat ?? $template->tipe_sertifikat;
+                TemplateSertifikat::where('tipe_sertifikat', $tipe)
+                    ->where('id_template', '!=', $id_template)
+                    ->update(['is_aktif' => false]);
+            }
         }
 
         if ($request->has('layout_data')) {
-            $updateData['layout_data'] = $request->layout_data;
+            $layoutData = $request->layout_data;
+            // Handle jika dikirim sebagai string JSON
+            if (is_string($layoutData) && !empty($layoutData)) {
+                $decoded = json_decode($layoutData, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $layoutData = $decoded;
+                }
+            }
+            $updateData['layout_data'] = $layoutData;
         }
 
         $template->update($updateData);
@@ -269,8 +311,16 @@ class TemplateSertifikatController extends Controller
             ], 404);
         }
 
+        $newStatus = !$template->is_aktif;
+        
+        if ($newStatus) {
+            TemplateSertifikat::where('tipe_sertifikat', $template->tipe_sertifikat)
+                ->where('id_template', '!=', $id_template)
+                ->update(['is_aktif' => false]);
+        }
+
         $template->update([
-            'is_aktif' => !$template->is_aktif
+            'is_aktif' => $newStatus
         ]);
 
         return response()->json([
@@ -317,6 +367,8 @@ class TemplateSertifikatController extends Controller
             ], 404);
         }
 
-        return response()->file($path);
+        $file = file_get_contents($path);
+        $type = mime_content_type($path);
+        return response($file, 200)->header('Content-Type', $type);
     }
 }

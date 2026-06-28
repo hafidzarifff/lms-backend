@@ -337,21 +337,9 @@ class PesertaKelasController extends Controller
         $peserta->status_kelayakan = $validated['status_kelayakan'];
         $peserta->save();
 
-        // Jika disetujui, generate sertifikat jika belum ada
+        // Jika disetujui, generate sertifikat yang memenuhi syarat
         if ($peserta->status_kelayakan === 'Disetujui') {
-            $sertifikatAda = \App\Models\Sertifikat::where('id_peserta', $peserta->id_peserta)->exists();
-            if (!$sertifikatAda) {
-                // Ambil template aktif
-                $templateAktif = \App\Models\TemplateSertifikat::where('is_aktif', true)->first();
-                if ($templateAktif) {
-                    \App\Models\Sertifikat::create([
-                        'id_peserta' => $peserta->id_peserta,
-                        'id_template' => $templateAktif->id_template,
-                        'nomor_sertifikat' => \App\Models\Sertifikat::generateNomorSertifikat(),
-                        'tanggal_terbit' => now(),
-                    ]);
-                }
-            }
+            \App\Models\Sertifikat::generateForPeserta($peserta);
         }
 
         return response()->json([

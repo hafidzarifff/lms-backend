@@ -19,6 +19,7 @@ class TemplateSertifikat extends Model
 
     protected $fillable = [
         'nama_template',
+        'tipe_sertifikat',
         'file_background',
         'is_aktif',
         'layout_data',
