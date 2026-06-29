@@ -3,10 +3,21 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ForgotPasswordController;
+use App\Http\Controllers\Api\GoogleAuthController;
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/register/dosen', [AuthController::class, 'registerDosen']);
 Route::get('/public/download', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'publicDownload']);
+
+// Forgot Password (Public)
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendLink']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'reset']);
+
+// Google Login (Public)
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -14,6 +25,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    // Profile & Password Management
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/foto', [ProfileController::class, 'uploadFoto']);
+    Route::put('/profile/password', [ProfileController::class, 'changePassword']);
+    
+    // Mahasiswa Onboarding
+    Route::put('/mahasiswa/onboarding', [ProfileController::class, 'onboarding']);
 
     // Fitur Verifikasi Dosen (Admin)
     Route::get('/verifikasi-dosen', [\App\Http\Controllers\Api\VerifikasiDosenController::class, 'index']);

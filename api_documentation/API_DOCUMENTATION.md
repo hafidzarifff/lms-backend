@@ -213,6 +213,236 @@ Digunakan oleh Dosen untuk mendaftarkan akun baru secara mandiri. Akun yang terd
 
 ---
 
+
+## Manajemen Profil (Semua Role)
+
+### 1. Get Profile Detail
+
+Mengambil data profil pengguna yang sedang login beserta URL foto profilnya.
+
+- **URL:** `/profile`
+- **Method:** `GET`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "data": {
+        "id_user": "uuid",
+        "nama_lengkap": "Nama User",
+        "email": "user@lms.com",
+        "foto_profil_url": "http://localhost:8000/storage/foto-profil/xxx.jpg",
+        ...
+    }
+}
+```
+
+---
+
+### 2. Update Profile Dasar
+
+Memperbarui data dasar profil pengguna.
+
+- **URL:** `/profile`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "nama_lengkap": "Nama Baru",
+    "email": "emailbaru@lms.com",
+    "tanggal_lahir": "1990-01-01",
+    "alamat": "Jl. Baru",
+    "nomor_telepon": "0812345678"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Profil berhasil diperbarui",
+    "data": { ... }
+}
+```
+
+---
+
+### 3. Upload Foto Profil
+
+Mengunggah atau memperbarui foto profil pengguna.
+
+- **URL:** `/profile/foto`
+- **Method:** `POST`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+    - `Content-Type: multipart/form-data`
+- **Request Body:**
+`foto` (File: jpg, jpeg, png, maks 2MB)
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Foto profil berhasil diunggah",
+    "data": { "foto_profil_url": "..." }
+}
+```
+
+---
+
+### 4. Ganti Kata Sandi (Logged In)
+
+Mengubah kata sandi pengguna saat sedang login (membutuhkan kata sandi lama).
+
+- **URL:** `/profile/password`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "current_password": "PasswordLama1",
+    "password": "PasswordBaru2",
+    "password_confirmation": "PasswordBaru2"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Kata sandi berhasil diubah"
+}
+```
+
+---
+
+### 5. Onboarding Mahasiswa (Ubah Sandi Pertama)
+
+Wajib dilakukan oleh mahasiswa saat login pertama kali untuk mengganti kata sandi default dan melengkapi data profil dasar.
+
+- **URL:** `/mahasiswa/onboarding`
+- **Method:** `PUT`
+- **Headers:**
+    - `Authorization: Bearer <token>`
+- **Request Body:**
+```json
+{
+    "password": "PasswordBaruMahasiswa",
+    "password_confirmation": "PasswordBaruMahasiswa",
+    "email": "email.pribadi@gmail.com"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Setup awal berhasil"
+}
+```
+
+---
+
+### 5. Redirect ke Google OAuth (SSO)
+
+Menginisiasi proses otentikasi menggunakan akun Google. Endpoint ini akan mengarahkan (redirect) pengguna ke halaman login Google.
+
+- **URL:** `/auth/google/redirect`
+- **Method:** `GET`
+- **Response:**
+Melakukan pengalihan HTTP (HTTP 302 Found) ke server otentikasi Google.
+
+---
+
+### 6. Callback Google OAuth (SSO)
+
+Menangani respon dari Google setelah pengguna berhasil login di halaman Google. Endpoint ini akan memvalidasi apakah email Google terdaftar di sistem.
+
+- **URL:** `/auth/google/callback`
+- **Method:** `GET`
+- **Query Params:**
+    - `code`: (Otomatis ditambahkan oleh Google)
+
+- **Response Sukses (Redirect):**
+Sistem tidak mengembalikan JSON, melainkan melakukan redirect ke Frontend membawa token (Sanctum) yang sukses dibuat.
+Contoh Redirect URL: `http://localhost:5173/auth/callback?token=1|xxxxx`
+
+- **Response Error (Redirect):**
+Jika email Google tidak terdaftar di sistem, atau akun belum diaktifkan/disetujui, sistem akan melakukan redirect ke Frontend dengan membawa pesan error di URL.
+Contoh Redirect URL: `http://localhost:5173/auth/callback?error=Akun belum terdaftar di sistem. Hubungi Admin.`
+
+---
+
+### 7. Kirim Link Lupa Kata Sandi (Forgot Password)
+
+Mengirimkan link reset kata sandi ke email pengguna.
+
+- **URL:** `/forgot-password`
+- **Method:** `POST`
+- **Request Body:**
+```json
+{
+    "email": "user@lms.com"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Link reset kata sandi telah dikirim ke email Anda."
+}
+```
+
+- **Response Error (400/422):**
+```json
+{
+    "success": false,
+    "message": "Gagal mengirim link reset. Pastikan email terdaftar."
+}
+```
+
+---
+
+### 8. Reset Kata Sandi Baru
+
+Menyimpan kata sandi baru menggunakan token reset dari email.
+
+- **URL:** `/reset-password`
+- **Method:** `POST`
+- **Request Body:**
+```json
+{
+    "token": "token_dari_email",
+    "email": "user@lms.com",
+    "password": "PasswordBaru1",
+    "password_confirmation": "PasswordBaru1"
+}
+```
+
+- **Response Sukses (200 OK):**
+```json
+{
+    "success": true,
+    "message": "Kata sandi Anda berhasil direset!"
+}
+```
+
+- **Response Error (400/422):**
+```json
+{
+    "success": false,
+    "message": "Kata sandi baru harus mengandung huruf."
+}
+```
+
+---
+
 ## Role: Admin
 
 ### Manajemen Dosen

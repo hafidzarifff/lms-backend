@@ -44,6 +44,7 @@ class Pengguna extends Authenticatable
         'tanggal_lahir',
         'alamat',
         'login_terakhir',
+        'is_first_login',
     ];
 
     /**
@@ -66,6 +67,7 @@ class Pengguna extends Authenticatable
             'role' => RolePengguna::class,
             'password' => 'hashed',
             'status_aktif' => 'boolean',
+            'is_first_login' => 'boolean',
         ];
     }
 

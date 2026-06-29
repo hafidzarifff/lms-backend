@@ -109,6 +109,7 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'nama_lengkap' => $user->nama_lengkap,
                     'role' => $user->role->value,
+                    'is_first_login' => $user->is_first_login,
                 ]
             ]
         ], 200);

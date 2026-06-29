@@ -43,6 +43,7 @@ class MahasiswaController extends Controller
             'angkatan'           => $validatedData['angkatan'],
             'status_aktif'       => true,
             'status_persetujuan' => 'Disetujui',
+            'is_first_login'     => true,
         ]);
 
         // 6. Return response JSON (HTTP 201) berisi pesan sukses
