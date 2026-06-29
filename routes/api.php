@@ -111,6 +111,9 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Hasil Evaluasi
         Route::get('/dosen/{id_dosen}/hasil-evaluasi', [\App\Http\Controllers\JawabanEvaluasiController::class, 'getHasilByDosen']);
+        
+        // Dosen Dashboard Stats
+        Route::get('/dashboard/dosen/{id_dosen}', [\App\Http\Controllers\Api\DashboardController::class, 'dosenStats']);
     });
 
     // Dosen & Mahasiswa: List tugas di sesi (GET shared)
