@@ -20,7 +20,9 @@ class JawabanEvaluasi extends Model
     protected $fillable = [
         'id_pertanyaan',
         'id_peserta',
+        'id_jadwal',
         'skor',
+        'jawaban_teks',
         'waktu_submit',
     ];
 
@@ -43,5 +45,13 @@ class JawabanEvaluasi extends Model
     public function peserta(): BelongsTo
     {
         return $this->belongsTo(Pengguna::class, 'id_peserta', 'id_user');
+    }
+
+    /**
+     * Relasi ke jadwal perkuliahan
+     */
+    public function jadwal(): BelongsTo
+    {
+        return $this->belongsTo(JadwalPerkuliahan::class, 'id_jadwal', 'id_jadwal');
     }
 }

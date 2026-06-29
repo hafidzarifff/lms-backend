@@ -20,6 +20,7 @@ class PertanyaanEvaluasi extends Model
     protected $fillable = [
         'kategori',
         'teks_pertanyaan',
+        'tipe_pertanyaan',
         'urutan',
         'is_aktif',
     ];

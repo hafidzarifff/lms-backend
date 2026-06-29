@@ -83,6 +83,7 @@ class PertanyaanEvaluasiController extends Controller
         $validator = Validator::make($request->all(), [
             'kategori' => 'required|string|max:50',
             'teks_pertanyaan' => 'required|string',
+            'tipe_pertanyaan' => 'required|in:skala,teks',
             'urutan' => 'required|integer|min:1',
             'is_aktif' => 'nullable|boolean',
         ]);
@@ -98,6 +99,7 @@ class PertanyaanEvaluasiController extends Controller
             'id_pertanyaan' => Str::uuid(),
             'kategori' => $request->kategori,
             'teks_pertanyaan' => $request->teks_pertanyaan,
+            'tipe_pertanyaan' => $request->tipe_pertanyaan,
             'urutan' => $request->urutan,
             'is_aktif' => $request->is_aktif ?? true,
         ]);
@@ -126,6 +128,7 @@ class PertanyaanEvaluasiController extends Controller
         $validator = Validator::make($request->all(), [
             'kategori' => 'nullable|string|max:50',
             'teks_pertanyaan' => 'nullable|string',
+            'tipe_pertanyaan' => 'nullable|in:skala,teks',
             'urutan' => 'nullable|integer|min:1',
             'is_aktif' => 'nullable|boolean',
         ]);
@@ -140,6 +143,7 @@ class PertanyaanEvaluasiController extends Controller
         $pertanyaan->update($request->only([
             'kategori',
             'teks_pertanyaan',
+            'tipe_pertanyaan',
             'urutan',
             'is_aktif',
         ]));

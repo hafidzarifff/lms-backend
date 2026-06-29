@@ -108,6 +108,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/sesi/{sesi_id}/tugas', [\App\Http\Controllers\Api\TugasController::class, 'store']);
         Route::put('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'update']);
         Route::delete('/tugas/{id}', [\App\Http\Controllers\Api\TugasController::class, 'destroy']);
+        
+        // Hasil Evaluasi
+        Route::get('/dosen/{id_dosen}/hasil-evaluasi', [\App\Http\Controllers\JawabanEvaluasiController::class, 'getHasilByDosen']);
     });
 
     // Dosen & Mahasiswa: List tugas di sesi (GET shared)

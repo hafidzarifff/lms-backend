@@ -18,9 +18,11 @@ class JawabanEvaluasiController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'id_peserta' => 'required|uuid|exists:pengguna,id_user',
+            'id_jadwal' => 'required|uuid|exists:jadwal_perkuliahan,id_jadwal',
             'jawaban' => 'required|array|min:1',
             'jawaban.*.id_pertanyaan' => 'required|uuid|exists:pertanyaan_evaluasi,id_pertanyaan',
-            'jawaban.*.skor' => 'required|integer|min:1|max:5',
+            'jawaban.*.skor' => 'nullable|integer|min:1|max:5',
+            'jawaban.*.jawaban_teks' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -35,15 +37,17 @@ class JawabanEvaluasiController extends Controller
             $waktuSubmit = now();
 
             foreach ($request->jawaban as $item) {
-                // Cek apakah sudah ada jawaban untuk pertanyaan + peserta ini
+                // Cek apakah sudah ada jawaban untuk pertanyaan + peserta + jadwal ini
                 $existing = JawabanEvaluasi::where('id_pertanyaan', $item['id_pertanyaan'])
                     ->where('id_peserta', $request->id_peserta)
+                    ->where('id_jadwal', $request->id_jadwal)
                     ->first();
 
                 if ($existing) {
                     // Update jika sudah ada (resubmit)
                     $existing->update([
-                        'skor' => $item['skor'],
+                        'skor' => $item['skor'] ?? null,
+                        'jawaban_teks' => $item['jawaban_teks'] ?? null,
                         'waktu_submit' => $waktuSubmit,
                     ]);
                     $inserted[] = $existing;
@@ -53,7 +57,9 @@ class JawabanEvaluasiController extends Controller
                         'id_evaluasi' => Str::uuid(),
                         'id_pertanyaan' => $item['id_pertanyaan'],
                         'id_peserta' => $request->id_peserta,
-                        'skor' => $item['skor'],
+                        'id_jadwal' => $request->id_jadwal,
+                        'skor' => $item['skor'] ?? null,
+                        'jawaban_teks' => $item['jawaban_teks'] ?? null,
                         'waktu_submit' => $waktuSubmit,
                     ]);
                     $inserted[] = $jawaban;
@@ -136,7 +142,8 @@ class JawabanEvaluasiController extends Controller
     public function update(Request $request, $id_evaluasi)
     {
         $validator = Validator::make($request->all(), [
-            'skor' => 'required|integer|min:1|max:5',
+            'skor' => 'nullable|integer|min:1|max:5',
+            'jawaban_teks' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -156,7 +163,8 @@ class JawabanEvaluasiController extends Controller
         }
 
         $jawaban->update([
-            'skor' => $request->skor,
+            'skor' => $request->skor ?? null,
+            'jawaban_teks' => $request->jawaban_teks ?? null,
             'waktu_submit' => now(),
         ]);
 
@@ -299,6 +307,102 @@ class JawabanEvaluasiController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $rekap
+        ]);
+    }
+
+    /**
+     * Get hasil evaluasi anonim khusus untuk Dosen
+     */
+    public function getHasilByDosen($id_dosen)
+    {
+        // 1. Ambil daftar jadwal (kelas) yang diajar oleh dosen tersebut
+        $jadwal = DB::table('jadwal_perkuliahan')
+            ->join('master_mata_kuliah', 'jadwal_perkuliahan.id_mk', '=', 'master_mata_kuliah.id_mk')
+            ->join('master_kelas', 'jadwal_perkuliahan.id_kelas', '=', 'master_kelas.id_kelas')
+            ->where('jadwal_perkuliahan.id_dosen', $id_dosen)
+            ->select(
+                'jadwal_perkuliahan.id_jadwal',
+                'master_mata_kuliah.nama_mk',
+                'master_mata_kuliah.kode_mk',
+                'master_kelas.nama_kelas',
+                'jadwal_perkuliahan.semester',
+                'jadwal_perkuliahan.fakultas',
+                'jadwal_perkuliahan.prodi'
+            )
+            ->get();
+
+        if ($jadwal->isEmpty()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => []
+            ]);
+        }
+
+        $hasil = [];
+
+        foreach ($jadwal as $j) {
+            // Ambil pertanyaan beserta rerata skor (untuk skala) dan list teks (untuk essay) 
+            // KHUSUS untuk id_jadwal ini
+            $pertanyaanList = PertanyaanEvaluasi::aktif()->orderBy('kategori')->orderBy('urutan')->get();
+            
+            $detailPertanyaan = [];
+            foreach ($pertanyaanList as $p) {
+                $jawabanJadwalIni = DB::table('jawaban_evaluasi')
+                    ->where('id_pertanyaan', $p->id_pertanyaan)
+                    ->where('id_jadwal', $j->id_jadwal)
+                    ->whereNull('deleted_at');
+
+                $totalResponden = (clone $jawabanJadwalIni)->count();
+
+                if ($p->tipe_pertanyaan === 'skala') {
+                    $rataRata = (clone $jawabanJadwalIni)->avg('skor');
+                    $detailPertanyaan[] = [
+                        'id_pertanyaan' => $p->id_pertanyaan,
+                        'kategori' => $p->kategori,
+                        'teks_pertanyaan' => $p->teks_pertanyaan,
+                        'tipe_pertanyaan' => $p->tipe_pertanyaan,
+                        'total_responden' => $totalResponden,
+                        'rata_rata' => $rataRata ? round($rataRata, 2) : 0,
+                    ];
+                } else {
+                    $listTeks = (clone $jawabanJadwalIni)
+                        ->whereNotNull('jawaban_teks')
+                        ->pluck('jawaban_teks');
+                        
+                    $detailPertanyaan[] = [
+                        'id_pertanyaan' => $p->id_pertanyaan,
+                        'kategori' => $p->kategori,
+                        'teks_pertanyaan' => $p->teks_pertanyaan,
+                        'tipe_pertanyaan' => $p->tipe_pertanyaan,
+                        'total_responden' => $totalResponden,
+                        'jawaban_teks' => $listTeks,
+                    ];
+                }
+            }
+
+            // Hitung rata-rata keseluruhan untuk kelas/jadwal ini
+            $rataKeseluruhan = DB::table('jawaban_evaluasi')
+                ->join('pertanyaan_evaluasi', 'jawaban_evaluasi.id_pertanyaan', '=', 'pertanyaan_evaluasi.id_pertanyaan')
+                ->where('jawaban_evaluasi.id_jadwal', $j->id_jadwal)
+                ->where('pertanyaan_evaluasi.tipe_pertanyaan', 'skala')
+                ->whereNull('jawaban_evaluasi.deleted_at')
+                ->avg('jawaban_evaluasi.skor');
+
+            $hasil[] = [
+                'id_jadwal' => $j->id_jadwal,
+                'mata_kuliah' => $j->nama_mk . ' (' . $j->kode_mk . ')',
+                'kelas' => $j->nama_kelas,
+                'semester' => $j->semester,
+                'fakultas' => $j->fakultas,
+                'prodi' => $j->prodi,
+                'rata_rata_keseluruhan' => $rataKeseluruhan ? round($rataKeseluruhan, 2) : 0,
+                'detail_pertanyaan' => $detailPertanyaan,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $hasil
         ]);
     }
 }
