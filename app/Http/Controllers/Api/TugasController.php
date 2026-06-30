@@ -54,7 +54,7 @@ class TugasController extends Controller
     /**
      * GET /tugas/jadwal/:id_jadwal - List semua tugas di sebuah jadwal (Dosen & Mahasiswa)
      */
-    public function getByJadwal(string $id_jadwal): JsonResponse
+    public function getByJadwal(\Illuminate\Http\Request $request, string $id_jadwal): JsonResponse
     {
         $jadwal = JadwalPerkuliahan::find($id_jadwal);
 
@@ -71,6 +71,19 @@ class TugasController extends Controller
             ->with('sesiPertemuan')
             ->orderBy('batas_waktu', 'asc')
             ->get();
+
+        $user = $request->user();
+        if ($user && $user->role === \App\Enums\RolePengguna::Mahasiswa) {
+            $tugas->transform(function ($item) use ($user) {
+                $nilaiCbt = \App\Models\NilaiCbt::where('id_tugas', $item->id_tugas)
+                    ->where('id_peserta', $user->id_user)
+                    ->first();
+                
+                $item->status_pengerjaan = $nilaiCbt ? 'Sudah Dikerjakan' : 'Belum Dikerjakan';
+                $item->nilai = $nilaiCbt ? $nilaiCbt->nilai : null;
+                return $item;
+            });
+        }
 
         return response()->json([
             'status' => 'success',
