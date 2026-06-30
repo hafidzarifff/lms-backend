@@ -70,6 +70,7 @@ class MahasiswaMataKuliahController extends Controller
                 'tahun' => $j->tahun,
                 'hari' => $j->hari,
                 'kelas' => $j->kelas ? $j->kelas->nama_kelas : 'Unknown',
+                'prodi' => $j->prodi,
                 'deskripsi' => $j->mataKuliah->deskripsi ?? 'Tidak ada deskripsi tersedia.',
             ];
         };
@@ -114,6 +115,7 @@ class MahasiswaMataKuliahController extends Controller
                 'tahun' => $j->tahun,
                 'hari' => $j->hari,
                 'kelas' => $j->kelas ? $j->kelas->nama_kelas : 'Unknown',
+                'prodi' => $j->prodi,
                 'deskripsi' => $j->mataKuliah->deskripsi ?? 'Tidak ada deskripsi tersedia.',
             ];
         };

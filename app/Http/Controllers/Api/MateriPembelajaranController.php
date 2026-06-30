@@ -187,7 +187,7 @@ class MateriPembelajaranController extends Controller
                     'file_materi' => $item->file_materi,
                     'jumlah_file' => is_array($item->file_materi) ? count($item->file_materi) : 0,
                     'link_video' => $item->link_video_pembelajaran,
-                    'tanggal' => $item->created_at ? $item->created_at->format('d F Y') : '-',
+                    'tanggal' => $item->created_at ? $item->created_at->locale('id')->translatedFormat('d F Y') : '-',
                     'created_at' => $item->created_at,
                 ];
             });
