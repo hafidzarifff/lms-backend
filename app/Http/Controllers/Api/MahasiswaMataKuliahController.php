@@ -60,14 +60,16 @@ class MahasiswaMataKuliahController extends Controller
                 'dosen' => $j->dosen ? $j->dosen->nama_lengkap : 'Tanpa Dosen',
                 'role' => 'Dosen pengampu',
                 'avatar' => $j->dosen && $j->dosen->foto_profil 
-                            ? asset('storage/' . $j->dosen->foto_profil) 
-                            : 'https://ui-avatars.com/api/?name=' . urlencode($j->dosen ? $j->dosen->nama_lengkap : 'Dosen') . '&background=random',
+                            ? request()->getSchemeAndHttpHost() . '/storage/' . $j->dosen->foto_profil
+                            : 'https://api.dicebear.com/7.x/initials/png?seed=' . urlencode($j->dosen ? $j->dosen->nama_lengkap : 'Dosen') . '&backgroundColor=116E63&textColor=ffffff',
                 'image' => $j->mataKuliah && $j->mataKuliah->banner 
-                            ? asset('storage/' . $j->mataKuliah->banner) 
+                            ? request()->getSchemeAndHttpHost() . '/storage/' . $j->mataKuliah->banner
                             : 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80',
                 'sks' => $j->sks,
                 'semester' => $j->semester,
                 'tahun' => $j->tahun,
+                'hari' => $j->hari,
+                'kelas' => $j->kelas ? $j->kelas->nama_kelas : 'Unknown',
                 'deskripsi' => $j->mataKuliah->deskripsi ?? 'Tidak ada deskripsi tersedia.',
             ];
         };
@@ -102,14 +104,16 @@ class MahasiswaMataKuliahController extends Controller
                 'dosen' => $j->dosen ? $j->dosen->nama_lengkap : 'Tanpa Dosen',
                 'role' => 'Dosen pengampu',
                 'avatar' => $j->dosen && $j->dosen->foto_profil 
-                            ? asset('storage/' . $j->dosen->foto_profil) 
-                            : 'https://ui-avatars.com/api/?name=' . urlencode($j->dosen ? $j->dosen->nama_lengkap : 'Dosen') . '&background=random',
+                            ? request()->getSchemeAndHttpHost() . '/storage/' . $j->dosen->foto_profil
+                            : 'https://api.dicebear.com/7.x/initials/png?seed=' . urlencode($j->dosen ? $j->dosen->nama_lengkap : 'Dosen') . '&backgroundColor=116E63&textColor=ffffff',
                 'image' => $j->mataKuliah && $j->mataKuliah->banner 
-                            ? asset('storage/' . $j->mataKuliah->banner) 
+                            ? request()->getSchemeAndHttpHost() . '/storage/' . $j->mataKuliah->banner
                             : 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80',
                 'sks' => $j->sks,
                 'semester' => $j->semester,
                 'tahun' => $j->tahun,
+                'hari' => $j->hari,
+                'kelas' => $j->kelas ? $j->kelas->nama_kelas : 'Unknown',
                 'deskripsi' => $j->mataKuliah->deskripsi ?? 'Tidak ada deskripsi tersedia.',
             ];
         };

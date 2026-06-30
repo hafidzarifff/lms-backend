@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Mahasiswa Dashboard & Mata Kuliah (Harus di atas /mahasiswa/{id} agar tidak tertangkap sebagai parameter ID)
     Route::get('/mahasiswa/dashboard', [\App\Http\Controllers\Api\MahasiswaDashboardController::class, 'index']);
+    Route::get('/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaDashboardController::class, 'search']);
     Route::get('/mahasiswa/mata-kuliah', [\App\Http\Controllers\Api\MahasiswaMataKuliahController::class, 'index']);
 
     Route::get('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'show']);
