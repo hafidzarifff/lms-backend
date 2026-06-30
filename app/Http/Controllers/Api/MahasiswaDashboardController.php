@@ -65,27 +65,45 @@ class MahasiswaDashboardController extends Controller
         $completedModules = $jumlahTugasDikerjakan + $jumlahHadir; 
 
         // 3. Jadwal Hari Ini
-        $days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        $todayIndo = $days[now()->dayOfWeek];
+        $todayStr = now()->setTimezone(config('app.timezone', 'Asia/Jakarta'))->format('Y-m-d');
+        
+        $sesiHariIni = \App\Models\SesiPertemuan::whereIn('id_jadwal', $idJadwals)
+            ->whereDate('tanggal_pelaksanaan', $todayStr)
+            ->with(['jadwalPerkuliahan.mataKuliah', 'jadwalPerkuliahan.dosen'])
+            ->orderBy('jam_mulai', 'asc')
+            ->get();
 
-        $jadwalHariIni = $peserta->map(function ($p) {
-            return $p->jadwal;
-        })->filter(function ($j) use ($todayIndo) {
-            return $j && $j->hari === $todayIndo;
-        })->map(function ($j) {
+        $jadwalHariIni = $sesiHariIni->map(function ($sesi) {
+            $jadwal = $sesi->jadwalPerkuliahan;
+            
+            $jamMulai = $sesi->jam_mulai ? \Carbon\Carbon::parse($sesi->jam_mulai)->format('H:i') : '';
+            $jamBerakhir = $sesi->jam_berakhir ? \Carbon\Carbon::parse($sesi->jam_berakhir)->format('H:i') : '';
+            $timeString = $jamMulai && $jamBerakhir ? "{$jamMulai} - {$jamBerakhir}" : '-';
+
+            $avatar = $jadwal?->dosen && $jadwal->dosen->foto_profil 
+                ? request()->getSchemeAndHttpHost() . '/storage/' . $jadwal->dosen->foto_profil
+                : 'https://ui-avatars.com/api/?name=' . urlencode($jadwal?->dosen ? $jadwal->dosen->nama_lengkap : 'Dosen') . '&background=random';
+            
+            $image = $jadwal?->mataKuliah && $jadwal->mataKuliah->banner 
+                ? request()->getSchemeAndHttpHost() . '/storage/' . $jadwal->mataKuliah->banner 
+                : 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80';
+
             return [
-                'id' => $j->id_jadwal,
-                'title' => $j->mataKuliah ? $j->mataKuliah->nama_mk : 'Tanpa Mata Kuliah',
-                'date' => now()->translatedFormat('d F Y'), // e.g. 21 Januari 2026
-                'time' => substr($j->waktu_mulai, 0, 5) . ' - ' . substr($j->waktu_berakhir, 0, 5),
-                'lecturer' => $j->dosen ? $j->dosen->nama_lengkap : 'Tanpa Dosen',
-                'role' => 'Dosen utama',
-                'avatar' => $j->dosen && $j->dosen->foto_profil 
-                            ? asset('storage/' . $j->dosen->foto_profil) 
-                            : 'https://ui-avatars.com/api/?name=' . urlencode($j->dosen ? $j->dosen->nama_lengkap : 'Dosen') . '&background=random',
-                'image' => $j->mataKuliah && $j->mataKuliah->banner 
-                            ? asset('storage/' . $j->mataKuliah->banner) 
-                            : 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80',
+                'id' => $sesi->id_sesi,
+                'id_jadwal' => $sesi->id_jadwal,
+                'title' => $jadwal?->mataKuliah?->nama_mk ?? 'Mata Kuliah',
+                'pertemuan' => $sesi->judul_sesi ?? ('Pertemuan ' . $sesi->pertemuan_ke),
+                'date' => \Carbon\Carbon::parse($sesi->tanggal_pelaksanaan)->locale('id')->translatedFormat('d F Y'),
+                'time' => $timeString,
+                'lecturer' => $jadwal?->dosen?->nama_lengkap ?? 'Tanpa Dosen',
+                'role' => 'Dosen Utama',
+                'avatar' => $avatar,
+                'image' => $image,
+                'course' => $jadwal?->mataKuliah?->nama_mk ?? 'Mata Kuliah',
+                'method' => $sesi->metode_pertemuan,
+                'topic' => $sesi->materi ?? '-',
+                'link_kelas_daring' => $sesi->link_kelas_daring,
+                'rawMateri' => $sesi->materi,
             ];
         })->values();
 
@@ -246,6 +264,68 @@ class MahasiswaDashboardController extends Controller
                 'mata_kuliah' => $mataKuliahData,
                 'materi' => $materiData
             ]
+        ]);
+    }
+    /**
+     * Mengambil jadwal kelas dinamis untuk mahasiswa.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function jadwalKelas(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if ($user->role !== \App\Enums\RolePengguna::Mahasiswa) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        $peserta = \App\Models\PesertaKelas::where('id_mahasiswa', $user->id_user)->get();
+        $idJadwals = $peserta->pluck('id_jadwal')->filter()->toArray();
+
+        if (empty($idJadwals)) {
+            return response()->json(['status' => 'success', 'data' => []], 200);
+        }
+
+        $sesiPertemuan = \App\Models\SesiPertemuan::whereIn('id_jadwal', $idJadwals)
+            ->with(['jadwalPerkuliahan.mataKuliah', 'jadwalPerkuliahan.dosen'])
+            ->orderBy('tanggal_pelaksanaan', 'asc')
+            ->orderBy('jam_mulai', 'asc')
+            ->get();
+
+        $jadwalData = $sesiPertemuan->map(function ($sesi) {
+            $jadwal = $sesi->jadwalPerkuliahan;
+            
+            $jamMulai = $sesi->jam_mulai ? \Carbon\Carbon::parse($sesi->jam_mulai)->format('H:i') : '';
+            $jamBerakhir = $sesi->jam_berakhir ? \Carbon\Carbon::parse($sesi->jam_berakhir)->format('H:i') : '';
+            $timeString = $jamMulai && $jamBerakhir ? "{$jamMulai} - {$jamBerakhir}" : '-';
+
+            $avatar = $jadwal?->dosen && $jadwal->dosen->foto_profil 
+                ? request()->getSchemeAndHttpHost() . '/storage/' . $jadwal->dosen->foto_profil
+                : 'https://api.dicebear.com/7.x/initials/png?seed=' . urlencode($jadwal?->dosen ? $jadwal->dosen->nama_lengkap : 'Dosen') . '&backgroundColor=116E63&textColor=ffffff';
+
+            return [
+                'id' => $sesi->id_sesi,
+                'id_jadwal' => $sesi->id_jadwal,
+                'date' => $sesi->tanggal_pelaksanaan ? \Carbon\Carbon::parse($sesi->tanggal_pelaksanaan)->setTimezone(config('app.timezone', 'Asia/Jakarta'))->format('Y-m-d') : null,
+                'title' => $jadwal?->mataKuliah?->nama_mk ?? 'Mata Kuliah',
+                'pertemuan' => $sesi->judul_sesi ?? ('Pertemuan ' . $sesi->pertemuan_ke),
+                'time' => $timeString,
+                'dosen' => $jadwal?->dosen?->nama_lengkap ?? 'Dosen',
+                'role' => 'Dosen Utama',
+                'avatar' => $avatar,
+                'course' => $jadwal?->mataKuliah?->nama_mk ?? 'Mata Kuliah',
+                'method' => $sesi->metode_pertemuan,
+                'topic' => $sesi->materi ?? '-',
+                'link_kelas_daring' => $sesi->link_kelas_daring,
+                'rawMateri' => $sesi->materi,
+            ];
+        })->filter(function($item) {
+            return !is_null($item['date']);
+        })->values();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $jadwalData
         ]);
     }
 }
