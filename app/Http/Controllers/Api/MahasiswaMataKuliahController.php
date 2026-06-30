@@ -83,4 +83,45 @@ class MahasiswaMataKuliahController extends Controller
             ]
         ], 200);
     }
+
+    /**
+     * Mengambil daftar mata kuliah yang tersedia untuk guest.
+     */
+    public function guestIndex(): JsonResponse
+    {
+        // Ambil data jadwal untuk yang "Tersedia"
+        $jadwalTersedia = JadwalPerkuliahan::with(['mataKuliah', 'kelas', 'dosen'])->get();
+
+        // Mapping data sesuai format Frontend
+        $formatJadwal = function ($j) {
+            return [
+                'id' => $j->id_jadwal,
+                'title' => $j->mataKuliah ? $j->mataKuliah->nama_mk : 'Tanpa Mata Kuliah',
+                'type' => ($j->kelas ? $j->kelas->nama_kelas : 'Kelas') . ' - ' . $j->fakultas,
+                'time' => $j->hari . ', ' . ($j->waktu_mulai ? substr($j->waktu_mulai, 0, 5) : '00:00') . ' - ' . ($j->waktu_berakhir ? substr($j->waktu_berakhir, 0, 5) : '00:00'),
+                'dosen' => $j->dosen ? $j->dosen->nama_lengkap : 'Tanpa Dosen',
+                'role' => 'Dosen pengampu',
+                'avatar' => $j->dosen && $j->dosen->foto_profil 
+                            ? asset('storage/' . $j->dosen->foto_profil) 
+                            : 'https://ui-avatars.com/api/?name=' . urlencode($j->dosen ? $j->dosen->nama_lengkap : 'Dosen') . '&background=random',
+                'image' => $j->mataKuliah && $j->mataKuliah->banner 
+                            ? asset('storage/' . $j->mataKuliah->banner) 
+                            : 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80',
+                'sks' => $j->sks,
+                'semester' => $j->semester,
+                'tahun' => $j->tahun,
+                'deskripsi' => $j->mataKuliah->deskripsi ?? 'Tidak ada deskripsi tersedia.',
+            ];
+        };
+
+        $tersediaFormatted = $jadwalTersedia->map($formatJadwal)->values();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'diambil' => [],
+                'tersedia' => $tersediaFormatted,
+            ]
+        ], 200);
+    }
 }

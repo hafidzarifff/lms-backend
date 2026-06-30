@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\GoogleAuthController;
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/register/dosen', [AuthController::class, 'registerDosen']);
 Route::get('/public/download', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'publicDownload']);
+Route::get('/public/mata-kuliah', [\App\Http\Controllers\Api\MahasiswaMataKuliahController::class, 'guestIndex']);
+Route::get('/public/sesi-pertemuan/jadwal/{id_jadwal}', [\App\Http\Controllers\SesiPertemuanController::class, 'getByJadwal']);
 
 // Forgot Password (Public)
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendLink']);
