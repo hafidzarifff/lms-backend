@@ -32,6 +32,19 @@ class TugasController extends Controller
             ->orderBy('batas_waktu', 'asc')
             ->paginate($perPage);
 
+        $user = $request->user();
+        if ($user && $user->role === \App\Enums\RolePengguna::Mahasiswa) {
+            $tugas->getCollection()->transform(function ($item) use ($user) {
+                $nilaiCbt = \App\Models\NilaiCbt::where('id_tugas', $item->id_tugas)
+                    ->where('id_peserta', $user->id_user)
+                    ->first();
+                
+                $item->status_pengerjaan = $nilaiCbt ? 'Sudah Dikerjakan' : 'Belum Dikerjakan';
+                $item->nilai = $nilaiCbt ? $nilaiCbt->nilai : null;
+                return $item;
+            });
+        }
+
         return response()->json([
             'success' => true,
             'data' => $tugas,
