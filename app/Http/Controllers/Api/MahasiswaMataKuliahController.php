@@ -25,6 +25,12 @@ class MahasiswaMataKuliahController extends Controller
         $jadwalDiambil = [];
         if (!empty($enrolledJadwalIds)) {
             $jadwalDiambil = JadwalPerkuliahan::with(['mataKuliah', 'kelas', 'dosen'])
+                ->withExists(['sesiPertemuan as has_tugas' => function ($query) {
+                    $query->whereHas('tugas');
+                }])
+                ->withExists(['sesiPertemuan as has_materi' => function ($query) {
+                    $query->whereHas('materiPembelajaran');
+                }])
                 ->whereIn('id_jadwal', $enrolledJadwalIds)
                 ->get();
         } else {
@@ -32,7 +38,13 @@ class MahasiswaMataKuliahController extends Controller
         }
 
         // 2. Ambil data jadwal untuk yang "Tersedia"
-        $jadwalTersediaQuery = JadwalPerkuliahan::with(['mataKuliah', 'kelas', 'dosen']);
+        $jadwalTersediaQuery = JadwalPerkuliahan::with(['mataKuliah', 'kelas', 'dosen'])
+            ->withExists(['sesiPertemuan as has_tugas' => function ($query) {
+                $query->whereHas('tugas');
+            }])
+            ->withExists(['sesiPertemuan as has_materi' => function ($query) {
+                $query->whereHas('materiPembelajaran');
+            }]);
 
         // Filter jadwal yang BELUM diikuti
         if (!empty($enrolledJadwalIds)) {
@@ -72,6 +84,8 @@ class MahasiswaMataKuliahController extends Controller
                 'kelas' => $j->kelas ? $j->kelas->nama_kelas : 'Unknown',
                 'prodi' => $j->prodi,
                 'deskripsi' => $j->mataKuliah->deskripsi ?? 'Tidak ada deskripsi tersedia.',
+                'has_tugas' => $j->has_tugas ?? false,
+                'has_materi' => $j->has_materi ?? false,
             ];
         };
 
@@ -93,7 +107,13 @@ class MahasiswaMataKuliahController extends Controller
     public function guestIndex(): JsonResponse
     {
         // Ambil data jadwal untuk yang "Tersedia"
-        $jadwalTersedia = JadwalPerkuliahan::with(['mataKuliah', 'kelas', 'dosen'])->get();
+        $jadwalTersedia = JadwalPerkuliahan::with(['mataKuliah', 'kelas', 'dosen'])
+            ->withExists(['sesiPertemuan as has_tugas' => function ($query) {
+                $query->whereHas('tugas');
+            }])
+            ->withExists(['sesiPertemuan as has_materi' => function ($query) {
+                $query->whereHas('materiPembelajaran');
+            }])->get();
 
         // Mapping data sesuai format Frontend
         $formatJadwal = function ($j) {
@@ -117,6 +137,8 @@ class MahasiswaMataKuliahController extends Controller
                 'kelas' => $j->kelas ? $j->kelas->nama_kelas : 'Unknown',
                 'prodi' => $j->prodi,
                 'deskripsi' => $j->mataKuliah->deskripsi ?? 'Tidak ada deskripsi tersedia.',
+                'has_tugas' => $j->has_tugas ?? false,
+                'has_materi' => $j->has_materi ?? false,
             ];
         };
 
