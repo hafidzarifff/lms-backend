@@ -65,8 +65,14 @@ class SertifikatController extends Controller
                 'jadwal.kelas:id_kelas,nama_kelas',
                 'jadwal.dosen:id_user,nama_lengkap,nomor_induk',
                 'sertifikat',
-                'sertifikat.template:id_template,nama_template,tipe_sertifikat'
-            ]);
+                'sertifikat.template:id_template,nama_template,tipe_sertifikat,layout_data'
+            ])
+            ->whereHas('sertifikat'); // Hanya tampilkan yang sudah punya sertifikat!
+
+        $user = $request->user();
+        if ($user && $user->role === \App\Enums\RolePengguna::Mahasiswa) {
+            $query->where('id_mahasiswa', $user->id_user);
+        }
 
         // Filter by Fakultas
         if ($request->has('fakultas') && !empty($request->fakultas)) {
