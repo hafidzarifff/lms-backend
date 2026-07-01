@@ -341,7 +341,7 @@ class MahasiswaDashboardController extends Controller
 
         // Ambil semua jadwal yang diikuti
         $peserta = \App\Models\PesertaKelas::where('id_mahasiswa', $user->id_user)
-            ->with(['jadwal.mataKuliah', 'jadwal.kelas'])
+            ->with(['jadwal.mataKuliah', 'jadwal.kelas', 'jadwal.dosen'])
             ->get();
 
         $progressData = $peserta->map(function ($p) use ($user) {
@@ -384,6 +384,7 @@ class MahasiswaDashboardController extends Controller
                 'classInfo' => $jadwal->kelas ? $jadwal->kelas->nama_kelas : 'Kelas',
                 'major' => $jadwal->prodi ?? 'Program Studi',
                 'image' => $image,
+                'dosen' => $jadwal->dosen ? $jadwal->dosen->nama_lengkap : 'Tanpa Dosen',
                 'periode' => $periode,
                 'absensi_current' => $hadirCount,
                 'absensi_total' => $totalSesi,
