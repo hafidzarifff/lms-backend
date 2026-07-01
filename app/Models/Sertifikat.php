@@ -30,6 +30,38 @@ class Sertifikat extends Model
         'tanggal_terbit' => 'date',
     ];
 
+    protected $appends = ['daftar_nilai'];
+
+    /**
+     * Mengambil daftar nilai peserta berdasarkan tugas-tugas dalam jadwal terkait
+     */
+    public function getDaftarNilaiAttribute()
+    {
+        $peserta = $this->peserta;
+        if (!$peserta || !$peserta->id_jadwal) return [];
+
+        $sesiList = \App\Models\SesiPertemuan::where('id_jadwal', $peserta->id_jadwal)
+            ->with(['tugas'])
+            ->orderBy('pertemuan_ke')
+            ->get();
+
+        $result = [];
+        foreach ($sesiList as $sesi) {
+            foreach ($sesi->tugas as $tugas) {
+                $nilai = \App\Models\NilaiCbt::where('id_tugas', $tugas->id_tugas)
+                    ->where('id_peserta', $peserta->id_mahasiswa) // NilaiCbt terhubung ke id_user mahasiswa
+                    ->first();
+
+                $result[] = [
+                    'pertemuan' => $sesi->pertemuan_ke,
+                    'tugas' => $tugas->judul_tugas,
+                    'nilai' => $nilai ? $nilai->nilai : 0,
+                ];
+            }
+        }
+        return $result;
+    }
+
     /**
      * Relasi ke peserta_kelas
      */
