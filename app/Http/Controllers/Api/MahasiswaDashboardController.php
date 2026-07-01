@@ -328,4 +328,73 @@ class MahasiswaDashboardController extends Controller
             'data' => $jadwalData
         ]);
     }
+
+    /**
+     * Mengambil data progress belajar per mata kuliah untuk mahasiswa.
+     */
+    public function progressBelajar(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if ($user->role !== \App\Enums\RolePengguna::Mahasiswa) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        // Ambil semua jadwal yang diikuti
+        $peserta = \App\Models\PesertaKelas::where('id_mahasiswa', $user->id_user)
+            ->with(['jadwal.mataKuliah', 'jadwal.kelas'])
+            ->get();
+
+        $progressData = $peserta->map(function ($p) use ($user) {
+            $jadwal = $p->jadwal;
+            if (!$jadwal) return null;
+
+            // Hitung sesi
+            $sesiIds = \App\Models\SesiPertemuan::where('id_jadwal', $jadwal->id_jadwal)->pluck('id_sesi')->toArray();
+            $totalSesi = count($sesiIds);
+            
+            $hadirCount = 0;
+            if ($totalSesi > 0) {
+                $hadirCount = \App\Models\Presensi::whereIn('id_sesi', $sesiIds)
+                    ->where('id_peserta', $p->id_peserta)
+                    ->where('status_kehadiran', 'hadir')
+                    ->count();
+            }
+
+            // Hitung tugas
+            $tugasList = \App\Models\Tugas::whereIn('id_sesi', $sesiIds)->pluck('id_tugas')->toArray();
+            $totalTugas = count($tugasList);
+            
+            $tugasDikerjakan = 0;
+            if ($totalTugas > 0) {
+                $tugasDikerjakan = \App\Models\NilaiCbt::whereIn('id_tugas', $tugasList)
+                    ->where('id_peserta', $user->id_user)
+                    ->count();
+            }
+
+            $periode = (string) $jadwal->tahun;
+
+            $image = $jadwal->mataKuliah && $jadwal->mataKuliah->banner 
+                ? request()->getSchemeAndHttpHost() . '/storage/' . $jadwal->mataKuliah->banner 
+                : 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80';
+
+            return [
+                'id' => $jadwal->id_jadwal,
+                'id_peserta' => $p->id_peserta,
+                'title' => $jadwal->mataKuliah ? $jadwal->mataKuliah->nama_mk : 'Mata Kuliah',
+                'classInfo' => $jadwal->kelas ? $jadwal->kelas->nama_kelas : 'Kelas',
+                'major' => $jadwal->prodi ?? 'Program Studi',
+                'image' => $image,
+                'periode' => $periode,
+                'absensi_current' => $hadirCount,
+                'absensi_total' => $totalSesi,
+                'tugas_current' => $tugasDikerjakan,
+                'tugas_total' => $totalTugas,
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $progressData
+        ]);
+    }
 }

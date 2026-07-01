@@ -369,6 +369,11 @@ class TemplateSertifikatController extends Controller
 
         $file = file_get_contents($path);
         $type = mime_content_type($path);
-        return response($file, 200)->header('Content-Type', $type);
+        return response($file, 200)
+            ->header('Content-Type', $type)
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+            ->header('Cross-Origin-Resource-Policy', 'cross-origin');
     }
 }

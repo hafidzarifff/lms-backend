@@ -110,8 +110,17 @@ class SertifikatController extends Controller
      */
     public function getByPeserta($id_peserta)
     {
+        $peserta = \App\Models\PesertaKelas::find($id_peserta);
+        
+        if (!$peserta || $peserta->status_kelayakan !== 'Disetujui') {
+            return response()->json([
+                'status' => 'success',
+                'data' => []
+            ]);
+        }
+
         $sertifikats = Sertifikat::where('id_peserta', $id_peserta)
-            ->with(['peserta:id_user,nama_lengkap,nim,email', 'template:id_template,nama_template'])
+            ->with(['peserta.mahasiswa:id_user,nama_lengkap,nomor_induk,email', 'template:id_template,nama_template,file_background,layout_data'])
             ->orderBy('tanggal_terbit', 'desc')
             ->get();
 

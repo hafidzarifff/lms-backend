@@ -21,6 +21,9 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'reset']);
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
+// Public Template Sertifikat Background (CORS enabled for Canvas drawing)
+Route::get('/template-sertifikat/{id_template}/download-background', [\App\Http\Controllers\TemplateSertifikatController::class, 'downloadBackground']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     
@@ -50,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaDashboardController::class, 'search']);
     Route::get('/mahasiswa/mata-kuliah', [\App\Http\Controllers\Api\MahasiswaMataKuliahController::class, 'index']);
     Route::get('/mahasiswa/jadwal-kelas', [\App\Http\Controllers\Api\MahasiswaDashboardController::class, 'jadwalKelas']);
+    Route::get('/mahasiswa/progress-belajar', [\App\Http\Controllers\Api\MahasiswaDashboardController::class, 'progressBelajar']);
 
     Route::get('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'show']);
     Route::put('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'update']);
@@ -226,7 +230,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/template-sertifikat/{id_template}', [\App\Http\Controllers\TemplateSertifikatController::class, 'destroy']);
     Route::put('/template-sertifikat/{id_template}/toggle', [\App\Http\Controllers\TemplateSertifikatController::class, 'toggleAktif']);
     Route::post('/template-sertifikat/{id_template}/background', [\App\Http\Controllers\TemplateSertifikatController::class, 'uploadBackground']);
-    Route::get('/template-sertifikat/{id_template}/download-background', [\App\Http\Controllers\TemplateSertifikatController::class, 'downloadBackground']);
 
     // ============================================================
     // Fitur Sertifikat
