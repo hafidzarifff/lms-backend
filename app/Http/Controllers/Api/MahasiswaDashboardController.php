@@ -398,4 +398,72 @@ class MahasiswaDashboardController extends Controller
             'data' => $progressData
         ]);
     }
+    /**
+     * Mengambil data nilai per mata kuliah untuk mahasiswa.
+     */
+    public function nilai(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if ($user->role !== \App\Enums\RolePengguna::Mahasiswa) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        // Ambil semua jadwal yang diikuti
+        $peserta = \App\Models\PesertaKelas::where('id_mahasiswa', $user->id_user)
+            ->with(['jadwal.mataKuliah'])
+            ->get();
+
+        $nilaiData = $peserta->map(function ($p) use ($user) {
+            $jadwal = $p->jadwal;
+            if (!$jadwal) return null;
+
+            // Hitung sesi
+            $sesiIds = \App\Models\SesiPertemuan::where('id_jadwal', $jadwal->id_jadwal)->pluck('id_sesi')->toArray();
+            
+            // Hitung tugas
+            $tugasList = \App\Models\Tugas::whereIn('id_sesi', $sesiIds)->pluck('id_tugas')->toArray();
+            
+            $rataRata = 0;
+            if (count($tugasList) > 0) {
+                $nilaiCbt = \App\Models\NilaiCbt::whereIn('id_tugas', $tugasList)
+                    ->where('id_peserta', $user->id_user)
+                    ->get();
+                $totalTugasDinilai = $nilaiCbt->count();
+                if ($totalTugasDinilai > 0) {
+                    $rataRata = $nilaiCbt->sum('nilai') / $totalTugasDinilai;
+                }
+            }
+            
+            // Convert to 4.0 scale and letter grade
+            $huruf = 'E';
+            $nilai4 = '0.00';
+            
+            if ($rataRata >= 85) { $huruf = 'A'; $nilai4 = '4.00'; }
+            elseif ($rataRata >= 80) { $huruf = 'A-'; $nilai4 = '3.75'; }
+            elseif ($rataRata >= 75) { $huruf = 'B+'; $nilai4 = '3.33'; }
+            elseif ($rataRata >= 70) { $huruf = 'B'; $nilai4 = '3.00'; }
+            elseif ($rataRata >= 65) { $huruf = 'B-'; $nilai4 = '2.75'; }
+            elseif ($rataRata >= 60) { $huruf = 'C+'; $nilai4 = '2.33'; }
+            elseif ($rataRata >= 55) { $huruf = 'C'; $nilai4 = '2.00'; }
+            elseif ($rataRata >= 40) { $huruf = 'D'; $nilai4 = '1.00'; }
+
+            $periode = (string) $jadwal->tahun;
+
+            return [
+                'id' => $jadwal->id_jadwal,
+                'course' => $jadwal->mataKuliah ? $jadwal->mataKuliah->nama_mk : 'Mata Kuliah',
+                'sks' => (string) ($jadwal->sks ?? 0),
+                'nilai' => $nilai4,
+                'huruf' => $huruf,
+                'periode' => $periode,
+                'rataRata' => number_format((float)$rataRata, 2, '.', ''),
+                'needsEval' => false // Placeholder for Evaluasi feature
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $nilaiData
+        ]);
+    }
 }

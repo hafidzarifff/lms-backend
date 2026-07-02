@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/mahasiswa/mata-kuliah', [\App\Http\Controllers\Api\MahasiswaMataKuliahController::class, 'index']);
     Route::get('/mahasiswa/jadwal-kelas', [\App\Http\Controllers\Api\MahasiswaDashboardController::class, 'jadwalKelas']);
     Route::get('/mahasiswa/progress-belajar', [\App\Http\Controllers\Api\MahasiswaDashboardController::class, 'progressBelajar']);
+    Route::get('/mahasiswa/nilai', [\App\Http\Controllers\Api\MahasiswaDashboardController::class, 'nilai']);
 
     Route::get('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'show']);
     Route::put('/mahasiswa/{id}', [\App\Http\Controllers\Api\MahasiswaController::class, 'update']);
