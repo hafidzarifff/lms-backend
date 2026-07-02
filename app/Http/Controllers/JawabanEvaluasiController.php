@@ -17,7 +17,6 @@ class JawabanEvaluasiController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id_peserta' => 'required|uuid|exists:pengguna,id_user',
             'id_jadwal' => 'required|uuid|exists:jadwal_perkuliahan,id_jadwal',
             'jawaban' => 'required|array|min:1',
             'jawaban.*.id_pertanyaan' => 'required|uuid|exists:pertanyaan_evaluasi,id_pertanyaan',
@@ -35,11 +34,12 @@ class JawabanEvaluasiController extends Controller
         try {
             $inserted = [];
             $waktuSubmit = now();
+            $idPeserta = $request->id_peserta ?? $request->user()->id_user;
 
             foreach ($request->jawaban as $item) {
                 // Cek apakah sudah ada jawaban untuk pertanyaan + peserta + jadwal ini
                 $existing = JawabanEvaluasi::where('id_pertanyaan', $item['id_pertanyaan'])
-                    ->where('id_peserta', $request->id_peserta)
+                    ->where('id_peserta', $idPeserta)
                     ->where('id_jadwal', $request->id_jadwal)
                     ->first();
 
@@ -56,7 +56,7 @@ class JawabanEvaluasiController extends Controller
                     $jawaban = JawabanEvaluasi::create([
                         'id_evaluasi' => Str::uuid(),
                         'id_pertanyaan' => $item['id_pertanyaan'],
-                        'id_peserta' => $request->id_peserta,
+                        'id_peserta' => $idPeserta,
                         'id_jadwal' => $request->id_jadwal,
                         'skor' => $item['skor'] ?? null,
                         'jawaban_teks' => $item['jawaban_teks'] ?? null,

@@ -415,10 +415,12 @@ class MahasiswaDashboardController extends Controller
 
         // Ambil semua jadwal yang diikuti
         $peserta = \App\Models\PesertaKelas::where('id_mahasiswa', $user->id_user)
-            ->with(['jadwal.mataKuliah'])
+            ->with(['jadwal.mataKuliah', 'jadwal.dosen'])
             ->get();
 
-        $nilaiData = $peserta->map(function ($p) use ($user) {
+        $totalPertanyaan = \App\Models\PertanyaanEvaluasi::aktif()->count();
+
+        $nilaiData = $peserta->map(function ($p) use ($user, $totalPertanyaan) {
             $jadwal = $p->jadwal;
             if (!$jadwal) return null;
 
@@ -454,15 +456,27 @@ class MahasiswaDashboardController extends Controller
 
             $periode = (string) $jadwal->tahun;
 
+            $totalDijawab = 0;
+            if ($totalPertanyaan > 0) {
+                $totalDijawab = \App\Models\JawabanEvaluasi::where('id_peserta', $user->id_user)
+                    ->where('id_jadwal', $jadwal->id_jadwal)
+                    ->join('pertanyaan_evaluasi', 'jawaban_evaluasi.id_pertanyaan', '=', 'pertanyaan_evaluasi.id_pertanyaan')
+                    ->where('pertanyaan_evaluasi.is_aktif', true)
+                    ->whereNull('jawaban_evaluasi.deleted_at')
+                    ->count('jawaban_evaluasi.id_evaluasi');
+            }
+            $needsEval = ($totalPertanyaan > 0 && $totalDijawab < $totalPertanyaan);
+
             return [
                 'id' => $jadwal->id_jadwal,
                 'course' => $jadwal->mataKuliah ? $jadwal->mataKuliah->nama_mk : 'Mata Kuliah',
+                'lecturer' => $jadwal->dosen ? $jadwal->dosen->nama_lengkap : 'Tanpa Dosen',
                 'sks' => (string) ($jadwal->sks ?? 0),
                 'nilai' => $nilai4,
                 'huruf' => $huruf,
                 'periode' => $periode,
                 'rataRata' => number_format((float)$rataRata, 2, '.', ''),
-                'needsEval' => false // Placeholder for Evaluasi feature
+                'needsEval' => $needsEval
             ];
         })->filter()->values();
 
