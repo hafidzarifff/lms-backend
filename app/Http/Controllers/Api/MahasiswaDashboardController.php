@@ -50,7 +50,7 @@ class MahasiswaDashboardController extends Controller
                 
                 if ($totalTugas > 0) {
                     $jumlahTugasDikerjakan = \App\Models\NilaiCbt::whereIn('id_tugas', $tugasIds)
-                        ->whereIn('id_peserta', $pesertaIds)
+                        ->where('id_peserta', $user->id_user)
                         ->count();
                 }
             }
