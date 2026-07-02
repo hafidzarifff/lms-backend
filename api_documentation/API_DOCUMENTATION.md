@@ -287,8 +287,11 @@ Mengunggah atau memperbarui foto profil pengguna.
 ```json
 {
     "success": true,
-    "message": "Foto profil berhasil diunggah",
-    "data": { "foto_profil_url": "..." }
+    "message": "Foto profil berhasil diperbarui.",
+    "data": {
+        "foto_profil": "1681234567_uuid.jpg",
+        "foto_profil_url": "http://localhost:8000/storage/foto-profil/1681234567_uuid.jpg"
+    }
 }
 ```
 
@@ -354,6 +357,8 @@ Menginisiasi proses otentikasi menggunakan akun Google. Endpoint ini akan mengar
 
 - **URL:** `/auth/google/redirect`
 - **Method:** `GET`
+- **Query Params:**
+    - `source` (optional): `web` (default) atau `mobile`. Digunakan untuk membedakan asal request, sehingga callback dapat mengarahkan (redirect) ke platform yang sesuai.
 - **Response:**
 Melakukan pengalihan HTTP (HTTP 302 Found) ke server otentikasi Google.
 
@@ -367,20 +372,22 @@ Menangani respon dari Google setelah pengguna berhasil login di halaman Google. 
 - **Method:** `GET`
 - **Query Params:**
     - `code`: (Otomatis ditambahkan oleh Google)
+    - `state`: (Opsional) Membawa data `source` yang dikirim dari saat redirect awal (`web` atau `mobile`).
 
 - **Response Sukses (Redirect):**
-Sistem tidak mengembalikan JSON, melainkan melakukan redirect ke Frontend membawa token (Sanctum) yang sukses dibuat.
-Contoh Redirect URL: `http://localhost:5173/auth/callback?token=1|xxxxx`
+Sistem tidak mengembalikan JSON, melainkan melakukan redirect ke platform asal (Frontend Web atau Mobile) membawa token (Sanctum) yang sukses dibuat.
+- Contoh Redirect URL (Web): `http://localhost:5173/auth/callback?token=1|xxxxx`
+- Contoh Redirect URL (Mobile): `exp://127.0.0.1:8081/--/auth/callback?token=1|xxxxx`
 
 - **Response Error (Redirect):**
-Jika email Google tidak terdaftar di sistem, atau akun belum diaktifkan/disetujui, sistem akan melakukan redirect ke Frontend dengan membawa pesan error di URL.
-Contoh Redirect URL: `http://localhost:5173/auth/callback?error=Akun belum terdaftar di sistem. Hubungi Admin.`
+Jika email Google tidak terdaftar di sistem, atau akun belum diaktifkan/disetujui, sistem akan melakukan redirect dengan membawa pesan error di URL.
+- Contoh Redirect URL: `http://localhost:5173/auth/callback?error=Akun belum terdaftar di sistem. Hubungi Admin.`
 
 ---
 
 ### 7. Kirim Link Lupa Kata Sandi (Forgot Password)
 
-Mengirimkan link reset kata sandi ke email pengguna.
+Mengirimkan link reset kata sandi ke email pengguna. *Catatan: Link yang dikirim ke email akan otomatis disesuaikan tujuannya. Jika pengguna adalah Mahasiswa, link akan mengarah langsung membuka aplikasi mobile (Deep Link `exp://...`). Jika pengguna adalah Admin/Dosen, link akan mengarah ke website (Frontend `http://localhost:5173...`).*
 
 - **URL:** `/forgot-password`
 - **Method:** `POST`
