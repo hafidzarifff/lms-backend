@@ -20,6 +20,12 @@ class ForumDiskusiController extends Controller
 
         $perPage = $request->input('per_page', 100);
 
+        // Tandai notifikasi terkait sebagai sudah dibaca secara otomatis
+        \App\Models\Notifikasi::where('id_user', Auth::id())
+            ->where('tipe', 'forum')
+            ->where('id_referensi', $idSesi)
+            ->update(['is_read' => true]);
+
         $pesan = ForumDiskusi::where('id_sesi', $idSesi)
             ->with(['pengirim', 'parentPesan.pengirim', 'sesi'])
             ->withExists(['reads as is_read' => function($q) {
@@ -142,6 +148,49 @@ class ForumDiskusiController extends Controller
 
         $pesan = ForumDiskusi::create($validated);
         $pesan->load(['pengirim', 'parentPesan']);
+
+        // --- Kirim Notifikasi ke Partisipan Lain ---
+        $sesi = \App\Models\SesiPertemuan::with(['jadwalPerkuliahan.mataKuliah'])->find($validated['id_sesi']);
+        if ($sesi && $sesi->jadwalPerkuliahan) {
+            $idJadwal = $sesi->id_jadwal;
+            $idDosen = $sesi->jadwalPerkuliahan->id_dosen;
+            
+            $pesertaIds = \App\Models\PesertaKelas::where('id_jadwal', $idJadwal)->pluck('id_mahasiswa')->toArray();
+            $targetUserIds = array_merge([$idDosen], $pesertaIds);
+            
+            // Hapus pengirim dari target notifikasi
+            $targetUserIds = array_filter($targetUserIds, function($id) use ($validated) {
+                return $id !== $validated['id_pengirim'];
+            });
+            
+            // Hindari duplikasi ID jika ada
+            $targetUserIds = array_unique($targetUserIds);
+            
+            $notifikasiData = [];
+            $pengirim = Auth::user();
+            $pengirimName = $pengirim->nama_lengkap ?? 'Seseorang';
+            $nomorInduk = $pengirim->nomor_induk ? " ({$pengirim->nomor_induk})" : "";
+            $matkulName = $sesi->jadwalPerkuliahan->mataKuliah->nama_mk ?? 'Mata Kuliah';
+            
+            foreach($targetUserIds as $targetId) {
+                $notifikasiData[] = [
+                    'id_notifikasi' => (string) \Illuminate\Support\Str::uuid(),
+                    'id_user' => $targetId,
+                    'judul' => 'Pesan Forum Baru',
+                    'pesan' => "Ada pesan baru di forum dari {$pengirimName}{$nomorInduk} pada mata kuliah {$matkulName}",
+                    'tipe' => 'forum',
+                    'id_referensi' => $validated['id_sesi'],
+                    'is_read' => false,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            
+            if (count($notifikasiData) > 0) {
+                \App\Models\Notifikasi::insert($notifikasiData);
+            }
+        }
+        // ------------------------------------------
 
         return response()->json([
             'success' => true,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterDosenRequest;
+use App\Http\Requests\RegisterMahasiswaRequest;
 use Illuminate\Http\Request;
 use App\Models\Pengguna;
 use Illuminate\Support\Facades\Hash;
@@ -161,6 +162,40 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Registrasi berhasil. Akun Anda sedang menunggu verifikasi oleh Admin.',
+            'data'    => [
+                'nama_lengkap' => $pengguna->nama_lengkap,
+                'email'        => $pengguna->email,
+            ],
+        ], 201);
+    }
+
+    /**
+     * Proses registrasi manual khusus Mahasiswa.
+     * Akun yang terdaftar akan menunggu verifikasi Admin sebelum bisa login.
+     */
+    public function registerMahasiswa(RegisterMahasiswaRequest $request)
+    {
+        $validated = $request->validated();
+        $uuid = Str::uuid()->toString();
+        $hashedPassword = Hash::make($validated['password']);
+
+        $pengguna = Pengguna::create([
+            'id_user'             => $uuid,
+            'nama_lengkap'        => $validated['nama_lengkap'],
+            'email'               => $validated['email'],
+            'password'            => $hashedPassword,
+            'nomor_induk'         => $validated['npm'],
+            'fakultas'            => $validated['fakultas'],
+            'prodi'               => $validated['prodi'],
+            'angkatan'            => $validated['angkatan'],
+            'role'                => 'Mahasiswa',
+            'status_persetujuan'  => 'Disetujui',
+            'status_aktif'        => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registrasi berhasil. Silakan login menggunakan akun Anda.',
             'data'    => [
                 'nama_lengkap' => $pengguna->nama_lengkap,
                 'email'        => $pengguna->email,

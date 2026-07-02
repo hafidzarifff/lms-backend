@@ -340,6 +340,19 @@ class PesertaKelasController extends Controller
         // Jika disetujui, generate sertifikat yang memenuhi syarat
         if ($peserta->status_kelayakan === 'Disetujui') {
             \App\Models\Sertifikat::generateForPeserta($peserta);
+
+            // --- Kirim Notifikasi ke Mahasiswa ---
+            $dosenName = $request->user()->nama_lengkap ?? 'Dosen';
+            \App\Models\Notifikasi::create([
+                'id_notifikasi' => (string) \Illuminate\Support\Str::uuid(),
+                'id_user' => $peserta->id_mahasiswa,
+                'judul' => 'Sertifikat Disetujui',
+                'pesan' => "Selamat! Kelayakan sertifikat Anda telah disetujui oleh {$dosenName}.",
+                'tipe' => 'sertifikat',
+                'id_referensi' => $peserta->id_peserta, // bisa mengarah ke sertifikat atau data kelayakan
+                'is_read' => false,
+            ]);
+            // -------------------------------------
         }
 
         return response()->json([

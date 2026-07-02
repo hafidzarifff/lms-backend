@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\GoogleAuthController;
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/register/dosen', [AuthController::class, 'registerDosen']);
+Route::post('/register/mahasiswa', [AuthController::class, 'registerMahasiswa']);
 Route::get('/public/download', [\App\Http\Controllers\Api\MateriPembelajaranController::class, 'publicDownload']);
 Route::get('/public/mata-kuliah', [\App\Http\Controllers\Api\MahasiswaMataKuliahController::class, 'guestIndex']);
 Route::get('/public/sesi-pertemuan/jadwal/{id_jadwal}', [\App\Http\Controllers\SesiPertemuanController::class, 'getByJadwal']);
@@ -33,6 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    // Notifikasi
+    Route::get('/notifikasi', [\App\Http\Controllers\Api\NotifikasiController::class, 'index']);
+    Route::put('/notifikasi/{id}/read', [\App\Http\Controllers\Api\NotifikasiController::class, 'markAsRead']);
 
     // Profile & Password Management
     Route::get('/profile', [ProfileController::class, 'show']);

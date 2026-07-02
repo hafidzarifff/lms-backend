@@ -72,6 +72,11 @@ class SertifikatController extends Controller
         $user = $request->user();
         if ($user && $user->role === \App\Enums\RolePengguna::Mahasiswa) {
             $query->where('id_mahasiswa', $user->id_user);
+            
+            // Tandai notifikasi terkait sertifikat sebagai sudah dibaca secara otomatis
+            \App\Models\Notifikasi::where('id_user', $user->id_user)
+                ->where('tipe', 'sertifikat')
+                ->update(['is_read' => true]);
         }
 
         // Filter by Fakultas

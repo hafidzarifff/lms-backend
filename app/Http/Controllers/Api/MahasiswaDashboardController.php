@@ -166,6 +166,10 @@ class MahasiswaDashboardController extends Controller
             }
         }
 
+        $unreadCount = \App\Models\Notifikasi::where('id_user', $user->id_user)
+            ->where('is_read', false)
+            ->count();
+
         return response()->json([
             'status' => 'success',
             'data' => [
@@ -179,6 +183,7 @@ class MahasiswaDashboardController extends Controller
                 ],
                 'jadwal_hari_ini' => $jadwalHariIni,
                 'materi_terbaru' => $materiTerbaru,
+                'unread_notif' => $unreadCount,
             ]
         ], 200);
     }
