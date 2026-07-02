@@ -24,6 +24,9 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 // Public Template Sertifikat Background (CORS enabled for Canvas drawing)
 Route::get('/template-sertifikat/{id_template}/download-background', [\App\Http\Controllers\TemplateSertifikatController::class, 'downloadBackground']);
 
+// Public Verifikasi Sertifikat
+Route::get('/sertifikat/verify/{nomor_sertifikat}', [\App\Http\Controllers\SertifikatController::class, 'verify'])->where('nomor_sertifikat', '.*');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     
@@ -244,6 +247,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/sertifikat/{id_sertifikat}', [\App\Http\Controllers\SertifikatController::class, 'destroy']);
     Route::post('/sertifikat/{id_sertifikat}/upload', [\App\Http\Controllers\SertifikatController::class, 'uploadFile']);
     Route::get('/sertifikat/{id_sertifikat}/download', [\App\Http\Controllers\SertifikatController::class, 'download']);
-    Route::get('/sertifikat/verify/{nomor_sertifikat}', [\App\Http\Controllers\SertifikatController::class, 'verify']);
     Route::get('/sertifikat/statistik', [\App\Http\Controllers\SertifikatController::class, 'getStatistik']);
 });

@@ -459,11 +459,17 @@ class SertifikatController extends Controller
      */
     public function verify($nomor_sertifikat)
     {
-        $sertifikat = Sertifikat::where('nomor_sertifikat', $nomor_sertifikat)
-            ->with(['peserta:id_user,nama_lengkap,nim,email', 'template:id_template,nama_template'])
-            ->first();
+        $sertifikats = Sertifikat::where('nomor_sertifikat', $nomor_sertifikat)
+            ->with([
+                'peserta.mahasiswa:id_user,nama_lengkap,nomor_induk,email', 
+                'peserta.jadwal.mataKuliah',
+                'peserta.jadwal.kelas:id_kelas,nama_kelas',
+                'peserta.jadwal.dosen:id_user,nama_lengkap',
+                'template:id_template,nama_template,file_background,layout_data'
+            ])
+            ->get();
 
-        if (!$sertifikat) {
+        if ($sertifikats->isEmpty()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Sertifikat tidak valid atau tidak ditemukan',
@@ -471,15 +477,17 @@ class SertifikatController extends Controller
             ], 404);
         }
 
+        $first = $sertifikats->first();
+
         return response()->json([
             'status' => 'success',
             'valid' => true,
             'message' => 'Sertifikat valid',
             'data' => [
-                'nomor_sertifikat' => $sertifikat->nomor_sertifikat,
-                'tanggal_terbit' => $sertifikat->tanggal_terbit->format('d F Y'),
-                'peserta' => $sertifikat->peserta,
-                'template' => $sertifikat->template
+                'nomor_sertifikat' => $first->nomor_sertifikat,
+                'tanggal_terbit' => $first->tanggal_terbit ? $first->tanggal_terbit->locale('id')->translatedFormat('d F Y') : '-',
+                'peserta' => $first->peserta,
+                'sertifikats' => $sertifikats
             ]
         ]);
     }
