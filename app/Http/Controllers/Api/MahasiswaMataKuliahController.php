@@ -51,14 +51,7 @@ class MahasiswaMataKuliahController extends Controller
             $jadwalTersediaQuery->whereNotIn('id_jadwal', $enrolledJadwalIds);
         }
 
-        // Filter berdasarkan Fakultas dan Program Studi Mahasiswa dengan ILIKE agar case-insensitive di PostgreSQL
-        if ($user->fakultas) {
-            $fakultasClean = str_ireplace('Fakultas ', '', $user->fakultas);
-            $jadwalTersediaQuery->where('fakultas', 'ilike', '%' . $fakultasClean . '%');
-        }
-        if ($user->prodi) {
-            $jadwalTersediaQuery->where('prodi', 'ilike', '%' . $user->prodi . '%');
-        }
+        // Removed automatic filter for Fakultas and Program Studi to allow all courses to show
 
         $jadwalTersedia = $jadwalTersediaQuery->get();
 
@@ -82,6 +75,7 @@ class MahasiswaMataKuliahController extends Controller
                 'tahun' => $j->tahun,
                 'hari' => $j->hari,
                 'kelas' => $j->kelas ? $j->kelas->nama_kelas : 'Unknown',
+                'fakultas' => $j->fakultas,
                 'prodi' => $j->prodi,
                 'deskripsi' => $j->mataKuliah->deskripsi ?? 'Tidak ada deskripsi tersedia.',
                 'has_tugas' => $j->has_tugas ?? false,
@@ -135,6 +129,7 @@ class MahasiswaMataKuliahController extends Controller
                 'tahun' => $j->tahun,
                 'hari' => $j->hari,
                 'kelas' => $j->kelas ? $j->kelas->nama_kelas : 'Unknown',
+                'fakultas' => $j->fakultas,
                 'prodi' => $j->prodi,
                 'deskripsi' => $j->mataKuliah->deskripsi ?? 'Tidak ada deskripsi tersedia.',
                 'has_tugas' => $j->has_tugas ?? false,
