@@ -43,7 +43,7 @@ class TemplateSertifikatController extends Controller
             ->map(function ($t) {
                 $arr = $t->toArray();
                 $arr['background_url'] = $t->file_background
-                    ? asset('storage/' . $t->file_background)
+                    ? rtrim(env('APP_URL'), '/') . '/storage/' . $t->file_background
                     : null;
                 return $arr;
             });
@@ -70,7 +70,7 @@ class TemplateSertifikatController extends Controller
 
         $data = $template->toArray();
         $data['background_url'] = $template->file_background
-            ? asset('storage/' . $template->file_background)
+            ? rtrim(env('APP_URL'), '/') . '/storage/' . $template->file_background
             : null;
 
         return response()->json([
