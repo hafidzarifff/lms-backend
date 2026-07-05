@@ -23,13 +23,8 @@ class AppServiceProvider extends ServiceProvider
         ResetPassword::createUrlUsing(function (object $notifiable, string $token) {
             $email = $notifiable->getEmailForPasswordReset();
             
-            // Jika pengguna adalah Mahasiswa, arahkan link ke aplikasi mobile via Deep Linking
-            if ($notifiable instanceof \App\Models\Pengguna && $notifiable->role === \App\Enums\RolePengguna::Mahasiswa) {
-                $mobileUrl = env('MOBILE_APP_URL', 'exp://127.0.0.1:8081/--');
-                return $mobileUrl . "/reset-password?token={$token}&email={$email}";
-            }
-
-            // Jika admin/dosen, arahkan ke frontend website
+            // Arahkan semua tautan Reset Password ke web frontend
+            // Karena email client (seperti Gmail) tidak mengizinkan link custom scheme (lms://) untuk diklik
             $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
             return $frontendUrl . "/reset-password?token={$token}&email={$email}";
         });
