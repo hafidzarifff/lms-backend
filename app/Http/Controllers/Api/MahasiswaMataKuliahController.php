@@ -100,14 +100,18 @@ class MahasiswaMataKuliahController extends Controller
      */
     public function guestIndex(): JsonResponse
     {
-        // Ambil data jadwal untuk yang "Tersedia"
+        // Ambil data jadwal untuk yang "Tersedia", urutkan berdasarkan peserta terbanyak, maksimal 5
         $jadwalTersedia = JadwalPerkuliahan::with(['mataKuliah', 'kelas', 'dosen'])
+            ->withCount('pesertaKelas')
             ->withExists(['sesiPertemuan as has_tugas' => function ($query) {
                 $query->whereHas('tugas');
             }])
             ->withExists(['sesiPertemuan as has_materi' => function ($query) {
                 $query->whereHas('materiPembelajaran');
-            }])->get();
+            }])
+            ->orderByDesc('peserta_kelas_count')
+            ->take(5)
+            ->get();
 
         // Mapping data sesuai format Frontend
         $formatJadwal = function ($j) {
