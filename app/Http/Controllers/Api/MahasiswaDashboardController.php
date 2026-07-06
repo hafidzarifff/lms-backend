@@ -212,7 +212,7 @@ class MahasiswaDashboardController extends Controller
 
         $jadwalPerkuliahan = \App\Models\JadwalPerkuliahan::with(['mataKuliah', 'dosen', 'kelas'])
             ->whereHas('mataKuliah', function($q) use ($query) {
-                $q->where('nama_mk', 'like', '%' . $query . '%');
+                $q->where('nama_mk', 'ilike', '%' . $query . '%');
             })
             ->limit(10)
             ->get();
@@ -237,7 +237,7 @@ class MahasiswaDashboardController extends Controller
             
             if (!empty($idSesis)) {
                 $materi = \App\Models\MateriPembelajaran::whereIn('id_sesi', $idSesis)
-                    ->where('judul_materi', 'like', '%' . $query . '%')
+                    ->where('judul_materi', 'ilike', '%' . $query . '%')
                     ->with(['sesiPertemuan.jadwalPerkuliahan.mataKuliah', 'sesiPertemuan.jadwalPerkuliahan.dosen'])
                     ->limit(10)
                     ->get();
