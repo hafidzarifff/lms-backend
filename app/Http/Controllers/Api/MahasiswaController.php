@@ -77,6 +77,12 @@ class MahasiswaController extends Controller
             ->when($request->query('angkatan'), function ($q, $angkatan) {
                 $q->where('angkatan', $angkatan);
             })
+            ->when($request->query('fakultas'), function ($q, $fakultas) {
+                $q->where('fakultas', 'ilike', "%{$fakultas}%");
+            })
+            ->when($request->query('prodi'), function ($q, $prodi) {
+                $q->where('prodi', 'ilike', "%{$prodi}%");
+            })
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 

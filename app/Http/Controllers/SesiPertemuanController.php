@@ -53,7 +53,7 @@ class SesiPertemuanController extends Controller
      */
     public function show(string $id_sesi): JsonResponse
     {
-        $sesiPertemuan = SesiPertemuan::with('jadwalPerkuliahan')->find($id_sesi);
+        $sesiPertemuan = SesiPertemuan::with(['jadwalPerkuliahan.mataKuliah', 'jadwalPerkuliahan.kelas'])->find($id_sesi);
 
         if (!$sesiPertemuan) {
             return response()->json([

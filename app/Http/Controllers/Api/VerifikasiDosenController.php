@@ -38,6 +38,14 @@ class VerifikasiDosenController extends Controller
             });
         }
 
+        if ($request->query('fakultas')) {
+            $query->where('fakultas', 'ilike', '%' . $request->query('fakultas') . '%');
+        }
+
+        if ($request->query('prodi')) {
+            $query->where('prodi', 'ilike', '%' . $request->query('prodi') . '%');
+        }
+
         $dosen = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json($dosen, 200);
