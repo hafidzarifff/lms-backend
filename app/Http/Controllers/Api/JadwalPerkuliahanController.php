@@ -227,20 +227,22 @@ class JadwalPerkuliahanController extends Controller
         $validatedData['token_enrollment'] = $token;
 
         $jadwal = DB::transaction(function () use ($validatedData) {
+            // ============================================================
+            // Generate sesi pertemuan berdasarkan jumlah_sesi dan tanggal_mulai
+            // ============================================================
+            $sesiPertemuan = [];
+            $validatedData['hari'] = \Carbon\Carbon::parse($validatedData['tanggal_mulai'])->locale('id')->dayName;
+            
             // Simpan data baru ke tabel jadwal_perkuliahan
             // (id_jadwal UUID akan di-generate otomatis oleh trait HasUuids di Model)
             $jadwal = JadwalPerkuliahan::create($validatedData);
 
-            // ============================================================
-            // Generate 16 sesi pertemuan berdasarkan tanggal_mulai
-            // ============================================================
-            $sesiPertemuan = [];
             $tanggalMulai = \Carbon\Carbon::parse($jadwal->tanggal_mulai);
             $waktuMulai = $jadwal->waktu_mulai;
             $waktuBerakhir = $jadwal->waktu_berakhir;
             $now = now();
 
-            for ($i = 1; $i <= 16; $i++) {
+            for ($i = 1; $i <= $jadwal->jumlah_sesi; $i++) {
                 $sesiPertemuan[] = [
                     'id_sesi'             => (string) Str::uuid(),
                     'id_jadwal'           => $jadwal->id_jadwal,
@@ -301,6 +303,10 @@ class JadwalPerkuliahanController extends Controller
         if ($validatedData['id_mk'] !== $jadwal->id_mk) {
             $mataKuliah = MasterMataKuliah::find($validatedData['id_mk']);
             $validatedData['sks'] = $mataKuliah->sks;
+        }
+
+        if (isset($validatedData['tanggal_mulai'])) {
+            $validatedData['hari'] = \Carbon\Carbon::parse($validatedData['tanggal_mulai'])->locale('id')->dayName;
         }
 
         // Cek apakah waktu berubah

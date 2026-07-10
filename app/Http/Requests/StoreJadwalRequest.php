@@ -57,8 +57,8 @@ class StoreJadwalRequest extends FormRequest
             // Tahun ajaran wajib diisi, bertipe string, maksimal 9 karakter (contoh: 2025/2026)
             'tahun' => ['required', 'string', 'max:9'],
 
-            // Hari wajib diisi, hanya boleh dari daftar hari yang valid
-            'hari' => ['required', 'string', 'in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu,Minggu'],
+            // Jumlah sesi pertemuan wajib diisi, berupa angka minimal 1
+            'jumlah_sesi' => ['required', 'integer', 'min:1'],
 
             // Waktu mulai wajib diisi, format HH:mm (24 jam)
             'waktu_mulai' => ['required', 'date_format:H:i'],
@@ -101,8 +101,9 @@ class StoreJadwalRequest extends FormRequest
             'tahun.required'       => 'Tahun ajaran wajib diisi.',
             'tahun.max'            => 'Tahun ajaran maksimal 9 karakter.',
 
-            'hari.required'        => 'Hari wajib dipilih.',
-            'hari.in'              => 'Hari yang dipilih tidak valid.',
+            'jumlah_sesi.required' => 'Jumlah sesi pertemuan wajib diisi.',
+            'jumlah_sesi.integer'  => 'Jumlah sesi pertemuan harus berupa angka.',
+            'jumlah_sesi.min'      => 'Jumlah sesi pertemuan minimal 1.',
 
             'waktu_mulai.required'     => 'Waktu mulai wajib diisi.',
             'waktu_mulai.date_format'  => 'Format waktu mulai tidak valid. Gunakan format HH:mm.',
