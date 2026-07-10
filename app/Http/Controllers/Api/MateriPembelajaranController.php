@@ -21,7 +21,7 @@ class MateriPembelajaranController extends Controller
             'judul_materi' => 'required|string|max:200',
             'deskripsi' => 'nullable|string',
             'file_materi' => 'nullable|array',
-            'file_materi.*' => 'file|max:51200|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx', // max 50MB per file
+            'file_materi.*' => 'file|max:51200|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,png,jpg,jpeg', // max 50MB per file
             'link_video_pembelajaran' => 'nullable|url',
         ]);
 
@@ -60,7 +60,7 @@ class MateriPembelajaranController extends Controller
             'judul_materi' => 'nullable|string|max:200',
             'deskripsi' => 'nullable|string',
             'file_materi' => 'nullable|array',
-            'file_materi.*' => 'file|max:51200|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx', // max 50MB per file
+            'file_materi.*' => 'file|max:51200|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,png,jpg,jpeg', // max 50MB per file
             'kept_files' => 'nullable|array',
             'kept_files.*' => 'string',
             'has_kept_files' => 'nullable|boolean',
