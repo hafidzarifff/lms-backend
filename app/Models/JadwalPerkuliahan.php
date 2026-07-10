@@ -44,6 +44,7 @@ class JadwalPerkuliahan extends Model
         'waktu_berakhir',
         'token_enrollment',
         'tanggal_mulai',
+        'akses_bebas',
     ];
 
     /**
@@ -56,6 +57,7 @@ class JadwalPerkuliahan extends Model
         return [
             'sks' => 'integer',
             'semester' => 'integer',
+            'akses_bebas' => 'boolean',
         ];
     }
 

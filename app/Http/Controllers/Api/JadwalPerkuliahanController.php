@@ -152,6 +152,7 @@ class JadwalPerkuliahanController extends Controller
                     'waktu_mulai'      => $j->waktu_mulai,
                     'waktu_berakhir'   => $j->waktu_berakhir,
                     'token_enrollment' => $j->token_enrollment,
+                    'akses_bebas'      => $j->akses_bebas,
                     'total_mahasiswa'  => $j->peserta_kelas_count,
                 ])->values(),
             ];
@@ -346,6 +347,36 @@ class JadwalPerkuliahanController extends Controller
 
         return response()->json([
             'message' => 'Jadwal perkuliahan berhasil dihapus.',
+        ], 200);
+    }
+    /**
+     * Mengubah status akses bebas pada jadwal perkuliahan.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $id_jadwal
+     * @return JsonResponse
+     */
+    public function toggleAksesBebas(\Illuminate\Http\Request $request, string $id_jadwal): JsonResponse
+    {
+        $jadwal = JadwalPerkuliahan::find($id_jadwal);
+
+        if (!$jadwal) {
+            return response()->json([
+                'message' => 'Data jadwal perkuliahan tidak ditemukan.'
+            ], 404);
+        }
+
+        $request->validate([
+            'akses_bebas' => 'required|boolean'
+        ]);
+
+        $jadwal->update([
+            'akses_bebas' => $request->akses_bebas
+        ]);
+
+        return response()->json([
+            'message' => 'Akses bebas berhasil diperbarui.',
+            'data' => $jadwal
         ], 200);
     }
 }

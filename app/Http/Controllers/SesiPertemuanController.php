@@ -205,7 +205,8 @@ class SesiPertemuanController extends Controller
      */
     public function getByJadwal(string $id_jadwal): JsonResponse
     {
-        $sesiPertemuans = SesiPertemuan::where('id_jadwal', $id_jadwal)
+        $sesiPertemuans = SesiPertemuan::with('jadwalPerkuliahan:id_jadwal,akses_bebas')
+            ->where('id_jadwal', $id_jadwal)
             ->orderBy('pertemuan_ke', 'asc')
             ->get();
 
