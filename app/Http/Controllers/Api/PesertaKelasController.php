@@ -45,13 +45,16 @@ class PesertaKelasController extends Controller
         // Token di-uppercase-kan untuk memastikan konsistensi pencarian
         // ============================================================
         $tokenInput = strtoupper($request->validated()['token_enrollment']);
+        $idJadwalInput = $request->validated()['id_jadwal'];
 
-        $jadwal = JadwalPerkuliahan::where('token_enrollment', $tokenInput)->first();
+        $jadwal = JadwalPerkuliahan::where('token_enrollment', $tokenInput)
+                    ->where('id_jadwal', $idJadwalInput)
+                    ->first();
 
         if (!$jadwal) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token enrollment tidak valid atau jadwal tidak ditemukan.',
+                'message' => 'Token enrollment tidak valid untuk mata kuliah ini.',
                 'data'    => null,
             ], 404);
         }

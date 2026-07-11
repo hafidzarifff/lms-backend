@@ -27,6 +27,7 @@ class EnrollKelasRequest extends FormRequest
     {
         return [
             'token_enrollment' => ['required', 'string', 'size:6'],
+            'id_jadwal'        => ['required', 'string', 'exists:jadwal_perkuliahan,id_jadwal'],
         ];
     }
 
@@ -41,6 +42,8 @@ class EnrollKelasRequest extends FormRequest
             'token_enrollment.required' => 'Token enrollment wajib diisi.',
             'token_enrollment.string'   => 'Token enrollment harus berupa teks.',
             'token_enrollment.size'     => 'Token enrollment harus tepat 6 karakter.',
+            'id_jadwal.required'        => 'ID Jadwal wajib diisi.',
+            'id_jadwal.exists'          => 'Jadwal tidak ditemukan.',
         ];
     }
 
