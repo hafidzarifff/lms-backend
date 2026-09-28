@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\RolePengguna;
 use App\Http\Controllers\Controller;
 use App\Models\Pengguna;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class EportalSsoController extends Controller
 {
@@ -40,7 +43,8 @@ class EportalSsoController extends Controller
             ], 401);
         }
 
-        $email = $response->json('user.email');
+        $ssoUser = $response->json('user');
+        $email = $ssoUser['email'] ?? null;
 
         if (!$email) {
             return response()->json(['status' => 'error', 'message' => 'Data pengguna dari E-Portal tidak lengkap.'], 422);
@@ -48,8 +52,34 @@ class EportalSsoController extends Controller
 
         $user = Pengguna::where('email', $email)->first();
 
+        // E-Portal sudah memvalidasi identitas & mengizinkan akses ke modul ini
+        // (dijamin oleh status 200 di atas) — jadi akun LMS dibuat otomatis
+        // saat pertama kali login, mengikuti role institusional dari E-Portal.
         if (!$user) {
-            return response()->json(['status' => 'error', 'message' => 'Akun belum terdaftar di sistem LMS. Hubungi Admin.'], 404);
+            $role = match ($ssoUser['institutional_role'] ?? null) {
+                'admin' => RolePengguna::Admin,
+                'dosen' => RolePengguna::Dosen,
+                'mahasiswa' => RolePengguna::Mahasiswa,
+                default => null,
+            };
+
+            if (!$role) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Role E-Portal Anda belum didukung di sistem LMS. Hubungi Admin.',
+                ], 403);
+            }
+
+            $user = Pengguna::create([
+                'id_user' => Str::uuid()->toString(),
+                'nama_lengkap' => $ssoUser['name'] ?? $email,
+                'role' => $role,
+                'email' => $email,
+                'nomor_induk' => $ssoUser['nidn'] ?? $ssoUser['npm'] ?? $ssoUser['nip'] ?? null,
+                'password' => Hash::make(Str::random(40)),
+                'status_aktif' => true,
+                'status_persetujuan' => 'Disetujui',
+            ]);
         }
 
         if (!$user->status_aktif || $user->status_persetujuan !== 'Disetujui') {
