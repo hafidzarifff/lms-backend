@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\EportalSsoController;
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/register/dosen', [AuthController::class, 'registerDosen']);
@@ -21,6 +22,9 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'reset']);
 // Google Login (Public)
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+
+// E-Portal SSO (Public)
+Route::get('/sso/callback', [EportalSsoController::class, 'callback']);
 
 // Public Template Sertifikat Background (CORS enabled for Canvas drawing)
 Route::get('/template-sertifikat/{id_template}/download-background', [\App\Http\Controllers\TemplateSertifikatController::class, 'downloadBackground']);
