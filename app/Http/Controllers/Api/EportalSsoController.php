@@ -76,6 +76,7 @@ class EportalSsoController extends Controller
                 'role' => $role,
                 'email' => $email,
                 'nomor_induk' => $ssoUser['nidn'] ?? $ssoUser['npm'] ?? $ssoUser['nip'] ?? null,
+                'nomor_telepon' => $ssoUser['phone'] ?? null,
                 'password' => Hash::make(Str::random(40)),
                 'status_aktif' => true,
                 'status_persetujuan' => 'Disetujui',
