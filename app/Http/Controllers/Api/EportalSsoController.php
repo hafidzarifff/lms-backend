@@ -81,6 +81,20 @@ class EportalSsoController extends Controller
                 'status_aktif' => true,
                 'status_persetujuan' => 'Disetujui',
             ]);
+        } else {
+            // Sinkronkan cache identitas dari E-Portal di setiap login, tapi
+            // jangan timpa data lokal dengan nilai kosong yang memang tidak
+            // dipunyai E-Portal (mis. supaya koreksi manual di profil LMS
+            // tidak ketiban null terus-menerus).
+            $user->fill(array_filter([
+                'nama_lengkap' => $ssoUser['name'] ?? null,
+                'nomor_induk' => $ssoUser['nidn'] ?? $ssoUser['npm'] ?? $ssoUser['nip'] ?? null,
+                'nomor_telepon' => $ssoUser['phone'] ?? null,
+            ]));
+
+            if ($user->isDirty()) {
+                $user->save();
+            }
         }
 
         if (!$user->status_aktif || $user->status_persetujuan !== 'Disetujui') {
