@@ -25,6 +25,7 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
 // E-Portal SSO (Public)
 Route::get('/sso/callback', [EportalSsoController::class, 'callback']);
+Route::post('/sso/mobile-login', [EportalSsoController::class, 'mobileLogin'])->middleware('throttle:5,1');
 
 // Public Template Sertifikat Background (CORS enabled for Canvas drawing)
 Route::get('/template-sertifikat/{id_template}/download-background', [\App\Http\Controllers\TemplateSertifikatController::class, 'downloadBackground']);

@@ -6,6 +6,7 @@ use App\Enums\RolePengguna;
 use App\Http\Controllers\Controller;
 use App\Models\Pengguna;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -13,12 +14,13 @@ use Illuminate\Support\Str;
 class EportalSsoController extends Controller
 {
     /**
-     * Verifikasi token SSO dari E-Portal dan tukar dengan token lokal LMS.
+     * Verifikasi token SSO dari E-Portal (hasil redirect dari dashboard
+     * E-Portal) dan tukar dengan token lokal LMS.
      *
-     * Dipanggil oleh frontend setelah menerima redirect dari E-Portal
+     * Dipanggil oleh frontend web setelah menerima redirect dari E-Portal
      * (?token=...&appModule_id=...&role_id=...).
      */
-    public function callback(Request $request)
+    public function callback(Request $request): JsonResponse
     {
         $token = $request->query('token');
         $roleId = $request->query('role_id');
@@ -28,6 +30,33 @@ class EportalSsoController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Parameter tidak lengkap.'], 400);
         }
 
+        return $this->introspectAndRespond($token, $appModuleId);
+    }
+
+    /**
+     * Login mobile: tukar token hasil login langsung (email+password) ke
+     * E-Portal (POST /auth/login, non-scoped) dengan token lokal LMS.
+     *
+     * Dipanggil oleh app mobile setelah dapat token dari E-Portal.
+     */
+    public function mobileLogin(Request $request): JsonResponse
+    {
+        $token = $request->input('token');
+
+        if (!$token) {
+            return response()->json(['status' => 'error', 'message' => 'Token E-Portal tidak ditemukan.'], 400);
+        }
+
+        return $this->introspectAndRespond($token, config('sso.module_id'));
+    }
+
+    /**
+     * Verifikasi token ke E-Portal, cari/buat akun lokal, dan terbitkan
+     * token Sanctum. Dipakai bersama oleh alur web (scoped) & mobile
+     * (non-scoped) — introspect E-Portal tetap valid untuk keduanya.
+     */
+    private function introspectAndRespond(string $token, string|int|null $appModuleId): JsonResponse
+    {
         $response = Http::withHeaders([
             'X-SSO-Client-ID' => config('sso.client_id'),
             'X-SSO-Client-Secret' => config('sso.client_secret'),
@@ -52,9 +81,9 @@ class EportalSsoController extends Controller
 
         $user = Pengguna::where('email', $email)->first();
 
-        // E-Portal sudah memvalidasi identitas & mengizinkan akses ke modul ini
-        // (dijamin oleh status 200 di atas) — jadi akun LMS dibuat otomatis
-        // saat pertama kali login, mengikuti role institusional dari E-Portal.
+        // E-Portal sudah memvalidasi identitas user — akun LMS dibuat
+        // otomatis saat pertama kali login, mengikuti role institusional
+        // dari E-Portal.
         if (!$user) {
             $role = match ($ssoUser['institutional_role'] ?? null) {
                 'admin' => RolePengguna::Admin,
